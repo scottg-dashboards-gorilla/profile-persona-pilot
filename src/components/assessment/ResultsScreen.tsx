@@ -22,11 +22,11 @@ const ResultsScreen = ({ scores, elapsedSeconds, employeeName, onRestart }: Resu
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold font-display text-foreground">
-            {employeeName ? `${employeeName}'s Profile` : "Your Personality Profile"}
+            {employeeName ? `${employeeName}'s Assessment` : "HR Candidate Assessment"}
           </h1>
           <Button variant="ghost" size="sm" onClick={onRestart} className="gap-1.5 text-muted-foreground">
             <RotateCcw className="w-3.5 h-3.5" />
-            Retake
+            New Assessment
           </Button>
         </div>
 
@@ -36,7 +36,7 @@ const ResultsScreen = ({ scores, elapsedSeconds, employeeName, onRestart }: Resu
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="dimensions">Dimensions</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
-            <TabsTrigger value="chat">Follow-Up</TabsTrigger>
+            <TabsTrigger value="chat">Q&A</TabsTrigger>
             <TabsTrigger value="coaching">AI Coach</TabsTrigger>
           </TabsList>
 

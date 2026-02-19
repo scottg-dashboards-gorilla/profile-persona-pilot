@@ -41,7 +41,7 @@ const Index = () => {
     // Save to database
     const { error } = await supabase.from("employee_profiles").insert({
       employee_name: employeeName,
-      scores: scores as any,
+      scores: scores as unknown as any,
       elapsed_seconds: elapsed,
     });
     if (error) {

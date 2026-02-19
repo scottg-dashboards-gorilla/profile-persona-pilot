@@ -3,112 +3,131 @@ import { DimensionScore } from "@/types/assessment";
 interface Archetype {
   name: string;
   summary: string;
-  conditions: [string, "high" | "low", string, "high" | "low"];
+  recommendation: "strong-hire" | "hire" | "conditional" | "caution";
+  conditions: (scores: Map<string, number>) => boolean;
 }
 
 const archetypes: Archetype[] = [
   {
-    name: "The Open Anchor",
-    summary: "Emotionally transparent and culture-driven — they bring authenticity and deep loyalty to teams that share their values.",
-    conditions: ["emotional-awareness", "high", "belonging", "high"],
+    name: "The Complete HR Leader",
+    summary: "Exceptional across the board — strategic, organized, employee-focused, and compliance-savvy. This candidate can run the entire HR function independently and drive company growth.",
+    recommendation: "strong-hire",
+    conditions: (s) => {
+      const dims = ["talent-acquisition", "leadership-coaching", "employee-advocacy", "compliance-risk", "pressure-resilience", "culture-building", "strategic-thinking", "initiative-drive"];
+      const avg = dims.reduce((sum, d) => sum + (s.get(d) ?? 50), 0) / dims.length;
+      const lowCount = dims.filter(d => (s.get(d) ?? 50) < 40).length;
+      return avg >= 65 && lowCount === 0;
+    },
   },
   {
-    name: "The Quiet Powerhouse",
-    summary: "Guarded and self-directed — they deliver exceptional work independently, processing everything internally before acting.",
-    conditions: ["emotional-awareness", "low", "autonomy-need", "high"],
+    name: "The Strategic Culture Builder",
+    summary: "Strong at strategic thinking, culture building, and employee advocacy. This candidate will elevate your people strategy and build a thriving remote culture, though may need support on compliance details.",
+    recommendation: "hire",
+    conditions: (s) =>
+      (s.get("strategic-thinking") ?? 50) >= 65 &&
+      (s.get("culture-building") ?? 50) >= 65 &&
+      (s.get("employee-advocacy") ?? 50) >= 60,
   },
   {
-    name: "The Trust Catalyst",
-    summary: "Extends trust easily and engages conflict directly — they build fast relationships and aren't afraid to have hard conversations.",
-    conditions: ["trust-building", "high", "conflict-response", "high"],
+    name: "The Operational Powerhouse",
+    summary: "Highly organized, compliance-strong, and performs well under pressure. They'll keep the HR engine running smoothly, though they may need to develop more strategic and culture-building capabilities.",
+    recommendation: "hire",
+    conditions: (s) =>
+      (s.get("pressure-resilience") ?? 50) >= 65 &&
+      (s.get("compliance-risk") ?? 50) >= 65 &&
+      (s.get("initiative-drive") ?? 50) >= 60,
   },
   {
-    name: "The Careful Builder",
-    summary: "Earns trust slowly and avoids unnecessary conflict — they create deep, lasting professional bonds through consistent reliability.",
-    conditions: ["trust-building", "low", "conflict-response", "low"],
+    name: "The Talent & Coaching Specialist",
+    summary: "Excels at recruiting and developing managers. They'll help you hire well and build leadership capability, but may need to grow in strategic business partnering or compliance areas.",
+    recommendation: "hire",
+    conditions: (s) =>
+      (s.get("talent-acquisition") ?? 50) >= 65 &&
+      (s.get("leadership-coaching") ?? 50) >= 65,
   },
   {
-    name: "The Focused Specialist",
-    summary: "Deep focus meets role-centered belonging — they're driven by the craft itself and produce remarkable work when given uninterrupted space.",
-    conditions: ["focus-style", "low", "belonging", "low"],
+    name: "The People Champion",
+    summary: "Deeply trusted by employees and strong at building culture. They'll create a workplace people love, but may need to develop harder-edged skills like compliance and strategic business alignment.",
+    recommendation: "conditional",
+    conditions: (s) =>
+      (s.get("employee-advocacy") ?? 50) >= 65 &&
+      (s.get("culture-building") ?? 50) >= 65 &&
+      (s.get("compliance-risk") ?? 50) < 50,
   },
   {
-    name: "The Resilient Mobilizer",
-    summary: "Stress activates them and they engage conflict head-on — they're the ones who step up when everything is on fire.",
-    conditions: ["stress-response", "high", "conflict-response", "high"],
+    name: "The Emerging HR Leader",
+    summary: "Shows promise in several areas but has meaningful gaps that could be challenging in a solo HR leadership role at a 100-person company. Could succeed with mentoring and gradual scope expansion.",
+    recommendation: "conditional",
+    conditions: (s) => {
+      const dims = ["talent-acquisition", "leadership-coaching", "employee-advocacy", "compliance-risk", "pressure-resilience", "culture-building", "strategic-thinking", "initiative-drive"];
+      const avg = dims.reduce((sum, d) => sum + (s.get(d) ?? 50), 0) / dims.length;
+      const highCount = dims.filter(d => (s.get(d) ?? 50) >= 65).length;
+      return avg >= 45 && avg < 65 && highCount >= 2;
+    },
   },
   {
-    name: "The Supported Performer",
-    summary: "Prefers guided oversight and contextual feedback — they thrive when their manager invests in the relationship and provides clear direction.",
-    conditions: ["autonomy-need", "low", "feedback-reception", "high"],
-  },
-  {
-    name: "The Independent Driver",
-    summary: "Self-directed and wants feedback straight — they respect efficiency, ownership, and managers who trust them to deliver.",
-    conditions: ["autonomy-need", "high", "feedback-reception", "low"],
+    name: "The Specialist, Not a Generalist",
+    summary: "Strong in specific areas but significant gaps in others. Running an entire HR function solo requires breadth, and this candidate may struggle to cover all the bases a 100-person IT company needs.",
+    recommendation: "caution",
+    conditions: (s) => {
+      const dims = ["talent-acquisition", "leadership-coaching", "employee-advocacy", "compliance-risk", "pressure-resilience", "culture-building", "strategic-thinking", "initiative-drive"];
+      const lowCount = dims.filter(d => (s.get(d) ?? 50) < 40).length;
+      return lowCount >= 3;
+    },
   },
 ];
 
-const singleDimensionArchetypes: Record<string, { high: { name: string; summary: string }; low: { name: string; summary: string } }> = {
-  "emotional-awareness": {
-    high: { name: "The Heart-on-Sleeve", summary: "Emotionally transparent — they process feelings openly, building intimacy and trust through vulnerability." },
-    low: { name: "The Steady Presence", summary: "Emotionally private — they maintain composure under any circumstances, providing calm stability to those around them." },
+const recommendationLabels: Record<string, { label: string; color: string; description: string }> = {
+  "strong-hire": {
+    label: "Strong Hire",
+    color: "#10b981",
+    description: "This candidate demonstrates exceptional qualifications across all key HR competencies. They are well-equipped to lead your HR function and drive company growth.",
   },
-  "trust-building": {
-    high: { name: "The Open Door", summary: "Trusts by default — they give people the benefit of the doubt, accelerating relationships and collaboration." },
-    low: { name: "The Earned Loyalist", summary: "Trust is earned through evidence — but once given, their commitment and loyalty are unwavering." },
+  "hire": {
+    label: "Recommended Hire",
+    color: "#6366f1",
+    description: "This candidate shows strong capabilities in the most critical areas. Some development areas exist but they're well-positioned to succeed in this role.",
   },
-  "focus-style": {
-    high: { name: "The Juggler", summary: "Thrives on variety and parallel workstreams — they keep many plates spinning and stay energized by context-switching." },
-    low: { name: "The Deep Diver", summary: "Produces their finest work in sustained, uninterrupted deep focus — quality over quantity, depth over breadth." },
+  "conditional": {
+    label: "Conditional — Proceed with Caution",
+    color: "#f59e0b",
+    description: "This candidate has notable strengths but also meaningful gaps. Consider whether you can provide the support they'd need, or whether these gaps are dealbreakers for your situation.",
   },
-  "feedback-reception": {
-    high: { name: "The Contextual Learner", summary: "Absorbs feedback best when it's delivered with empathy and context — they grow fastest in psychologically safe environments." },
-    low: { name: "The Straight Shooter", summary: "Respects and prefers unfiltered honesty — they see direct feedback as a sign of respect and waste no time on pleasantries." },
-  },
-  "conflict-response": {
-    high: { name: "The Truth-Teller", summary: "Leans into disagreement productively — they name what others won't and push teams toward honest, uncomfortable growth." },
-    low: { name: "The Peacekeeper", summary: "Prioritizes harmony and works behind the scenes to resolve tension — they keep teams cohesive and psychologically safe." },
-  },
-  "autonomy-need": {
-    high: { name: "The Self-Starter", summary: "Needs space to own their work completely — micromanagement is their kryptonite, trust is their fuel." },
-    low: { name: "The Aligned Executor", summary: "Performs best with clear expectations and regular touchpoints — they value alignment and want to know they're on track." },
-  },
-  "stress-response": {
-    high: { name: "The Activator", summary: "Stress brings out their best — they get sharper, faster, and more organized when the pressure is on." },
-    low: { name: "The Silent Processor", summary: "Absorbs stress internally and needs space to recover — don't mistake their silence for being okay." },
-  },
-  belonging: {
-    high: { name: "The Culture Champion", summary: "Deeply connected to the team, mission, and values — they need to believe in where they work to do their best work." },
-    low: { name: "The Craft Devotee", summary: "Connected to the work itself — they'll thrive anywhere the problems are interesting, regardless of the brand." },
+  "caution": {
+    label: "Not Recommended",
+    color: "#ef4444",
+    description: "This candidate has significant gaps in critical areas needed to run a full HR function at a 100-person company. The risk of underperformance is high.",
   },
 };
 
-export function getArchetype(scores: DimensionScore[]): { name: string; summary: string } {
+export function getArchetype(scores: DimensionScore[]): { name: string; summary: string; recommendation: string; recommendationLabel: string; recommendationColor: string; recommendationDescription: string } {
   const scoreMap = new Map(scores.map((s) => [s.dimensionId, s.normalizedScore]));
 
-  const isHigh = (id: string) => (scoreMap.get(id) ?? 50) >= 65;
-  const isLow = (id: string) => (scoreMap.get(id) ?? 50) <= 35;
-  const matches = (id: string, dir: "high" | "low") => (dir === "high" ? isHigh(id) : isLow(id));
-
   for (const a of archetypes) {
-    const [d1, dir1, d2, dir2] = a.conditions;
-    if (matches(d1, dir1) && matches(d2, dir2)) {
-      return { name: a.name, summary: a.summary };
+    if (a.conditions(scoreMap)) {
+      const rec = recommendationLabels[a.recommendation];
+      return {
+        name: a.name,
+        summary: a.summary,
+        recommendation: a.recommendation,
+        recommendationLabel: rec.label,
+        recommendationColor: rec.color,
+        recommendationDescription: rec.description,
+      };
     }
   }
 
-  // Fallback: single most extreme dimension
-  let mostExtreme = { id: "emotional-awareness", distance: 0 };
-  for (const s of scores) {
-    const dist = Math.abs(s.normalizedScore - 50);
-    if (dist > mostExtreme.distance) {
-      mostExtreme = { id: s.dimensionId, distance: dist };
-    }
-  }
-
-  const extremeScore = scoreMap.get(mostExtreme.id) ?? 50;
-  const dir = extremeScore >= 50 ? "high" : "low";
-  const fallback = singleDimensionArchetypes[mostExtreme.id]?.[dir];
-  return fallback ?? { name: "The Balanced Professional", summary: "A well-rounded individual who adapts their style across all dimensions — versatile and context-aware." };
+  // Fallback
+  const dims = ["talent-acquisition", "leadership-coaching", "employee-advocacy", "compliance-risk", "pressure-resilience", "culture-building", "strategic-thinking", "initiative-drive"];
+  const avg = dims.reduce((sum, d) => sum + (scoreMap.get(d) ?? 50), 0) / dims.length;
+  const rec = avg >= 55 ? recommendationLabels["conditional"] : recommendationLabels["caution"];
+  
+  return {
+    name: "Mixed Profile",
+    summary: "This candidate shows a varied profile without a clear pattern of strength. Review individual dimension scores carefully to understand specific capabilities and gaps.",
+    recommendation: avg >= 55 ? "conditional" : "caution",
+    recommendationLabel: rec.label,
+    recommendationColor: rec.color,
+    recommendationDescription: rec.description,
+  };
 }
