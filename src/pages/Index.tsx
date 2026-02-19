@@ -4,7 +4,7 @@ import { useAssessment } from "@/hooks/useAssessment";
 import { supabase } from "@/integrations/supabase/client";
 import IntroScreen from "@/components/assessment/IntroScreen";
 import QuestionScreen from "@/components/assessment/QuestionScreen";
-import ResultsScreen from "@/components/assessment/ResultsScreen";
+import ThankYouScreen from "@/components/assessment/ThankYouScreen";
 import { toast } from "@/hooks/use-toast";
 
 type Screen = "intro" | "questions" | "results";
@@ -75,10 +75,9 @@ const Index = () => {
   }
 
   return (
-    <ResultsScreen
-      scores={scores}
-      elapsedSeconds={elapsedSeconds}
+    <ThankYouScreen
       employeeName={employeeName}
+      elapsedSeconds={elapsedSeconds}
       onRestart={handleRestart}
     />
   );
