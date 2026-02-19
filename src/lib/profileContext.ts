@@ -14,7 +14,7 @@ export function buildProfileContext(scores: DimensionScore[]): string {
         ? dim.lowLabel
         : s.normalizedScore >= 65
         ? dim.highLabel
-        : `Balanced (${dim.lowLabel}/${dim.highLabel})`;
+        : `Developing (${dim.lowLabel}/${dim.highLabel})`;
     const desc =
       s.normalizedScore <= 35
         ? dim.scoreDescriptions.low
@@ -24,8 +24,12 @@ export function buildProfileContext(scores: DimensionScore[]): string {
     return `- ${dim.name}: ${s.normalizedScore}% → ${label}. ${desc}`;
   });
 
-  return `Archetype: ${archetype.name} — ${archetype.summary}
+  return `HR Head Candidate Profile: ${archetype.name}
+Hiring Recommendation: ${archetype.recommendationLabel}
+Summary: ${archetype.summary}
 
-Dimension Scores:
-${lines.join("\n")}`;
+Competency Scores:
+${lines.join("\n")}
+
+Context: This candidate is being assessed for a Head of HR role at a 100-person remote IT services company. The role requires running all of HR solo — recruiting, coaching managers, employee advocacy, compliance, culture building, and strategic HR leadership.`;
 }

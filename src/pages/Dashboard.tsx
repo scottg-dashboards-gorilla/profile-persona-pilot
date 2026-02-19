@@ -104,8 +104,8 @@ const Dashboard = () => {
               <Users className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold font-display text-foreground">Employee Profiles</h1>
-              <p className="text-sm text-muted-foreground">{profiles.length} profile{profiles.length !== 1 ? "s" : ""}</p>
+              <h1 className="text-2xl font-bold font-display text-foreground">HR Candidate Assessments</h1>
+              <p className="text-sm text-muted-foreground">{profiles.length} assessment{profiles.length !== 1 ? "s" : ""}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -145,7 +145,7 @@ const Dashboard = () => {
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search employees..."
+                placeholder="Search candidates..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -159,7 +159,7 @@ const Dashboard = () => {
               <div className="card-elevated p-8 text-center">
                 <Users className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
                 <p className="text-muted-foreground">
-                  {search ? "No matching profiles" : "No profiles yet. Start a new assessment!"}
+                  {search ? "No matching assessments" : "No assessments yet. Start a new assessment!"}
                 </p>
               </div>
             ) : (

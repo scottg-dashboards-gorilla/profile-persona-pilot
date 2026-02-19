@@ -11,8 +11,16 @@ function getDescription(dim: DimensionMeta, score: number): string {
   return dim.scoreDescriptions.mid;
 }
 
+function getScoreLabel(score: number): { text: string; color: string } {
+  if (score >= 75) return { text: "Excellent", color: "#10b981" };
+  if (score >= 60) return { text: "Good", color: "#6366f1" };
+  if (score >= 45) return { text: "Developing", color: "#f59e0b" };
+  return { text: "Gap", color: "#ef4444" };
+}
+
 const DimensionCard = ({ score, dim }: { score: DimensionScore; dim: DimensionMeta }) => {
   const pct = score.normalizedScore;
+  const label = getScoreLabel(pct);
   return (
     <div className="card-elevated p-5 hover-lift">
       <div className="flex items-center justify-between mb-3">
@@ -20,12 +28,17 @@ const DimensionCard = ({ score, dim }: { score: DimensionScore; dim: DimensionMe
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: dim.color }} />
           <h3 className="font-semibold text-foreground font-display">{dim.name}</h3>
         </div>
-        <span
-          className="dimension-badge text-white"
-          style={{ backgroundColor: dim.color }}
-        >
-          {pct}%
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${label.color}20`, color: label.color }}>
+            {label.text}
+          </span>
+          <span
+            className="dimension-badge text-white"
+            style={{ backgroundColor: dim.color }}
+          >
+            {pct}%
+          </span>
+        </div>
       </div>
 
       {/* Spectrum Bar */}
@@ -65,8 +78,8 @@ const DimensionsTab = ({ scores }: DimensionsTabProps) => {
   return (
     <div className="animate-fade-in space-y-4">
       <div className="text-center mb-2">
-        <h2 className="text-xl font-bold font-display text-foreground">Dimension Breakdown</h2>
-        <p className="text-sm text-muted-foreground">Your scores across all 8 personality dimensions</p>
+        <h2 className="text-xl font-bold font-display text-foreground">Competency Breakdown</h2>
+        <p className="text-sm text-muted-foreground">Scores across all 8 HR leadership competencies</p>
       </div>
       {scores.map((score) => {
         const dim = dimensions.find((d) => d.id === score.dimensionId)!;

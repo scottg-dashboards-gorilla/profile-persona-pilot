@@ -1,59 +1,59 @@
 import { Question } from "@/types/assessment";
 
 export const questions: Question[] = [
-  // Emotional Openness (Guarded ↔ Transparent)
-  { id: "eo-1", dimensionId: "emotional-awareness", text: "When something at work genuinely upsets me, my colleagues can usually tell right away", reverseScored: false },
-  { id: "eo-2", dimensionId: "emotional-awareness", text: "I've been told I'm hard to read — people often can't tell what I'm really feeling", reverseScored: true },
-  { id: "eo-3", dimensionId: "emotional-awareness", text: "If I'm going through a tough time personally, it affects my energy and engagement at work in ways others can see", reverseScored: false },
-  { id: "eo-4", dimensionId: "emotional-awareness", text: "I believe showing vulnerability at work is a sign of strength, not weakness", reverseScored: false },
-  { id: "eo-5", dimensionId: "emotional-awareness", text: "I prefer to fully resolve my feelings on my own before talking about them with anyone at work", reverseScored: true },
+  // Talent Acquisition & Recruiting
+  { id: "ta-1", dimensionId: "talent-acquisition", text: "I build candidate pipelines for critical roles before positions actually open", reverseScored: false },
+  { id: "ta-2", dimensionId: "talent-acquisition", text: "I primarily rely on job postings and inbound applications to fill roles", reverseScored: true },
+  { id: "ta-3", dimensionId: "talent-acquisition", text: "I've developed and executed employer branding strategies that measurably improved our ability to attract talent", reverseScored: false },
+  { id: "ta-4", dimensionId: "talent-acquisition", text: "I use data (time-to-fill, quality-of-hire, source effectiveness) to continuously improve recruiting outcomes", reverseScored: false },
+  { id: "ta-5", dimensionId: "talent-acquisition", text: "I find it challenging to compete for technical talent against larger companies with bigger budgets", reverseScored: true },
 
-  // Trust Pattern (Earned ↔ Extended)
-  { id: "tr-1", dimensionId: "trust-building", text: "When I join a new team, I assume everyone is competent and well-intentioned until proven otherwise", reverseScored: false },
-  { id: "tr-2", dimensionId: "trust-building", text: "I need to see someone deliver several times before I'm comfortable relying on them for something important", reverseScored: true },
-  { id: "tr-3", dimensionId: "trust-building", text: "I'd rather delegate a task and risk it being done differently than hover over someone to make sure it's perfect", reverseScored: false },
-  { id: "tr-4", dimensionId: "trust-building", text: "When a colleague makes a mistake that affects me, it takes me a while to fully trust their work again", reverseScored: true },
-  { id: "tr-5", dimensionId: "trust-building", text: "I'll share sensitive or personal information with a coworker relatively early in the relationship", reverseScored: false },
+  // Management Coaching & Development
+  { id: "mc-1", dimensionId: "leadership-coaching", text: "When a manager struggles with a team member's performance, I coach them through the conversation rather than handling it myself", reverseScored: false },
+  { id: "mc-2", dimensionId: "leadership-coaching", text: "I've built frameworks or training programs that help managers have effective performance conversations", reverseScored: false },
+  { id: "mc-3", dimensionId: "leadership-coaching", text: "I tend to give managers direct answers rather than helping them develop their own problem-solving skills", reverseScored: true },
+  { id: "mc-4", dimensionId: "leadership-coaching", text: "I proactively identify managers who need development support before performance issues escalate", reverseScored: false },
+  { id: "mc-5", dimensionId: "leadership-coaching", text: "I'm more comfortable handling administrative HR tasks than coaching leaders on difficult people issues", reverseScored: true },
 
-  // Focus & Attention (Deep Focus ↔ Multi-Tracker)
-  { id: "fo-1", dimensionId: "focus-style", text: "I do my best thinking when I can close everything else out and go deep on one thing for hours", reverseScored: true },
-  { id: "fo-2", dimensionId: "focus-style", text: "Switching between multiple projects in a single day energizes me rather than drains me", reverseScored: false },
-  { id: "fo-3", dimensionId: "focus-style", text: "An unexpected interruption in the middle of focused work can derail my productivity for the rest of the hour", reverseScored: true },
-  { id: "fo-4", dimensionId: "focus-style", text: "I naturally keep a mental map of 5+ active projects and can jump between them without losing context", reverseScored: false },
-  { id: "fo-5", dimensionId: "focus-style", text: "I produce my highest-quality work when I have large, protected blocks of uninterrupted time", reverseScored: true },
+  // Employee Advocacy & Voice
+  { id: "ea-1", dimensionId: "employee-advocacy", text: "Employees regularly come to me with sensitive concerns because they trust I'll advocate for them fairly", reverseScored: false },
+  { id: "ea-2", dimensionId: "employee-advocacy", text: "I've pushed back on leadership decisions when I believed they would negatively impact employee well-being or morale", reverseScored: false },
+  { id: "ea-3", dimensionId: "employee-advocacy", text: "I sometimes avoid raising uncomfortable employee feedback with senior leadership", reverseScored: true },
+  { id: "ea-4", dimensionId: "employee-advocacy", text: "I run regular pulse surveys or feedback mechanisms to proactively understand employee sentiment", reverseScored: false },
+  { id: "ea-5", dimensionId: "employee-advocacy", text: "I find it difficult to balance being an employee advocate while also supporting company decisions I don't fully agree with", reverseScored: true },
 
-  // Feedback Style (Direct ↔ Contextual/Supportive)
-  { id: "fb-1", dimensionId: "feedback-reception", text: "I'd rather someone tell me exactly what I did wrong without softening it — just give it to me straight", reverseScored: true },
-  { id: "fb-2", dimensionId: "feedback-reception", text: "When I receive critical feedback, I need time to sit with it before I can respond constructively", reverseScored: false },
-  { id: "fb-3", dimensionId: "feedback-reception", text: "I don't need praise before criticism — in fact, the 'compliment sandwich' feels manipulative to me", reverseScored: true },
-  { id: "fb-4", dimensionId: "feedback-reception", text: "Harsh feedback, even when accurate, can affect my confidence for days", reverseScored: false },
-  { id: "fb-5", dimensionId: "feedback-reception", text: "I appreciate it when someone explains the bigger picture and their intent before giving me tough feedback", reverseScored: false },
+  // Compliance & Risk Management
+  { id: "cr-1", dimensionId: "compliance-risk", text: "I proactively audit our HR policies and practices for legal compliance at least annually", reverseScored: false },
+  { id: "cr-2", dimensionId: "compliance-risk", text: "I'm confident in my knowledge of employment law as it applies to remote workers across different states or countries", reverseScored: false },
+  { id: "cr-3", dimensionId: "compliance-risk", text: "I've sometimes realized a compliance gap only after it became a problem", reverseScored: true },
+  { id: "cr-4", dimensionId: "compliance-risk", text: "I maintain up-to-date employee handbooks, policies, and documentation that would withstand legal scrutiny", reverseScored: false },
+  { id: "cr-5", dimensionId: "compliance-risk", text: "Managing compliance across multiple jurisdictions for remote workers feels overwhelming to me", reverseScored: true },
 
-  // Conflict Approach (Harmony-Seeking ↔ Direct Engagement)
-  { id: "cf-1", dimensionId: "conflict-response", text: "When I disagree with someone in a meeting, I usually speak up immediately rather than waiting", reverseScored: false },
-  { id: "cf-2", dimensionId: "conflict-response", text: "I sometimes let small issues slide to avoid tension, even when I know I should address them", reverseScored: true },
-  { id: "cf-3", dimensionId: "conflict-response", text: "I believe most teams don't have enough healthy conflict — too many things go unsaid", reverseScored: false },
-  { id: "cf-4", dimensionId: "conflict-response", text: "After a heated disagreement at work, I feel drained and anxious, even if it was resolved", reverseScored: true },
-  { id: "cf-5", dimensionId: "conflict-response", text: "I'd rather have an uncomfortable conversation now than let resentment build up over weeks", reverseScored: false },
+  // Pressure & Organization
+  { id: "po-1", dimensionId: "pressure-resilience", text: "When multiple urgent issues hit simultaneously (e.g., a resignation, a complaint, and a deadline), I triage and handle them calmly", reverseScored: false },
+  { id: "po-2", dimensionId: "pressure-resilience", text: "I maintain organized systems for tracking HR projects, deadlines, and follow-ups even during busy periods", reverseScored: false },
+  { id: "po-3", dimensionId: "pressure-resilience", text: "During high-stress periods, important tasks sometimes fall through the cracks", reverseScored: true },
+  { id: "po-4", dimensionId: "pressure-resilience", text: "I perform at my best when things are busy and there's a lot on my plate", reverseScored: false },
+  { id: "po-5", dimensionId: "pressure-resilience", text: "I need a relatively calm and predictable schedule to produce my best work", reverseScored: true },
 
-  // Autonomy & Oversight (Guided ↔ Self-Directed)
-  { id: "au-1", dimensionId: "autonomy-need", text: "I do my best work when my manager sets the goal and leaves me to figure out how to get there", reverseScored: false },
-  { id: "au-2", dimensionId: "autonomy-need", text: "Regular check-ins with my manager help me stay on track and feel confident I'm heading in the right direction", reverseScored: true },
-  { id: "au-3", dimensionId: "autonomy-need", text: "When someone closely monitors my progress, it feels more like a lack of trust than support", reverseScored: false },
-  { id: "au-4", dimensionId: "autonomy-need", text: "I appreciate when my manager proactively suggests how to approach a problem rather than waiting for me to figure it out", reverseScored: true },
-  { id: "au-5", dimensionId: "autonomy-need", text: "I've turned down or left roles because there was too much oversight and not enough freedom", reverseScored: false },
+  // Culture & Engagement
+  { id: "cb-1", dimensionId: "culture-building", text: "I've designed and implemented programs specifically aimed at building culture and connection in remote or hybrid teams", reverseScored: false },
+  { id: "cb-2", dimensionId: "culture-building", text: "I measure employee engagement and culture health using structured data, not just gut feeling", reverseScored: false },
+  { id: "cb-3", dimensionId: "culture-building", text: "I find it difficult to create meaningful team connection when people don't share a physical office", reverseScored: true },
+  { id: "cb-4", dimensionId: "culture-building", text: "I see company culture as something that needs to be intentionally designed and maintained, not something that just happens", reverseScored: false },
+  { id: "cb-5", dimensionId: "culture-building", text: "I tend to focus more on HR operations than on culture-building initiatives", reverseScored: true },
 
-  // Stress Processing (Internalizer ↔ Mobilizer)
-  { id: "sp-1", dimensionId: "stress-response", text: "When I'm overwhelmed, I tend to go quiet and withdraw rather than talk about it", reverseScored: true },
-  { id: "sp-2", dimensionId: "stress-response", text: "High-pressure deadlines bring out a focused intensity in me that I actually enjoy", reverseScored: false },
-  { id: "sp-3", dimensionId: "stress-response", text: "When I'm stressed, I need time completely alone before I can think clearly again", reverseScored: true },
-  { id: "sp-4", dimensionId: "stress-response", text: "Under pressure, I naturally start organizing people and tasks — stress makes me more action-oriented", reverseScored: false },
-  { id: "sp-5", dimensionId: "stress-response", text: "I've had moments where I didn't realize how stressed I was until I hit a breaking point", reverseScored: true },
+  // Strategic HR Leadership
+  { id: "st-1", dimensionId: "strategic-thinking", text: "I regularly connect HR initiatives directly to measurable business outcomes like revenue growth, retention, or productivity", reverseScored: false },
+  { id: "st-2", dimensionId: "strategic-thinking", text: "I'm more comfortable executing HR tasks than presenting workforce strategy to the executive team", reverseScored: true },
+  { id: "st-3", dimensionId: "strategic-thinking", text: "I use workforce analytics and data to inform executive decisions about the organization's future", reverseScored: false },
+  { id: "st-4", dimensionId: "strategic-thinking", text: "I anticipate organizational challenges (like succession gaps or skill shortages) before they become urgent problems", reverseScored: false },
+  { id: "st-5", dimensionId: "strategic-thinking", text: "I primarily see my role as supporting what the business asks of HR rather than shaping the people strategy", reverseScored: true },
 
-  // Organizational Belonging (Role-Centered ↔ Culture-Centered)
-  { id: "bl-1", dimensionId: "belonging", text: "I could do the same role at a company with completely different values and still feel satisfied, as long as the work is good", reverseScored: true },
-  { id: "bl-2", dimensionId: "belonging", text: "Feeling like I belong to a team and community matters more to me than the specific tasks I'm doing", reverseScored: false },
-  { id: "bl-3", dimensionId: "belonging", text: "I've stayed at a job longer than I should have because I loved the people and the culture", reverseScored: false },
-  { id: "bl-4", dimensionId: "belonging", text: "If the work stopped being intellectually stimulating, no amount of culture or perks would keep me engaged", reverseScored: true },
-  { id: "bl-5", dimensionId: "belonging", text: "I need to feel that my company's mission aligns with my personal values to do my best work", reverseScored: false },
+  // Initiative & Ownership
+  { id: "io-1", dimensionId: "initiative-drive", text: "I regularly identify process improvements or new programs and drive them from idea to implementation without being asked", reverseScored: false },
+  { id: "io-2", dimensionId: "initiative-drive", text: "I tend to wait for leadership to set HR priorities rather than proposing my own agenda", reverseScored: true },
+  { id: "io-3", dimensionId: "initiative-drive", text: "When I see a gap in our people practices, I build the business case and get buy-in to fix it", reverseScored: false },
+  { id: "io-4", dimensionId: "initiative-drive", text: "I've successfully launched HR programs or initiatives that weren't part of my original job description", reverseScored: false },
+  { id: "io-5", dimensionId: "initiative-drive", text: "I prefer clear direction on what to prioritize rather than having to figure out what's most important on my own", reverseScored: true },
 ];

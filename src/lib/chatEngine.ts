@@ -1,5 +1,6 @@
 import { DimensionScore } from "@/types/assessment";
 import { dimensions, DimensionMeta } from "@/data/dimensions";
+import { getArchetype } from "@/lib/archetypes";
 
 function getDim(scores: DimensionScore[], id: string): number {
   return scores.find((s) => s.dimensionId === id)?.normalizedScore ?? 50;
@@ -18,15 +19,7 @@ function descForScore(dim: DimensionMeta, score: number): string {
 function labelForScore(dim: DimensionMeta, score: number): string {
   if (score <= 35) return dim.lowLabel;
   if (score >= 65) return dim.highLabel;
-  return `balanced between ${dim.lowLabel} and ${dim.highLabel}`;
-}
-
-function getTopStrengths(scores: DimensionScore[]): DimensionScore[] {
-  return [...scores].sort((a, b) => Math.abs(b.normalizedScore - 50) - Math.abs(a.normalizedScore - 50)).slice(0, 3);
-}
-
-function getGrowthAreas(scores: DimensionScore[]): DimensionScore[] {
-  return [...scores].sort((a, b) => Math.abs(a.normalizedScore - 50) - Math.abs(b.normalizedScore - 50)).slice(0, 3);
+  return `developing`;
 }
 
 export function generateResponse(
@@ -38,72 +31,65 @@ export function generateResponse(
 
   // Strengths
   if (/strength|strong|best|excel|good at/i.test(lower)) {
-    const top = getTopStrengths(scores);
+    const top = [...scores].sort((a, b) => b.normalizedScore - a.normalizedScore).slice(0, 3);
     const lines = top.map((s) => {
       const d = dimMeta(s.dimensionId);
       return `• **${d.name}** (${s.normalizedScore}%) — ${descForScore(d, s.normalizedScore)}`;
     });
-    return `As a **${archetypeName}**, your top strengths are:\n\n${lines.join("\n\n")}\n\nThese strengths make you particularly effective in roles that leverage your natural tendencies.`;
+    return `As a **${archetypeName}**, this candidate's top competencies are:\n\n${lines.join("\n\n")}\n\nThese strengths suggest the candidate would be most effective in these aspects of the HR Head role.`;
   }
 
-  // Weaknesses / Growth
-  if (/weakness|growth|improve|develop|grow|opportunity/i.test(lower)) {
-    const growth = getGrowthAreas(scores);
-    const lines = growth.map((s) => {
+  // Weaknesses / Risks
+  if (/weakness|gap|risk|concern|worry|red flag|improve/i.test(lower)) {
+    const weak = [...scores].sort((a, b) => a.normalizedScore - b.normalizedScore).slice(0, 3);
+    const lines = weak.map((s) => {
       const d = dimMeta(s.dimensionId);
-      return `• **${d.name}** (${s.normalizedScore}%) — ${d.growthSuggestion}`;
+      return `• **${d.name}** (${s.normalizedScore}%) — ${descForScore(d, s.normalizedScore)}\n  💡 ${d.growthSuggestion}`;
     });
-    return `Here are areas where you could grow:\n\n${lines.join("\n\n")}\n\nThese aren't weaknesses — they're opportunities to expand your range as a professional.`;
+    return `Here are the candidate's biggest risk areas:\n\n${lines.join("\n\n")}\n\nFor a solo HR Head at a 100-person company, these gaps could be significant. Consider whether mentoring, training, or additional support could address them.`;
   }
 
-  // Conflict
-  if (/conflict|disagree|argument|tension|difficult/i.test(lower)) {
-    const comm = getDim(scores, "communication");
-    const lead = getDim(scores, "leadership");
-    const res = getDim(scores, "resilience");
-    return `Based on your profile as a **${archetypeName}**, here's how you likely handle conflict:\n\n• **Communication approach**: You're ${labelForScore(dimMeta("communication"), comm)}, which means you ${comm >= 65 ? "tend to address issues directly and verbally" : comm <= 35 ? "prefer to process before responding, which gives you thoughtful perspectives" : "can adapt between direct discussion and thoughtful reflection"}.\n\n• **Leadership in conflict**: With a ${labelForScore(dimMeta("leadership"), lead)} approach, you ${lead >= 65 ? "seek consensus and want everyone's voice heard" : lead <= 35 ? "may take charge to resolve the situation decisively" : "can flex between mediating and deciding"}.\n\n• **Stress response**: Your ${labelForScore(dimMeta("resilience"), res)} resilience means ${res >= 65 ? "conflict energizes you to push through" : res <= 35 ? "you need processing time before engaging productively" : "you balance action with reflection during tense moments"}.\n\n**Tip**: In your next conflict, try ${comm >= 65 ? "pausing to listen before responding" : "voicing your perspective earlier rather than holding back"}.`;
+  // Recruiting
+  if (/recruit|hiring|talent|sourcing|pipeline/i.test(lower)) {
+    const score = getDim(scores, "talent-acquisition");
+    const dim = dimMeta("talent-acquisition");
+    return `**Recruiting & Talent Acquisition** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate appears ready to build and execute a full recruiting strategy for your IT services company." : score >= 45 ? "They have foundational recruiting skills but may need support building a strategic talent acquisition function from scratch." : "This is a significant gap. Your 100-person IT company needs someone who can compete for scarce technical talent — this candidate may struggle here."}\n\n💡 ${dim.growthSuggestion}`;
   }
 
-  // Leadership / Career / Roles
-  if (/leader|career|role|manage|position|job/i.test(lower)) {
-    const lead = getDim(scores, "leadership");
-    const struct = getDim(scores, "structure");
-    const drive = getDim(scores, "drive");
-    return `As a **${archetypeName}**, you'd excel in roles that combine:\n\n• **Leadership style**: ${labelForScore(dimMeta("leadership"), lead)} (${lead}%) — ${descForScore(dimMeta("leadership"), lead)}\n\n• **Work environment**: ${labelForScore(dimMeta("structure"), struct)} (${struct}%) — You need ${struct >= 65 ? "autonomy and the freedom to define your own approach" : struct <= 35 ? "clear expectations and well-defined processes" : "a mix of structure and creative freedom"}.\n\n• **Motivation fit**: ${labelForScore(dimMeta("drive"), drive)} (${drive}%) — Look for roles with ${drive >= 65 ? "clear metrics, competitive environments, and visible impact" : drive <= 35 ? "meaningful missions, value alignment, and purpose" : "balanced goals and meaningful work"}.\n\nConsider roles in **${lead >= 65 ? "facilitation, coaching, cross-functional leadership" : lead <= 35 ? "program management, executive leadership, operations" : "hybrid leadership positions"}**.`;
+  // Coaching / Performance
+  if (/coach|performance|manager|feedback|development/i.test(lower)) {
+    const score = getDim(scores, "leadership-coaching");
+    const dim = dimMeta("leadership-coaching");
+    return `**Management Coaching** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate can elevate your entire management team's people skills — a huge multiplier effect." : score >= 45 ? "They can handle standard coaching situations but may need development for complex leadership challenges." : "Coaching managers is a critical part of this role. This gap means your managers may not get the people development support they need."}`;
   }
 
-  // Working with others / managers
-  if (/manager|boss|team|colleague|coworker|work with|working with/i.test(lower)) {
-    const lead = getDim(scores, "leadership");
-    const vals = getDim(scores, "values");
-    const comm = getDim(scores, "communication");
-    return `Here's what your profile suggests about your ideal working relationships:\n\n• **Ideal manager**: Someone who ${lead >= 65 ? "gives you space to collaborate and co-create" : lead <= 35 ? "provides clear direction and decisive guidance" : "balances autonomy with clear expectations"}.\n\n• **Team dynamics**: With ${labelForScore(dimMeta("values"), vals)} values (${vals}%), you ${vals >= 65 ? "thrive in tight-knit teams with shared celebrations" : vals <= 35 ? "do your best work when given ownership of your domain" : "appreciate both individual recognition and team success"}.\n\n• **Communication needs**: As a ${labelForScore(dimMeta("communication"), comm)} communicator, you work best with people who ${comm >= 65 ? "match your energy and engage in lively discussion" : comm <= 35 ? "respect your need to process and value written communication" : "can flex between spontaneous and structured communication"}.\n\n**Pro tip**: Share these insights with your manager during your first 1:1 to set expectations early.`;
+  // Culture / Remote
+  if (/culture|remote|engage|belong|connect|virtual/i.test(lower)) {
+    const score = getDim(scores, "culture-building");
+    const dim = dimMeta("culture-building");
+    return `**Culture & Engagement** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This is exactly what a remote-first company needs — someone who intentionally designs culture rather than letting it happen by accident." : score >= 45 ? "They understand culture matters but may need to build their remote-specific toolkit." : "With most of your 100 employees working remotely, culture building is critical. This candidate may default to in-person approaches that don't translate."}\n\n💡 ${dim.growthSuggestion}`;
   }
 
-  // Stress / Resilience
-  if (/stress|pressure|burnout|overwhelm|resilien|cope|deadline/i.test(lower)) {
-    const res = getDim(scores, "resilience");
-    const struct = getDim(scores, "structure");
-    return `Your resilience score of **${res}%** (${labelForScore(dimMeta("resilience"), res)}) tells us a lot:\n\n${res >= 65 ? "**You thrive under pressure.** Tight deadlines and high stakes actually improve your performance. However, be careful not to seek unnecessary pressure or burn out others who process differently." : res <= 35 ? "**You process stress internally.** You need quiet time to recharge after intense periods. This isn't a weakness — it means you process deeply and return with stronger insights." : "**You have a balanced stress response.** You can push through when needed but also know when to step back and recharge."}\n\n**Your structure preference** (${struct}%): ${struct >= 65 ? "Your flexible nature means you might take on too many shifting priorities. Create personal boundaries even if the environment doesn't impose them." : struct <= 35 ? "Your love of structure is actually a stress management superpower — use it to create predictability during chaotic periods." : "You can adapt your approach to match the demands of the situation."}\n\n**Recommended strategies**: ${res >= 65 ? "Schedule intentional recovery time, practice delegating during calm periods, and recognize when your energy is creating pressure for others." : res <= 35 ? "Block focused work time, communicate your processing needs to your team, and build recharge rituals into your workday." : "Monitor your stress levels and alternate between pushing through and stepping back as needed."}`;
+  // Compliance
+  if (/compliance|legal|law|risk|policy|handbook/i.test(lower)) {
+    const score = getDim(scores, "compliance-risk");
+    const dim = dimMeta("compliance-risk");
+    return `**Compliance & Risk** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "Strong compliance awareness — they'll protect the company proactively." : score >= 45 ? "They handle standard compliance but remote multi-jurisdiction complexity may require outside support." : "⚠️ This is a significant risk. With remote workers across jurisdictions, compliance gaps can be very costly."}`;
   }
 
-  // Communication
-  if (/communicat|speak|talk|write|present|meeting/i.test(lower)) {
-    const comm = getDim(scores, "communication");
-    return `Your communication style score is **${comm}%** — ${labelForScore(dimMeta("communication"), comm)}.\n\n${descForScore(dimMeta("communication"), comm)}\n\n**Tips for your onboarding**:\n• ${comm >= 65 ? "Channel your expressiveness — volunteer for presentations and brainstorms, but practice active listening too" : comm <= 35 ? "Leverage your reflective nature — ask for agendas ahead of time so you can prepare thoughtful contributions" : "You naturally adapt — pay attention to which mode you default to and stretch the other direction sometimes"}.\n• In meetings: ${comm >= 65 ? "Try the 'one idea, one listen' rule — share an idea, then actively solicit someone else's perspective before sharing another" : comm <= 35 ? "Set a goal to share at least one thought per meeting, even if it's not fully formed" : "Experiment with both spontaneous sharing and prepared remarks to see what works best in different contexts"}.`;
+  // Pressure / Organization
+  if (/pressure|stress|organiz|busy|overwhelm|priorit/i.test(lower)) {
+    const score = getDim(scores, "pressure-resilience");
+    const dim = dimMeta("pressure-resilience");
+    return `**Pressure & Organization** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\nAs the sole HR leader for 100 people, they'll regularly face competing urgent priorities. ${score >= 65 ? "This candidate appears well-equipped for the intensity." : score < 45 ? "This is concerning — the role requires someone who thrives in high-demand environments." : "They can handle normal pressure but sustained chaos may impact their effectiveness."}`;
   }
 
-  // Culture fit
-  if (/culture|fit|environment|workplace|company|team culture/i.test(lower)) {
-    return generateEnvironmentParagraph(scores);
-  }
-
-  // Onboarding
-  if (/onboard|first day|first week|new job|getting started|start/i.test(lower)) {
-    const comm = getDim(scores, "communication");
-    const struct = getDim(scores, "structure");
-    const vals = getDim(scores, "values");
-    return `Here's a personalized onboarding plan based on your **${archetypeName}** profile:\n\n**Week 1 — Foundation**:\n• ${struct >= 65 ? "Don't wait for structure — create your own onboarding checklist and share it with your manager" : "Ask your manager for a structured onboarding plan with clear milestones and expectations"}\n• ${comm >= 65 ? "Introduce yourself to as many people as possible — your natural energy will build connections quickly" : "Schedule 1:1 coffee chats so you can connect in a comfortable, low-pressure format"}\n\n**Week 2-4 — Integration**:\n• ${vals >= 65 ? "Find a team project to contribute to early — you'll learn faster through collaboration" : "Identify a domain where you can build expertise quickly and establish yourself as a go-to resource"}\n• Share this personality profile with your manager to accelerate mutual understanding\n\n**Month 2+ — Acceleration**:\n• Seek feedback early and often to calibrate your natural tendencies to the team culture\n• Look for opportunities that play to your strengths as a **${archetypeName}**`;
+  // Should I hire / recommendation
+  if (/hire|recommend|should i|decision|verdict|good fit|right person/i.test(lower)) {
+    const archetype = getArchetype(scores);
+    const strong = scores.filter(s => s.normalizedScore >= 65);
+    const weak = scores.filter(s => s.normalizedScore < 40);
+    return `**Hiring Recommendation: ${archetype.recommendationLabel}**\n\n${archetype.recommendationDescription}\n\n**Profile: ${archetype.name}**\n${archetype.summary}\n\n${strong.length > 0 ? `**Strengths (${strong.length}):** ${strong.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(", ")}\n\n` : ""}${weak.length > 0 ? `**Gaps (${weak.length}):** ${weak.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(", ")}\n\n` : ""}**Key consideration:** This role requires running all of HR solo at a 100-person remote IT company. ${weak.length === 0 ? "This candidate appears well-rounded enough to handle the breadth." : `The gaps in ${weak.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(" and ")} could be challenging without support.`}`;
   }
 
   // Specific dimension names
@@ -111,44 +97,29 @@ export function generateResponse(
     const patterns = [dim.id, dim.name.toLowerCase(), dim.lowLabel.toLowerCase(), dim.highLabel.toLowerCase()];
     if (patterns.some((p) => lower.includes(p))) {
       const score = getDim(scores, dim.id);
-      return `**${dim.name}** — Your score: **${score}%**\n\n${descForScore(dim, score)}\n\nOn the spectrum from **${dim.lowLabel}** to **${dim.highLabel}**, you lean toward **${labelForScore(dim, score)}**.\n\n**Growth opportunity**: ${dim.growthSuggestion}`;
+      return `**${dim.name}** — Score: **${score}%**\n\n${descForScore(dim, score)}\n\nOn the spectrum from **${dim.lowLabel}** to **${dim.highLabel}**, this candidate leans toward **${labelForScore(dim, score)}**.\n\n💡 ${dim.growthSuggestion}`;
     }
   }
 
   // Profile overview / catch-all
-  if (/profile|overview|summary|result|score|tell me about/i.test(lower)) {
-    return generateOverviewResponse(scores, archetypeName);
-  }
-
-  // Default catch-all
-  return generateOverviewResponse(scores, archetypeName) + "\n\n---\n\nYou can ask me about specific topics like **strengths**, **growth areas**, **conflict style**, **leadership roles**, **stress management**, **communication tips**, **culture fit**, or any of the 8 dimensions by name.";
-}
-
-function generateOverviewResponse(scores: DimensionScore[], archetype: string): string {
   const lines = scores.map((s) => {
     const d = dimMeta(s.dimensionId);
     return `• **${d.name}**: ${s.normalizedScore}% (${labelForScore(d, s.normalizedScore)})`;
   });
-  return `As a **${archetype}**, here's your complete profile:\n\n${lines.join("\n")}\n\nYour strongest tendencies are in the dimensions farthest from 50%, while scores near 50% indicate natural flexibility.`;
+  return `Here's the candidate's complete competency profile (**${archetypeName}**):\n\n${lines.join("\n")}\n\nScores above 65% indicate strong competency. Below 40% indicates a significant gap for this role.\n\n---\n\nAsk me about **strengths**, **risk areas**, **hiring recommendation**, **recruiting ability**, **coaching skills**, **culture fit**, **compliance readiness**, or any specific dimension.`;
 }
 
 export function generateEnvironmentParagraph(scores: DimensionScore[]): string {
   const parts: string[] = [];
 
-  const struct = getDim(scores, "structure");
-  parts.push(struct >= 65 ? "autonomy and the freedom to define your own approach" : struct <= 35 ? "clear processes, defined expectations, and organized workflows" : "a balance of structure and creative freedom");
+  const ta = getDim(scores, "talent-acquisition");
+  parts.push(ta >= 65 ? "a strategic recruiting function with pipeline building and employer branding" : ta <= 35 ? "support with recruiting strategy and sourcing — this isn't their strongest area" : "a solid but developing approach to talent acquisition");
 
-  const change = getDim(scores, "change");
-  parts.push(change >= 65 ? "opportunities to innovate and try new approaches" : change <= 35 ? "consistency and the ability to deepen expertise in proven methods" : "a blend of innovation and stability");
+  const cb = getDim(scores, "culture-building");
+  parts.push(cb >= 65 ? "intentional culture design with remote-specific programs and measurable engagement" : cb <= 35 ? "significant investment in developing remote culture-building capabilities" : "growing skills in remote culture building that will benefit from mentoring");
 
-  const vals = getDim(scores, "values");
-  parts.push(vals >= 65 ? "strong team culture, shared celebrations, and collaborative goals" : vals <= 35 ? "recognition of individual expertise and personal achievement" : "both individual recognition and team-based wins");
+  const pr = getDim(scores, "pressure-resilience");
+  parts.push(pr >= 65 ? "the ability to handle high-pressure, multi-priority environments with composure" : pr <= 35 ? "a more structured, predictable environment — they may struggle with the chaos of a growing company" : "reasonable ability to handle pressure with occasional support during peak periods");
 
-  const comm = getDim(scores, "communication");
-  parts.push(comm >= 65 ? "open, energetic communication and frequent brainstorming" : comm <= 35 ? "space for reflection, written communication, and thoughtful discussion" : "diverse communication channels that support both spontaneity and reflection");
-
-  const res = getDim(scores, "resilience");
-  parts.push(res >= 65 ? "high-stakes projects and challenging deadlines that bring out your best" : res <= 35 ? "sustainable pace with built-in recovery time after intense sprints" : "a rhythm that alternates between intense sprints and calm periods");
-
-  return `**Your Ideal Work Environment**\n\nBased on your personality profile, you thrive in workplaces that offer:\n\n• ${parts.join("\n• ")}\n\nLook for teams and organizations where these elements are part of the culture — they'll bring out your best work naturally.`;
+  return `**Candidate Environment Fit**\n\nBased on the competency profile, this candidate would bring:\n\n• ${parts.join("\n• ")}\n\nFor a 100-person remote IT services company, consider how these capabilities align with your current needs and growth trajectory.`;
 }

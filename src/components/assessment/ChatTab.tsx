@@ -15,12 +15,12 @@ interface ChatMessage {
 }
 
 const SUGGESTION_CHIPS = [
-  "What are my biggest strengths?",
-  "How should I handle conflict with my style?",
-  "What leadership roles suit me best?",
-  "How can I grow as a leader?",
-  "What kind of manager would I work best with?",
-  "How do I handle stress differently from others?",
+  "Should I hire this person?",
+  "What are their biggest strengths?",
+  "What are the risk areas?",
+  "How will they handle recruiting?",
+  "Can they coach our managers?",
+  "Will they build remote culture effectively?",
 ];
 
 function renderMarkdown(text: string) {
@@ -34,7 +34,7 @@ const ChatTab = ({ scores }: ChatTabProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "ai",
-      text: `Hi! I'm your personality profile assistant. Based on your results, you're a **${archetype.name}** — ${archetype.summary.toLowerCase()}\n\nFeel free to ask me anything about your profile, strengths, growth areas, or how to leverage your style during onboarding.`,
+      text: `I've analyzed the candidate's HR competency profile. They're a **${archetype.name}** — ${archetype.summary.toLowerCase()}\n\n**Recommendation: ${archetype.recommendationLabel}**\n\nAsk me anything about their fit for the Head of HR role — strengths, risks, specific competencies, or whether you should hire them.`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -71,9 +71,8 @@ const ChatTab = ({ scores }: ChatTabProps) => {
 
   return (
     <div className="animate-fade-in flex flex-col" style={{ height: "calc(100vh - 220px)", minHeight: 400 }}>
-      {/* Intro */}
       <p className="text-sm text-muted-foreground mb-3">
-        Ask questions about your personality profile. Get personalized insights for your onboarding journey.
+        Ask questions about this candidate's HR competency profile and fit for the Head of HR role.
       </p>
 
       {/* Suggestion Chips */}
@@ -123,7 +122,7 @@ const ChatTab = ({ scores }: ChatTabProps) => {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about your profile..."
+          placeholder="Ask about this candidate's profile..."
           className="flex-1 rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           disabled={isTyping}
         />
