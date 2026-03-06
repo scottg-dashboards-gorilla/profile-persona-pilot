@@ -24,12 +24,12 @@ export function buildProfileContext(scores: DimensionScore[]): string {
     return `- ${dim.name}: ${s.normalizedScore}% → ${label}. ${desc}`;
   });
 
-  return `HR Head Candidate Profile: ${archetype.name}
+  return `IT Director Candidate Profile: ${archetype.name}
 Hiring Recommendation: ${archetype.recommendationLabel}
 Summary: ${archetype.summary}
 
 Competency Scores:
 ${lines.join("\n")}
 
-Context: This candidate is being assessed for a Head of HR role at a 100-person remote IT services company. The role requires running all of HR solo — recruiting, coaching managers, employee advocacy, compliance, culture building, and strategic HR leadership.`;
+Context: This candidate is being assessed for an IT Director role at a client's organization. The role requires leading the entire IT function — managing Microsoft environments, leading IT teams, driving technology strategy, ensuring security and compliance, solving complex problems creatively, communicating across the business, building operational processes, and performing under pressure during crises.`;
 }

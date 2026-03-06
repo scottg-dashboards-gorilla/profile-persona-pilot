@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Shield, Target, Briefcase, Heart, ArrowRight, Clock, HelpCircle } from "lucide-react";
+import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle } from "lucide-react";
 import { dimensions } from "@/data/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,24 +10,24 @@ interface IntroScreenProps {
 
 const competencyAreas = [
   {
-    icon: Target,
-    name: "Recruiting & Talent",
-    description: "Full-cycle recruiting strategy for IT talent in a competitive market.",
+    icon: Monitor,
+    name: "Microsoft & Technical Depth",
+    description: "Azure, M365, Active Directory/Entra ID, Exchange, SharePoint, Teams, and Intune expertise.",
   },
   {
     icon: Users,
-    name: "Leadership Coaching",
-    description: "Coaching managers on performance, feedback, and difficult conversations.",
+    name: "Leadership & People",
+    description: "Leading IT teams, mentoring, performance management, and building trust.",
   },
   {
-    icon: Heart,
-    name: "Employee Advocacy",
-    description: "Being the voice of 100 employees and surfacing their needs to leadership.",
+    icon: Target,
+    name: "Strategy & Innovation",
+    description: "Aligning IT to business goals, thinking outside the box, and driving continuous improvement.",
   },
   {
     icon: Shield,
-    name: "Compliance & Operations",
-    description: "Employment law, remote work compliance, and HR risk management.",
+    name: "Security & Operations",
+    description: "Cybersecurity, compliance frameworks, ITIL processes, and crisis management.",
   },
 ];
 
@@ -40,10 +40,10 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display text-foreground mb-3 leading-tight">
-            Head of HR Assessment
+            IT Director Assessment
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto">
-            Evaluate whether this candidate can lead the entire HR function for a 100-person remote IT services company.
+            Evaluate whether this candidate has the technical depth, leadership qualities, and strategic vision to lead as an IT Director.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
 
           {/* Info note */}
           <div className="text-xs text-muted-foreground bg-secondary/30 rounded-lg p-3 mb-6">
-            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all HR leadership dimensions.
+            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all IT leadership dimensions.
           </div>
 
           {/* CTA */}

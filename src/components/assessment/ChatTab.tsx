@@ -18,9 +18,9 @@ const SUGGESTION_CHIPS = [
   "Should I hire this person?",
   "What are their biggest strengths?",
   "What are the risk areas?",
-  "How will they handle recruiting?",
-  "Can they coach our managers?",
-  "Will they build remote culture effectively?",
+  "How strong is their Microsoft expertise?",
+  "Can they lead and develop a team?",
+  "How do they handle pressure and crises?",
 ];
 
 function renderMarkdown(text: string) {
@@ -34,7 +34,7 @@ const ChatTab = ({ scores }: ChatTabProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "ai",
-      text: `I've analyzed the candidate's HR competency profile. They're a **${archetype.name}** — ${archetype.summary.toLowerCase()}\n\n**Recommendation: ${archetype.recommendationLabel}**\n\nAsk me anything about their fit for the Head of HR role — strengths, risks, specific competencies, or whether you should hire them.`,
+      text: `I've analyzed the candidate's IT leadership competency profile. They're a **${archetype.name}** — ${archetype.summary.toLowerCase()}\n\n**Recommendation: ${archetype.recommendationLabel}**\n\nAsk me anything about their fit for the IT Director role — strengths, risks, specific competencies, or whether you should hire them.`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -72,7 +72,7 @@ const ChatTab = ({ scores }: ChatTabProps) => {
   return (
     <div className="animate-fade-in flex flex-col" style={{ height: "calc(100vh - 220px)", minHeight: 400 }}>
       <p className="text-sm text-muted-foreground mb-3">
-        Ask questions about this candidate's HR competency profile and fit for the Head of HR role.
+        Ask questions about this candidate's IT leadership competency profile and fit for the IT Director role.
       </p>
 
       {/* Suggestion Chips */}

@@ -20,7 +20,7 @@ const InsightsTab = ({ scores }: InsightsTabProps) => {
           Strongest Competencies
         </h3>
         {strengths.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No dimensions scored above 60%. This is a significant concern for a Head of HR role.</p>
+          <p className="text-sm text-muted-foreground">No dimensions scored above 60%. This is a significant concern for an IT Director role.</p>
         ) : (
           <div className="space-y-3">
             {strengths.map((s) => {
@@ -81,16 +81,17 @@ const InsightsTab = ({ scores }: InsightsTabProps) => {
         </h3>
         <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
           <p>
-            This assessment evaluates readiness for a <strong>Head of HR</strong> role at a <strong>100-person remote IT services company</strong>. The ideal candidate needs to:
+            This assessment evaluates readiness for an <strong>IT Director</strong> role. The ideal candidate needs to:
           </p>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li>Run full-cycle recruiting for technical and non-technical roles</li>
-            <li>Coach managers on performance management and difficult conversations</li>
-            <li>Serve as the employee voice while maintaining leadership credibility</li>
-            <li>Manage compliance across multiple jurisdictions for remote workers</li>
-            <li>Build and maintain company culture in a distributed environment</li>
-            <li>Work independently under pressure with strong organizational skills</li>
-            <li>Think strategically and connect HR to business growth</li>
+            <li>Manage and optimize a Microsoft-centric environment (Azure, M365, AD/Entra ID)</li>
+            <li>Lead, mentor, and develop IT teams with strong people management skills</li>
+            <li>Align IT strategy with business goals and drive technology as a competitive advantage</li>
+            <li>Ensure cybersecurity, compliance, and risk management across the organization</li>
+            <li>Solve complex problems creatively and drive continuous improvement</li>
+            <li>Communicate effectively with technical and non-technical stakeholders</li>
+            <li>Build structured IT processes and operational excellence</li>
+            <li>Lead calmly and decisively during crises, outages, and high-pressure situations</li>
           </ul>
         </div>
       </div>

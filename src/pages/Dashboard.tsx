@@ -104,7 +104,7 @@ const Dashboard = () => {
               <Users className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold font-display text-foreground">HR Candidate Assessments</h1>
+              <h1 className="text-2xl font-bold font-display text-foreground">IT Director Assessments</h1>
               <p className="text-sm text-muted-foreground">{profiles.length} assessment{profiles.length !== 1 ? "s" : ""}</p>
             </div>
           </div>
@@ -141,7 +141,6 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="profiles">
-            {/* Search */}
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -152,7 +151,6 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* List */}
             {loading ? (
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
             ) : filtered.length === 0 ? (
