@@ -118,7 +118,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
 
           {/* Info note */}
           <div className="text-xs text-muted-foreground bg-secondary/30 rounded-lg p-3 mb-6">
-            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all IT leadership dimensions.
+            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all leadership dimensions.
           </div>
 
           {/* CTA */}

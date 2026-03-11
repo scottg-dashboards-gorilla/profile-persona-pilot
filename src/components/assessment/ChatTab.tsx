@@ -72,7 +72,7 @@ const ChatTab = ({ scores }: ChatTabProps) => {
   return (
     <div className="animate-fade-in flex flex-col" style={{ height: "calc(100vh - 220px)", minHeight: 400 }}>
       <p className="text-sm text-muted-foreground mb-3">
-        Ask questions about this candidate's IT leadership competency profile and fit for the IT Director role.
+        Ask questions about this candidate's leadership competency profile and fit for the Team Leader role.
       </p>
 
       {/* Suggestion Chips */}

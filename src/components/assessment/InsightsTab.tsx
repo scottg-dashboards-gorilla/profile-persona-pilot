@@ -81,7 +81,7 @@ const InsightsTab = ({ scores }: InsightsTabProps) => {
         </h3>
         <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
           <p>
-            This assessment evaluates readiness for an <strong>IT Director</strong> role. The ideal candidate needs to:
+            This assessment evaluates readiness for a <strong>Team Leader</strong> role. The ideal candidate needs to:
           </p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>Manage and optimize a Microsoft-centric environment (Azure, M365, AD/Entra ID)</li>
