@@ -20,7 +20,7 @@ const InsightsTab = ({ scores }: InsightsTabProps) => {
           Strongest Competencies
         </h3>
         {strengths.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No dimensions scored above 60%. This is a significant concern for an IT Director role.</p>
+          <p className="text-sm text-muted-foreground">No dimensions scored above 60%. This is a significant concern for a Team Leader role.</p>
         ) : (
           <div className="space-y-3">
             {strengths.map((s) => {
