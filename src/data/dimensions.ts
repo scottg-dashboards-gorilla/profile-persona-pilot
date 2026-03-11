@@ -2,7 +2,7 @@ import { Dimension } from "@/types/assessment";
 
 export interface DimensionMeta extends Dimension {
   color: string;
-  category: "competency" | "disc" | "comptia";
+  category: "competency" | "disc" | "comptia" | "coaching";
   scoreDescriptions: { low: string; mid: string; high: string };
   growthSuggestion: string;
 }
