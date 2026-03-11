@@ -96,26 +96,28 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
         </div>
       </div>
 
-      {/* Truthfulness Indicator */}
-      <div className="card-elevated p-4 flex items-center gap-4" style={{ borderLeft: `4px solid ${truthColor}` }}>
-        <TruthIcon className="w-8 h-8 flex-shrink-0" style={{ color: truthColor }} />
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-foreground">Response Consistency</h3>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${truthColor}20`, color: truthColor }}>
-              {truthfulness.label} ({truthfulness.score}%)
-            </span>
+      {/* Truthfulness Indicator - only show if we have actual data */}
+      {truthfulness.score >= 0 && (
+        <div className="card-elevated p-4 flex items-center gap-4" style={{ borderLeft: `4px solid ${truthColor}` }}>
+          <TruthIcon className="w-8 h-8 flex-shrink-0" style={{ color: truthColor }} />
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-foreground">Response Consistency</h3>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${truthColor}20`, color: truthColor }}>
+                {truthfulness.label} ({truthfulness.score}%)
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {truthfulness.score >= 80
+                ? "Responses are highly consistent across validation questions. This assessment appears trustworthy."
+                : truthfulness.score >= 60
+                ? `Some inconsistencies detected across ${truthfulness.inconsistentPairs.length} question pairs. Review individual dimension scores carefully.`
+                : `Significant inconsistencies detected across ${truthfulness.inconsistentPairs.length} question pairs. This candidate may have responded inconsistently or tried to game the assessment.`
+              }
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {truthfulness.score >= 80
-              ? "Responses are highly consistent across validation questions. This assessment appears trustworthy."
-              : truthfulness.score >= 60
-              ? `Some inconsistencies detected across ${truthfulness.inconsistentPairs.length} question pairs. Review individual dimension scores carefully.`
-              : `Significant inconsistencies detected across ${truthfulness.inconsistentPairs.length} question pairs. This candidate may have responded inconsistently or tried to game the assessment.`
-            }
-          </p>
         </div>
-      </div>
+      )}
 
       {/* Recommendation Badge */}
       <div
