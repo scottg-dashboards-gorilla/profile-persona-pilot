@@ -28,7 +28,7 @@ const ThankYouScreen = ({ employeeName, elapsedSeconds, onRestart }: ThankYouScr
               Thank You, {employeeName}!
             </h1>
             <p className="text-muted-foreground">
-              Your IT Director assessment has been submitted successfully. The hiring team will review your responses.
+              Your Team Leader assessment has been submitted successfully. The hiring team will review your responses.
             </p>
           </div>
 

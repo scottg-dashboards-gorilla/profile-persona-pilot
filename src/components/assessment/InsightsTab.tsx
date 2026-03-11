@@ -20,7 +20,7 @@ const InsightsTab = ({ scores }: InsightsTabProps) => {
           Strongest Competencies
         </h3>
         {strengths.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No dimensions scored above 60%. This is a significant concern for an IT Director role.</p>
+          <p className="text-sm text-muted-foreground">No dimensions scored above 60%. This is a significant concern for a Team Leader role.</p>
         ) : (
           <div className="space-y-3">
             {strengths.map((s) => {
@@ -81,7 +81,7 @@ const InsightsTab = ({ scores }: InsightsTabProps) => {
         </h3>
         <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
           <p>
-            This assessment evaluates readiness for an <strong>IT Director</strong> role. The ideal candidate needs to:
+            This assessment evaluates readiness for a <strong>Team Leader</strong> role. The ideal candidate needs to:
           </p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>Manage and optimize a Microsoft-centric environment (Azure, M365, AD/Entra ID)</li>

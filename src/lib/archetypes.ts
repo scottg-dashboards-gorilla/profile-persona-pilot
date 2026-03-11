@@ -9,7 +9,7 @@ interface Archetype {
 
 const archetypes: Archetype[] = [
   {
-    name: "The Complete IT Leader",
+    name: "The Complete Team Leader",
     summary: "Exceptional across the board — technically deep, strategically sharp, and a proven people leader. This candidate can run the entire IT function and drive technology as a competitive advantage.",
     recommendation: "strong-hire",
     conditions: (s) => {
@@ -55,8 +55,8 @@ const archetypes: Archetype[] = [
       (s.get("microsoft-environment") ?? 50) < 50,
   },
   {
-    name: "The Emerging IT Director",
-    summary: "Shows promise in several areas but has meaningful gaps that could be challenging in a director-level role. Could succeed with mentoring and gradual scope expansion.",
+    name: "The Emerging Team Leader",
+    summary: "Shows promise in several areas but has meaningful gaps that could be challenging in a team leader role. Could succeed with mentoring and gradual scope expansion.",
     recommendation: "conditional",
     conditions: (s) => {
       const dims = ["microsoft-environment", "leadership-people", "strategic-thinking", "security-compliance", "problem-solving", "communication-culture", "process-operations", "pressure-resilience"];
@@ -66,8 +66,8 @@ const archetypes: Archetype[] = [
     },
   },
   {
-    name: "The Specialist, Not a Director",
-    summary: "Strong in specific areas but significant gaps in others. An IT Director role requires breadth across technical, leadership, and strategic domains — this candidate may struggle to cover all the bases.",
+    name: "The Specialist, Not a Team Leader",
+    summary: "Strong in specific areas but significant gaps in others. A Team Leader role requires breadth across technical, leadership, and strategic domains — this candidate may struggle to cover all the bases.",
     recommendation: "caution",
     conditions: (s) => {
       const dims = ["microsoft-environment", "leadership-people", "strategic-thinking", "security-compliance", "problem-solving", "communication-culture", "process-operations", "pressure-resilience"];
@@ -81,12 +81,12 @@ const recommendationLabels: Record<string, { label: string; color: string; descr
   "strong-hire": {
     label: "Strong Hire",
     color: "#10b981",
-    description: "This candidate demonstrates exceptional qualifications across all key IT leadership competencies. They are well-equipped to lead your IT function and drive technology as a competitive advantage.",
+    description: "This candidate demonstrates exceptional qualifications across all key leadership competencies. They are well-equipped to lead your team and drive technology as a competitive advantage.",
   },
   "hire": {
     label: "Recommended Hire",
     color: "#6366f1",
-    description: "This candidate shows strong capabilities in the most critical areas. Some development areas exist but they're well-positioned to succeed as IT Director.",
+    description: "This candidate shows strong capabilities in the most critical areas. Some development areas exist but they're well-positioned to succeed as Team Leader.",
   },
   "conditional": {
     label: "Conditional — Proceed with Caution",
@@ -96,7 +96,7 @@ const recommendationLabels: Record<string, { label: string; color: string; descr
   "caution": {
     label: "Not Recommended",
     color: "#ef4444",
-    description: "This candidate has significant gaps in critical areas needed for an IT Director role. The risk of underperformance is high.",
+    description: "This candidate has significant gaps in critical areas needed for a Team Leader role. The risk of underperformance is high.",
   },
 };
 

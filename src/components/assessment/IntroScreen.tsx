@@ -40,10 +40,10 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display text-foreground mb-3 leading-tight">
-            IT Director Assessment
+            Team Leader Assessment
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto">
-            Evaluate whether this candidate has the technical depth, leadership qualities, and strategic vision to lead as an IT Director.
+            Evaluate whether this candidate has the technical depth, leadership qualities, and strategic vision to lead as a Team Leader.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
 
           {/* Info note */}
           <div className="text-xs text-muted-foreground bg-secondary/30 rounded-lg p-3 mb-6">
-            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all IT leadership dimensions.
+            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all leadership dimensions.
           </div>
 
           {/* CTA */}
