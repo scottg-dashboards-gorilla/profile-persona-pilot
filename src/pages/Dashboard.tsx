@@ -21,6 +21,14 @@ interface EmployeeProfile {
   created_at: string;
 }
 
+const PUBLISHED_APP_URL = "https://profile-persona-pilot.lovable.app";
+
+const getAssessmentShareUrl = () => {
+  const isPreviewHost = window.location.hostname.includes("id-preview--");
+  const baseUrl = isPreviewHost ? PUBLISHED_APP_URL : window.location.origin;
+  return `${baseUrl}/assessment`;
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
@@ -114,7 +122,7 @@ const Dashboard = () => {
               size="sm"
               className="gap-1.5"
               onClick={() => {
-                const url = `${window.location.origin}/assessment`;
+                const url = getAssessmentShareUrl();
                 navigator.clipboard.writeText(url);
                 toast({ title: "Link copied!", description: "Share this link for someone to take the assessment." });
               }}
@@ -217,3 +225,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
