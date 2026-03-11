@@ -1,7 +1,7 @@
-import { DimensionScore } from "@/types/assessment";
-import { dimensions } from "@/data/dimensions";
+import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
+import { dimensions, competencyDimensions, comptiaDimensions } from "@/data/dimensions";
 import { getArchetype } from "@/lib/archetypes";
-import { Clock, Award, CheckCircle2, AlertTriangle, XCircle, ThumbsUp } from "lucide-react";
+import { Clock, Award, CheckCircle2, AlertTriangle, XCircle, ThumbsUp, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
 import {
   RadarChart,
   PolarGrid,
@@ -13,6 +13,8 @@ import {
 
 interface OverviewTabProps {
   scores: DimensionScore[];
+  discProfile: DISCProfile;
+  truthfulness: TruthtfulnessResult;
   elapsedSeconds: number;
 }
 
@@ -30,12 +32,14 @@ const recommendationIcons: Record<string, typeof CheckCircle2> = {
   "caution": XCircle,
 };
 
-const OverviewTab = ({ scores, elapsedSeconds }: OverviewTabProps) => {
+const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: OverviewTabProps) => {
   const archetype = getArchetype(scores);
   const RecIcon = recommendationIcons[archetype.recommendation] ?? AlertTriangle;
 
-  const radarData = scores.map((s) => {
-    const dim = dimensions.find((d) => d.id === s.dimensionId)!;
+  // Only show competency + comptia dimensions on radar (not DISC)
+  const radarDims = [...competencyDimensions, ...comptiaDimensions];
+  const radarData = radarDims.map((dim) => {
+    const s = scores.find(sc => sc.dimensionId === dim.id);
     const shortName = dim.name
       .replace("Microsoft ", "")
       .replace(" & Cloud Infrastructure", "")
@@ -46,16 +50,26 @@ const OverviewTab = ({ scores, elapsedSeconds }: OverviewTabProps) => {
       .replace(" & Communication", "")
       .replace(" & Compliance", "")
       .replace(" & Infrastructure Management", "")
+      .replace("IT Fundamentals & Support ", "")
+      .replace("Data & Analytics ", "")
+      .replace("Advanced Cybersecurity ", "")
+      .replace(/\(.*\)/, "")
       .trim();
     return {
       dimension: shortName,
-      score: s.normalizedScore,
+      score: s?.normalizedScore ?? 50,
       fullMark: 100,
     };
   });
 
-  const strongDims = scores.filter(s => s.normalizedScore >= 65);
-  const weakDims = scores.filter(s => s.normalizedScore < 40);
+  const allCompetencyScores = scores.filter(s => 
+    [...competencyDimensions, ...comptiaDimensions].some(d => d.id === s.dimensionId)
+  );
+  const strongDims = allCompetencyScores.filter(s => s.normalizedScore >= 65);
+  const weakDims = allCompetencyScores.filter(s => s.normalizedScore < 40);
+
+  const TruthIcon = truthfulness.score >= 80 ? ShieldCheck : truthfulness.score >= 60 ? Shield : ShieldAlert;
+  const truthColor = truthfulness.score >= 80 ? "#10b981" : truthfulness.score >= 60 ? "#f59e0b" : "#ef4444";
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -71,10 +85,36 @@ const OverviewTab = ({ scores, elapsedSeconds }: OverviewTabProps) => {
         <p className="text-muted-foreground text-sm max-w-md mx-auto mb-3">
           {archetype.summary}
         </p>
-        <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5">
-          <Clock className="w-3.5 h-3.5" />
-          Completed in {formatDuration(elapsedSeconds)}
-        </p>
+        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            {formatDuration(elapsedSeconds)}
+          </span>
+          <span className="flex items-center gap-1.5">
+            DISC: {discProfile.primaryType}{discProfile.secondaryType}
+          </span>
+        </div>
+      </div>
+
+      {/* Truthfulness Indicator */}
+      <div className="card-elevated p-4 flex items-center gap-4" style={{ borderLeft: `4px solid ${truthColor}` }}>
+        <TruthIcon className="w-8 h-8 flex-shrink-0" style={{ color: truthColor }} />
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-foreground">Response Consistency</h3>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${truthColor}20`, color: truthColor }}>
+              {truthfulness.label} ({truthfulness.score}%)
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {truthfulness.score >= 80
+              ? "Responses are highly consistent across validation questions. This assessment appears trustworthy."
+              : truthfulness.score >= 60
+              ? `Some inconsistencies detected across ${truthfulness.inconsistentPairs.length} question pairs. Review individual dimension scores carefully.`
+              : `Significant inconsistencies detected across ${truthfulness.inconsistentPairs.length} question pairs. This candidate may have responded inconsistently or tried to game the assessment.`
+            }
+          </p>
+        </div>
       </div>
 
       {/* Recommendation Badge */}
@@ -108,13 +148,13 @@ const OverviewTab = ({ scores, elapsedSeconds }: OverviewTabProps) => {
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 text-center">
           Competency Map
         </h3>
-        <div className="w-full" style={{ height: 320 }}>
+        <div className="w-full" style={{ height: 360 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
+            <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="65%">
               <PolarGrid stroke="hsl(234, 20%, 91%)" />
               <PolarAngleAxis
                 dataKey="dimension"
-                tick={{ fontSize: 10, fill: "hsl(234, 12%, 46%)" }}
+                tick={{ fontSize: 9, fill: "hsl(234, 12%, 46%)" }}
               />
               <PolarRadiusAxis
                 angle={90}

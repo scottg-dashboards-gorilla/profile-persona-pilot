@@ -1,4 +1,4 @@
-import { DimensionScore } from "@/types/assessment";
+import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
@@ -7,15 +7,18 @@ import DimensionsTab from "./DimensionsTab";
 import InsightsTab from "./InsightsTab";
 import ChatTab from "./ChatTab";
 import CoachingChat from "./CoachingChat";
+import DISCTab from "./DISCTab";
 
 interface ResultsScreenProps {
   scores: DimensionScore[];
+  discProfile: DISCProfile;
+  truthfulness: TruthtfulnessResult;
   elapsedSeconds: number;
   employeeName?: string;
   onRestart: () => void;
 }
 
-const ResultsScreen = ({ scores, elapsedSeconds, employeeName, onRestart }: ResultsScreenProps) => {
+const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, employeeName, onRestart }: ResultsScreenProps) => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
@@ -32,24 +35,29 @@ const ResultsScreen = ({ scores, elapsedSeconds, employeeName, onRestart }: Resu
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6">
+          <TabsList className="grid w-full grid-cols-6 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="dimensions">Dimensions</TabsTrigger>
+            <TabsTrigger value="dimensions">Skills</TabsTrigger>
+            <TabsTrigger value="disc">DISC</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
             <TabsTrigger value="chat">Q&A</TabsTrigger>
             <TabsTrigger value="coaching">AI Coach</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
-            <OverviewTab scores={scores} elapsedSeconds={elapsedSeconds} />
+            <OverviewTab scores={scores} discProfile={discProfile} truthfulness={truthfulness} elapsedSeconds={elapsedSeconds} />
           </TabsContent>
 
           <TabsContent value="dimensions">
             <DimensionsTab scores={scores} />
           </TabsContent>
 
+          <TabsContent value="disc">
+            <DISCTab discProfile={discProfile} scores={scores} />
+          </TabsContent>
+
           <TabsContent value="insights">
-            <InsightsTab scores={scores} />
+            <InsightsTab scores={scores} truthfulness={truthfulness} />
           </TabsContent>
 
           <TabsContent value="chat">
