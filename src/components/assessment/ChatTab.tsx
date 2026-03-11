@@ -34,7 +34,7 @@ const ChatTab = ({ scores }: ChatTabProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "ai",
-      text: `I've analyzed the candidate's IT leadership competency profile. They're a **${archetype.name}** — ${archetype.summary.toLowerCase()}\n\n**Recommendation: ${archetype.recommendationLabel}**\n\nAsk me anything about their fit for the IT Director role — strengths, risks, specific competencies, or whether you should hire them.`,
+      text: `I've analyzed the candidate's leadership competency profile. They're a **${archetype.name}** — ${archetype.summary.toLowerCase()}\n\n**Recommendation: ${archetype.recommendationLabel}**\n\nAsk me anything about their fit for the Team Leader role — strengths, risks, specific competencies, or whether you should hire them.`,
     },
   ]);
   const [input, setInput] = useState("");
