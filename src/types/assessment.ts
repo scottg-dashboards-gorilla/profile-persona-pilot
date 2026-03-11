@@ -43,8 +43,17 @@ export interface DISCProfile {
 }
 
 export interface TruthtfulnessResult {
-  score: number; // 0-100, higher = more consistent
+  score: number; // 0-100, higher = more consistent. -1 = not available
   pairCount: number;
   inconsistentPairs: { q1Id: string; q2Id: string; delta: number }[];
-  label: string; // "High", "Moderate", "Low"
+  label: string; // "High", "Moderate", "Low", "N/A"
+}
+
+export type TierLevel = "tier-1" | "tier-2" | "team-leader";
+
+export interface TierClassification {
+  tier: TierLevel;
+  label: string;
+  confidence: number; // 0-100
+  reasoning: string;
 }
