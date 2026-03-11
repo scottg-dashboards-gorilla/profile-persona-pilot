@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { DimensionScore } from "@/types/assessment";
+import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
+import { calculateDISCProfile } from "@/lib/scoring";
 import { getArchetype } from "@/lib/archetypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
