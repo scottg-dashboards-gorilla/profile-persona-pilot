@@ -11,13 +11,13 @@ interface IntroScreenProps {
 const competencyAreas = [
   {
     icon: Users,
-    name: "Leadership & Adaptability",
-    description: "Leading by example, inspiring the team, and thriving in a dynamic multi-client MSP environment.",
+    name: "Leadership, DISC & Adaptability",
+    description: "Leading by example, behavioral style profiling (DISC), and thriving in a dynamic multi-client MSP environment.",
   },
   {
     icon: Monitor,
-    name: "Azure, M365 & Technical Depth",
-    description: "Microsoft Azure, M365 administration, and network infrastructure expertise across client environments.",
+    name: "Azure, M365 & CompTIA Technical",
+    description: "Microsoft Azure, M365, plus CompTIA-aligned questions across A+, Network+, Security+, Cloud+, CySA+, Data+, and more.",
   },
   {
     icon: Shield,
@@ -26,8 +26,8 @@ const competencyAreas = [
   },
   {
     icon: MessageSquare,
-    name: "Culture & Communication",
-    description: "Building positive team culture, strong client relationships, and effective cross-functional communication.",
+    name: "Culture, Communication & Consistency",
+    description: "Team culture, client relationships, and built-in consistency checks to ensure assessment truthfulness.",
   },
 ];
 

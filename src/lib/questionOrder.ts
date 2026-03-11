@@ -13,18 +13,29 @@ function shuffle<T>(arr: T[]): T[] {
 
 /**
  * Generate round-robin question order:
- * 5 rounds, each round has 1 question per dimension (8 questions),
- * dimension order shuffled within each round.
+ * For each round, pick one question per dimension (order shuffled).
+ * Consistency-pair questions are spread throughout but separated from their originals.
  */
 export function generateQuestionOrder(): Question[] {
   const dimIds = dimensions.map((d) => d.id);
+
+  // Separate regular questions from truthfulness pairs
+  const regularQuestions = questions.filter(q => !q.consistencyPairId);
+  const truthfulnessQuestions = questions.filter(q => q.consistencyPairId);
+
+  // Group regular questions by dimension
   const questionsByDim = new Map<string, Question[]>();
   for (const d of dimIds) {
-    questionsByDim.set(d, questions.filter((q) => q.dimensionId === d));
+    questionsByDim.set(d, regularQuestions.filter((q) => q.dimensionId === d));
   }
 
+  // Find max questions per dimension for regular questions
+  const maxRounds = Math.max(...Array.from(questionsByDim.values()).map(qs => qs.length));
+
   const ordered: Question[] = [];
-  for (let round = 0; round < 5; round++) {
+
+  // Round-robin the regular questions
+  for (let round = 0; round < maxRounds; round++) {
     const shuffledDims = shuffle(dimIds);
     for (const dimId of shuffledDims) {
       const dimQuestions = questionsByDim.get(dimId)!;
@@ -32,6 +43,17 @@ export function generateQuestionOrder(): Question[] {
         ordered.push(dimQuestions[round]);
       }
     }
+  }
+
+  // Insert truthfulness questions spread throughout the second half
+  // This ensures originals are answered first before their rephrased pairs appear
+  const shuffledTP = shuffle(truthfulnessQuestions);
+  const insertStart = Math.floor(ordered.length * 0.5);
+  const spacing = Math.floor((ordered.length - insertStart) / shuffledTP.length);
+
+  for (let i = 0; i < shuffledTP.length; i++) {
+    const insertIndex = Math.min(insertStart + (i * spacing) + i, ordered.length);
+    ordered.splice(insertIndex, 0, shuffledTP[i]);
   }
 
   return ordered;

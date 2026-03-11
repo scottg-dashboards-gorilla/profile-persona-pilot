@@ -1,5 +1,5 @@
 import { DimensionScore } from "@/types/assessment";
-import { dimensions, DimensionMeta } from "@/data/dimensions";
+import { dimensions, competencyDimensions, comptiaDimensions, DimensionMeta } from "@/data/dimensions";
 
 interface DimensionsTabProps {
   scores: DimensionScore[];
@@ -26,7 +26,7 @@ const DimensionCard = ({ score, dim }: { score: DimensionScore; dim: DimensionMe
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: dim.color }} />
-          <h3 className="font-semibold text-foreground font-display">{dim.name}</h3>
+          <h3 className="font-semibold text-foreground font-display text-sm">{dim.name}</h3>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${label.color}20`, color: label.color }}>
@@ -76,15 +76,36 @@ const DimensionCard = ({ score, dim }: { score: DimensionScore; dim: DimensionMe
 
 const DimensionsTab = ({ scores }: DimensionsTabProps) => {
   return (
-    <div className="animate-fade-in space-y-4">
-      <div className="text-center mb-2">
-        <h2 className="text-xl font-bold font-display text-foreground">Competency Breakdown</h2>
-        <p className="text-sm text-muted-foreground">Scores across all 8 HR leadership competencies</p>
+    <div className="animate-fade-in space-y-6">
+      {/* Competency Skills */}
+      <div>
+        <div className="text-center mb-3">
+          <h2 className="text-xl font-bold font-display text-foreground">Leadership & Soft Skills</h2>
+          <p className="text-sm text-muted-foreground">Core competencies for MSP team leadership</p>
+        </div>
+        <div className="space-y-4">
+          {competencyDimensions.map((dim) => {
+            const score = scores.find(s => s.dimensionId === dim.id);
+            if (!score) return null;
+            return <DimensionCard key={dim.id} score={score} dim={dim} />;
+          })}
+        </div>
       </div>
-      {scores.map((score) => {
-        const dim = dimensions.find((d) => d.id === score.dimensionId)!;
-        return <DimensionCard key={score.dimensionId} score={score} dim={dim} />;
-      })}
+
+      {/* CompTIA Technical Skills */}
+      <div>
+        <div className="text-center mb-3">
+          <h2 className="text-xl font-bold font-display text-foreground">Technical Skills (CompTIA)</h2>
+          <p className="text-sm text-muted-foreground">Technical knowledge across CompTIA certification domains</p>
+        </div>
+        <div className="space-y-4">
+          {comptiaDimensions.map((dim) => {
+            const score = scores.find(s => s.dimensionId === dim.id);
+            if (!score) return null;
+            return <DimensionCard key={dim.id} score={score} dim={dim} />;
+          })}
+        </div>
+      </div>
     </div>
   );
 };

@@ -7,7 +7,9 @@ interface Archetype {
   conditions: (scores: Map<string, number>) => boolean;
 }
 
-const ALL_DIMS = ["leadership-example", "adaptability-dynamics", "problem-solving", "culture-communication", "azure-cloud", "m365-admin", "security-compliance", "network-infrastructure"];
+const COMPETENCY_DIMS = ["leadership-example", "adaptability-dynamics", "problem-solving", "culture-communication", "azure-cloud", "m365-admin", "security-compliance", "network-infrastructure"];
+const COMPTIA_DIMS = ["comptia-fundamentals", "comptia-data", "comptia-cyberops"];
+const ALL_DIMS = [...COMPETENCY_DIMS, ...COMPTIA_DIMS];
 
 const archetypes: Archetype[] = [
   {
@@ -36,7 +38,8 @@ const archetypes: Archetype[] = [
     conditions: (s) =>
       (s.get("azure-cloud") ?? 50) >= 65 &&
       (s.get("m365-admin") ?? 50) >= 60 &&
-      (s.get("security-compliance") ?? 50) >= 60,
+      (s.get("security-compliance") ?? 50) >= 60 &&
+      (s.get("comptia-cyberops") ?? 50) >= 55,
   },
   {
     name: "The Dynamic MSP Operator",

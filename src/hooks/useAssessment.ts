@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo } from "react";
-import { AssessmentState, LikertValue, DimensionScore } from "@/types/assessment";
+import { AssessmentState, LikertValue, DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
 import { Question } from "@/types/assessment";
 import { generateQuestionOrder } from "@/lib/questionOrder";
-import { calculateScores } from "@/lib/scoring";
+import { calculateScores, calculateDISCProfile, calculateTruthfulness } from "@/lib/scoring";
 
 const initialState: AssessmentState = {
   answers: {},
@@ -44,6 +44,16 @@ export function useAssessment() {
     [state.answers]
   );
 
+  const discProfile: DISCProfile = useMemo(
+    () => calculateDISCProfile(scores),
+    [scores]
+  );
+
+  const truthfulness: TruthtfulnessResult = useMemo(
+    () => calculateTruthfulness(state.answers),
+    [state.answers]
+  );
+
   const currentQuestion = orderedQuestions[state.currentQuestionIndex] ?? null;
   const progress = Object.keys(state.answers).length / orderedQuestions.length;
   const totalQuestions = orderedQuestions.length;
@@ -55,6 +65,8 @@ export function useAssessment() {
     totalQuestions,
     progress,
     scores,
+    discProfile,
+    truthfulness,
     setAnswer,
     goToQuestion,
     completeAssessment,

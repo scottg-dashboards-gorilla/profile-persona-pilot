@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { DimensionScore } from "@/types/assessment";
+import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
+import { calculateDISCProfile } from "@/lib/scoring";
 import { getArchetype } from "@/lib/archetypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +73,16 @@ const Dashboard = () => {
     p.employee_name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (view === "profile" && selected) {
+  const selectedDiscProfile = useMemo<DISCProfile | null>(() => {
+    if (!selected) return null;
+    return calculateDISCProfile(selected.scores);
+  }, [selected]);
+
+  const defaultTruthfulness: TruthtfulnessResult = {
+    score: -1, pairCount: 0, inconsistentPairs: [], label: "N/A"
+  };
+
+  if (view === "profile" && selected && selectedDiscProfile) {
     return (
       <div>
         <div className="max-w-2xl mx-auto px-4 pt-4">
@@ -82,6 +92,8 @@ const Dashboard = () => {
         </div>
         <ResultsScreen
           scores={selected.scores}
+          discProfile={selectedDiscProfile}
+          truthfulness={defaultTruthfulness}
           elapsedSeconds={selected.elapsed_seconds}
           employeeName={selected.employee_name}
           onRestart={() => setView("list")}

@@ -1,6 +1,10 @@
 import { Question } from "@/types/assessment";
 
 export const questions: Question[] = [
+  // ==========================================
+  // COMPETENCY DIMENSIONS (Original 8 × 5 = 40)
+  // ==========================================
+
   // Leadership & Leading by Example
   { id: "le-1", dimensionId: "leadership-example", text: "I regularly roll up my sleeves and work alongside my team on complex client issues rather than only delegating from a distance", reverseScored: false },
   { id: "le-2", dimensionId: "leadership-example", text: "I set clear performance standards for my team and hold myself to the same or higher standards", reverseScored: false },
@@ -56,4 +60,105 @@ export const questions: Question[] = [
   { id: "ni-3", dimensionId: "network-infrastructure", text: "I sometimes feel out of my depth when network engineers discuss advanced routing, firewall rules, or complex multi-site networking configurations", reverseScored: true },
   { id: "ni-4", dimensionId: "network-infrastructure", text: "I've successfully overseen infrastructure assessments and network upgrades for clients, coordinating engineers and managing timelines effectively", reverseScored: false },
   { id: "ni-5", dimensionId: "network-infrastructure", text: "I tend to defer entirely to network engineers on infrastructure decisions rather than providing technical guidance or direction", reverseScored: true },
+
+  // ==========================================
+  // COMPTIA TECHNICAL DIMENSIONS (3 × 5 = 15)
+  // ==========================================
+
+  // IT Fundamentals & Support (A+/Server+)
+  { id: "cf-1", dimensionId: "comptia-fundamentals", text: "I can confidently troubleshoot hardware failures, BIOS/UEFI configurations, and peripheral issues across diverse client workstations and servers", reverseScored: false },
+  { id: "cf-2", dimensionId: "comptia-fundamentals", text: "I understand operating system internals well enough to diagnose boot failures, driver conflicts, and performance issues on both Windows and Linux systems", reverseScored: false },
+  { id: "cf-3", dimensionId: "comptia-fundamentals", text: "I find it challenging to explain the difference between RAID levels or choose the right storage configuration for a client's specific workload requirements", reverseScored: true },
+  { id: "cf-4", dimensionId: "comptia-fundamentals", text: "I can set up and manage Windows Server environments including Active Directory, Group Policy, DNS, DHCP, and file services across client sites", reverseScored: false },
+  { id: "cf-5", dimensionId: "comptia-fundamentals", text: "I often need to refer to documentation for basic server administration tasks like configuring backup schedules, managing certificates, or setting up print services", reverseScored: true },
+
+  // Data & Analytics (Data+)
+  { id: "cd-1", dimensionId: "comptia-data", text: "I can write SQL queries to extract, analyze, and report on data from client databases and ticketing systems to identify trends and optimize operations", reverseScored: false },
+  { id: "cd-2", dimensionId: "comptia-data", text: "I understand data governance principles including data classification, retention policies, and privacy regulations that affect how we handle client data", reverseScored: false },
+  { id: "cd-3", dimensionId: "comptia-data", text: "I struggle to interpret data visualizations or statistical reports when making operational decisions about client account performance", reverseScored: true },
+  { id: "cd-4", dimensionId: "comptia-data", text: "I've built or managed reporting dashboards that track MSP KPIs like ticket resolution times, SLA compliance, and client satisfaction metrics", reverseScored: false },
+  { id: "cd-5", dimensionId: "comptia-data", text: "I rely on others to handle data analysis tasks and don't feel comfortable working with databases or reporting tools directly", reverseScored: true },
+
+  // Advanced Cybersecurity (CySA+/PenTest+)
+  { id: "co-1", dimensionId: "comptia-cyberops", text: "I can analyze security logs from SIEM tools, identify indicators of compromise, and lead incident response procedures across client environments", reverseScored: false },
+  { id: "co-2", dimensionId: "comptia-cyberops", text: "I understand vulnerability scanning tools and can interpret results to prioritize remediation efforts based on risk and business impact for each client", reverseScored: false },
+  { id: "co-3", dimensionId: "comptia-cyberops", text: "I find it difficult to differentiate between false positives and genuine security threats when reviewing alerts from security monitoring tools", reverseScored: true },
+  { id: "co-4", dimensionId: "comptia-cyberops", text: "I can explain common attack vectors like SQL injection, cross-site scripting, and social engineering techniques to both technical and non-technical audiences", reverseScored: false },
+  { id: "co-5", dimensionId: "comptia-cyberops", text: "I lack confidence in conducting or overseeing vulnerability assessments and penetration testing activities for client environments", reverseScored: true },
+
+  // ==========================================
+  // DISC BEHAVIORAL DIMENSIONS (4 × 4 = 16)
+  // ==========================================
+
+  // Dominance (D)
+  { id: "dd-1", dimensionId: "disc-dominance", text: "When I see a problem, I take charge immediately rather than waiting for someone else to step up", reverseScored: false },
+  { id: "dd-2", dimensionId: "disc-dominance", text: "I'm comfortable making tough decisions quickly, even when I don't have all the information I'd like", reverseScored: false },
+  { id: "dd-3", dimensionId: "disc-dominance", text: "I prefer to let others take the lead in high-pressure situations while I support from behind", reverseScored: true },
+  { id: "dd-4", dimensionId: "disc-dominance", text: "I push hard for results and am willing to challenge people or processes that are underperforming", reverseScored: false },
+
+  // Influence (I)
+  { id: "di-1", dimensionId: "disc-influence", text: "I naturally energize and motivate people around me, even during stressful periods", reverseScored: false },
+  { id: "di-2", dimensionId: "disc-influence", text: "I find it easy to persuade clients or team members to see things from my perspective through conversation and enthusiasm", reverseScored: false },
+  { id: "di-3", dimensionId: "disc-influence", text: "I'd rather work quietly on tasks by myself than spend time socializing or building relationships at work", reverseScored: true },
+  { id: "di-4", dimensionId: "disc-influence", text: "I'm often described as optimistic and enthusiastic, and I bring positive energy to team interactions", reverseScored: false },
+
+  // Steadiness (S)
+  { id: "ds-1", dimensionId: "disc-steadiness", text: "I remain calm and composed when multiple crises hit at the same time, providing a stabilizing presence for the team", reverseScored: false },
+  { id: "ds-2", dimensionId: "disc-steadiness", text: "I value consistency and follow-through, and I'm known for reliably delivering on my commitments", reverseScored: false },
+  { id: "ds-3", dimensionId: "disc-steadiness", text: "I get restless with routine and am always looking to shake things up, even when current processes are working well", reverseScored: true },
+  { id: "ds-4", dimensionId: "disc-steadiness", text: "I'm patient with team members who are learning and prefer coaching over pressure to drive improvement", reverseScored: false },
+
+  // Conscientiousness (C)
+  { id: "dc-1", dimensionId: "disc-conscientiousness", text: "I insist on thorough documentation and systematic processes — I believe quality comes from attention to detail", reverseScored: false },
+  { id: "dc-2", dimensionId: "disc-conscientiousness", text: "Before making a decision, I gather and analyze all available data rather than going with my gut feeling", reverseScored: false },
+  { id: "dc-3", dimensionId: "disc-conscientiousness", text: "I sometimes skip over procedural details when I feel confident about the outcome", reverseScored: true },
+  { id: "dc-4", dimensionId: "disc-conscientiousness", text: "I hold myself and others to high quality standards and am uncomfortable cutting corners even under time pressure", reverseScored: false },
+
+  // ==========================================
+  // CONSISTENCY/TRUTHFULNESS PAIRS (12 questions)
+  // These rephrase existing questions to detect inconsistent responding
+  // ==========================================
+
+  // Pair with le-1 (rolling up sleeves)
+  { id: "tp-1", dimensionId: "leadership-example", text: "When a critical client issue arises, I jump in and work alongside the team rather than simply assigning it and checking back later", reverseScored: false, consistencyPairId: "le-1" },
+
+  // Pair with le-3 (directing from behind scenes) — rephrase, same direction
+  { id: "tp-2", dimensionId: "leadership-example", text: "I prefer to manage through emails and reports rather than being physically present and engaged with my team's daily work", reverseScored: true, consistencyPairId: "le-3" },
+
+  // Pair with ad-3 (prefer single environment)
+  { id: "tp-3", dimensionId: "adaptability-dynamics", text: "I would be happier in a role where I focus on one company's systems rather than juggling many different client environments", reverseScored: true, consistencyPairId: "ad-3" },
+
+  // Pair with ad-5 (context-switching overwhelming)
+  { id: "tp-4", dimensionId: "adaptability-dynamics", text: "I handle switching between different client projects throughout the day without difficulty or stress", reverseScored: false, consistencyPairId: "ad-5" },
+
+  // Pair with ps-2 (stick with proven methods)
+  { id: "tp-5", dimensionId: "problem-solving", text: "I actively seek out new and creative approaches when standard troubleshooting methods don't resolve a complex issue", reverseScored: false, consistencyPairId: "ps-2" },
+
+  // Pair with cc-5 (keep to myself)
+  { id: "tp-6", dimensionId: "culture-communication", text: "Building strong working relationships with colleagues is something I actively prioritize in my daily routine", reverseScored: false, consistencyPairId: "cc-5" },
+
+  // Pair with dd-1 (take charge immediately)
+  { id: "tp-7", dimensionId: "disc-dominance", text: "In crisis situations, I wait for clear direction from leadership before taking action on my own", reverseScored: true, consistencyPairId: "dd-1" },
+
+  // Pair with di-3 (rather work quietly alone)
+  { id: "tp-8", dimensionId: "disc-influence", text: "I seek out opportunities to connect with colleagues and clients socially because I genuinely enjoy building relationships", reverseScored: false, consistencyPairId: "di-3" },
+
+  // Pair with sc-1 (proactively assess vulnerabilities)
+  { id: "tp-9", dimensionId: "security-compliance", text: "I schedule regular security reviews and vulnerability scans for client environments without waiting to be asked", reverseScored: false, consistencyPairId: "sc-1" },
+
+  // Pair with az-2 (rely on external consultants)
+  { id: "tp-10", dimensionId: "azure-cloud", text: "I can independently resolve most Azure issues without needing to escalate to outside experts or senior staff", reverseScored: false, consistencyPairId: "az-2" },
+
+  // Pair with ds-3 (get restless with routine)
+  { id: "tp-11", dimensionId: "disc-steadiness", text: "I'm comfortable with established routines and don't feel the need to constantly change things that are working", reverseScored: false, consistencyPairId: "ds-3" },
+
+  // Pair with dc-3 (skip procedural details)
+  { id: "tp-12", dimensionId: "disc-conscientiousness", text: "I always follow documented procedures carefully, even when I'm confident I know the right answer without checking", reverseScored: false, consistencyPairId: "dc-3" },
 ];
+
+/**
+ * Map of consistency pairs: each entry maps a truthfulness question ID to its paired original question ID.
+ */
+export const consistencyPairs: { truthfulnessQuestionId: string; originalQuestionId: string }[] = questions
+  .filter((q) => q.consistencyPairId)
+  .map((q) => ({ truthfulnessQuestionId: q.id, originalQuestionId: q.consistencyPairId! }));
