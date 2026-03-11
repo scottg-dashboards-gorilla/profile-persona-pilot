@@ -40,10 +40,10 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display text-foreground mb-3 leading-tight">
-            IT Director Assessment
+            Team Leader Assessment
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto">
-            Evaluate whether this candidate has the technical depth, leadership qualities, and strategic vision to lead as an IT Director.
+            Evaluate whether this candidate has the technical depth, leadership qualities, and strategic vision to lead as a Team Leader.
           </p>
         </div>
 
