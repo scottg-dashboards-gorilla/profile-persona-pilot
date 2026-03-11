@@ -15,6 +15,8 @@ const Index = () => {
     state,
     questions,
     scores,
+    discProfile,
+    truthfulness,
     setAnswer,
     goToQuestion,
     completeAssessment,
