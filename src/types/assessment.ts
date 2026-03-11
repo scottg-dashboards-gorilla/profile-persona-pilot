@@ -6,6 +6,8 @@ export interface Question {
   text: string;
   /** If true, response is reversed before scoring (1→5, 2→4, etc.) */
   reverseScored: boolean;
+  /** ID of a paired question used for truthfulness/consistency checking */
+  consistencyPairId?: string;
 }
 
 export interface Dimension {
@@ -27,4 +29,22 @@ export interface DimensionScore {
   /** 0–100 where 0 = fully lowLabel, 100 = fully highLabel */
   normalizedScore: number;
   rawSum: number;
+}
+
+export type DISCType = "D" | "I" | "S" | "C";
+
+export interface DISCProfile {
+  D: number;
+  I: number;
+  S: number;
+  C: number;
+  primaryType: DISCType;
+  secondaryType: DISCType;
+}
+
+export interface TruthtfulnessResult {
+  score: number; // 0-100, higher = more consistent
+  pairCount: number;
+  inconsistentPairs: { q1Id: string; q2Id: string; delta: number }[];
+  label: string; // "High", "Moderate", "Low"
 }
