@@ -37,14 +37,15 @@ const OverviewTab = ({ scores, elapsedSeconds }: OverviewTabProps) => {
   const radarData = scores.map((s) => {
     const dim = dimensions.find((d) => d.id === s.dimensionId)!;
     const shortName = dim.name
-      .replace(" Expertise", "")
-      .replace(" & People Management", "")
-      .replace("IT ", "")
+      .replace("Microsoft ", "")
+      .replace(" & Cloud Infrastructure", "")
+      .replace(" Administration", "")
+      .replace(" & Leading by Example", "")
+      .replace(" & MSP Dynamics", "")
+      .replace(" & Critical Thinking", "")
+      .replace(" & Communication", "")
       .replace(" & Compliance", "")
-      .replace(" & Innovation", "")
-      .replace(" & Culture Fit", "")
-      .replace(" & IT Operations", "")
-      .replace(" & Crisis Management", "")
+      .replace(" & Infrastructure Management", "")
       .trim();
     return {
       dimension: shortName,

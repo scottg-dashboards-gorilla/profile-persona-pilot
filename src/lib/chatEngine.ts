@@ -36,7 +36,7 @@ export function generateResponse(
       const d = dimMeta(s.dimensionId);
       return `• **${d.name}** (${s.normalizedScore}%) — ${descForScore(d, s.normalizedScore)}`;
     });
-    return `As a **${archetypeName}**, this candidate's top competencies are:\n\n${lines.join("\n\n")}\n\nThese strengths suggest the candidate would be most effective in these aspects of the Team Leader role.`;
+    return `As a **${archetypeName}**, this candidate's top competencies are:\n\n${lines.join("\n\n")}\n\nThese strengths suggest the candidate would be most effective in these aspects of the Team Leader role at Datapath.`;
   }
 
   // Weaknesses / Risks
@@ -46,56 +46,63 @@ export function generateResponse(
       const d = dimMeta(s.dimensionId);
       return `• **${d.name}** (${s.normalizedScore}%) — ${descForScore(d, s.normalizedScore)}\n  💡 ${d.growthSuggestion}`;
     });
-    return `Here are the candidate's biggest risk areas:\n\n${lines.join("\n\n")}\n\nFor a Team Leader role, these gaps could be significant. Consider whether mentoring, training, or additional support could address them.`;
+    return `Here are the candidate's biggest risk areas:\n\n${lines.join("\n\n")}\n\nFor a Team Leader role at Datapath, these gaps could be significant. Consider whether mentoring, training, or additional support could address them.`;
   }
 
-  // Microsoft / Azure / M365
-  if (/microsoft|azure|365|m365|active directory|entra|exchange|sharepoint|teams|intune/i.test(lower)) {
-    const score = getDim(scores, "microsoft-environment");
-    const dim = dimMeta("microsoft-environment");
-    return `**Microsoft Environment Expertise** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate has the deep Microsoft expertise needed to manage and optimize your environment." : score >= 45 ? "They have solid fundamentals but may need support with advanced Azure or hybrid configurations." : "This is a significant gap. A Team Leader needs deep Microsoft platform knowledge to lead effectively."}\n\n💡 ${dim.growthSuggestion}`;
+  // Azure / Cloud
+  if (/azure|cloud|virtual|entra|hybrid|migration/i.test(lower)) {
+    const score = getDim(scores, "azure-cloud");
+    const dim = dimMeta("azure-cloud");
+    return `**Microsoft Azure & Cloud Infrastructure** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate has the deep Azure expertise needed to manage and optimize client cloud environments." : score >= 45 ? "They have solid fundamentals but may need support with advanced Azure networking or hybrid configurations." : "This is a significant gap. A Team Leader at Datapath needs strong Azure knowledge to guide the team across client environments."}\n\n💡 ${dim.growthSuggestion}`;
   }
 
-  // Leadership / People / Team
-  if (/leader|people|team|manag|mentor|develop|delegate/i.test(lower)) {
-    const score = getDim(scores, "leadership-people");
-    const dim = dimMeta("leadership-people");
-    return `**Leadership & People Management** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate can build and lead high-performing teams — a critical multiplier for the organization." : score >= 45 ? "They can manage a team competently but may need development as a true leader and mentor." : "Leadership is essential for a Team Leader. This gap means the team may not get the direction and development they need."}`;
+  // M365
+  if (/m365|365|exchange|sharepoint|teams|intune|microsoft 365/i.test(lower)) {
+    const score = getDim(scores, "m365-admin");
+    const dim = dimMeta("m365-admin");
+    return `**Microsoft 365 Administration** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate can confidently manage multi-tenant M365 environments across Datapath's client base." : score >= 45 ? "They can handle standard M365 administration but may need support with advanced configurations or multi-tenant scenarios." : "This gap is concerning. M365 is core to Datapath's service delivery — the Team Leader needs strong expertise here."}\n\n💡 ${dim.growthSuggestion}`;
+  }
+
+  // Leadership
+  if (/leader|example|inspire|motivat|standard|roll.?up/i.test(lower)) {
+    const score = getDim(scores, "leadership-example");
+    const dim = dimMeta("leadership-example");
+    return `**Leadership & Leading by Example** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate leads from the front — exactly what Datapath needs to inspire the engineering team." : score >= 45 ? "They show management potential but may need development to become the kind of visible, inspiring leader the team needs." : "Leadership is critical for this role. The team needs someone who sets the pace through their own actions and standards."}`;
+  }
+
+  // Adaptability / MSP
+  if (/adapt|dynamic|msp|multi.?client|context.?switch|juggl|priorit/i.test(lower)) {
+    const score = getDim(scores, "adaptability-dynamics");
+    const dim = dimMeta("adaptability-dynamics");
+    return `**Adaptability & MSP Dynamics** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "They thrive in the fast-paced MSP world — perfect for Datapath's multi-client environment." : score >= 45 ? "They can handle multiple clients but may struggle during peak periods with competing urgent demands." : "This is a significant concern. Datapath's MSP model demands constant adaptability across dozens of client environments."}`;
+  }
+
+  // Problem Solving
+  if (/problem|solv|troubleshoot|diagnos|root.?cause|critical.?think/i.test(lower)) {
+    const score = getDim(scores, "problem-solving");
+    const dim = dimMeta("problem-solving");
+    return `**Problem Solving & Critical Thinking** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate excels at complex problem-solving — they'll be invaluable for escalations across client environments." : score >= 45 ? "They solve problems competently but may default to conventional approaches for complex cross-client issues." : "A Team Leader needs to be the escalation point for the team. This gap could mean unresolved issues impacting client satisfaction."}\n\n💡 ${dim.growthSuggestion}`;
+  }
+
+  // Culture / Communication
+  if (/cultur|communicat|relationship|client|rapport|collaborat/i.test(lower)) {
+    const score = getDim(scores, "culture-communication");
+    const dim = dimMeta("culture-communication");
+    return `**Culture & Communication** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "Excellent — they'll build strong client relationships and foster a positive Datapath team culture." : score >= 45 ? "They communicate adequately but may not actively shape team culture or build deep client relationships." : "Communication and culture are essential at Datapath. A Team Leader who can't connect with clients and teammates will struggle."}\n\n💡 ${dim.growthSuggestion}`;
   }
 
   // Security
-  if (/security|compliance|cyber|threat|soc|iso|zero.?trust|incident/i.test(lower)) {
+  if (/security|compliance|cyber|threat|zero.?trust|incident/i.test(lower)) {
     const score = getDim(scores, "security-compliance");
     const dim = dimMeta("security-compliance");
-    return `**Security & Compliance** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "Strong security leadership — they'll protect the organization proactively." : score >= 45 ? "They understand basics but may need support with advanced security architecture and compliance frameworks." : "⚠️ This is a significant risk. A Team Leader must lead security strategy and compliance efforts."}`;
+    return `**Security & Compliance** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "Strong security leadership — they'll protect Datapath's clients proactively." : score >= 45 ? "They understand basics but may need support with advanced threat management across multiple client environments." : "⚠️ This is a significant risk. A Team Leader at an MSP must ensure security across all client accounts."}`;
   }
 
-  // Innovation / Problem solving
-  if (/innovat|creative|outside.?the.?box|problem.?solv|automat/i.test(lower)) {
-    const score = getDim(scores, "problem-solving");
-    const dim = dimMeta("problem-solving");
-    return `**Problem Solving & Innovation** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "This candidate brings creative thinking and continuous improvement — they won't just maintain, they'll transform." : score >= 45 ? "They solve problems competently but may default to conventional approaches." : "A Team Leader needs to think beyond established procedures and drive innovation."}\n\n💡 ${dim.growthSuggestion}`;
-  }
-
-  // Communication / Culture
-  if (/communicat|culture|stakeholder|present|translat|relationship/i.test(lower)) {
-    const score = getDim(scores, "communication-culture");
-    const dim = dimMeta("communication-culture");
-    return `**Communication & Culture Fit** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "Excellent — they'll bridge the gap between IT and the business effortlessly." : score >= 45 ? "They communicate adequately but may struggle to position IT as a strategic partner." : "Communication skills are critical. A Team Leader who can't translate tech to business will struggle to get buy-in."}\n\n💡 ${dim.growthSuggestion}`;
-  }
-
-  // Process / Operations
-  if (/process|itil|change.?manage|sla|service|operation|runbook/i.test(lower)) {
-    const score = getDim(scores, "process-operations");
-    const dim = dimMeta("process-operations");
-    return `**Process & IT Operations** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "They build structured, scalable operations — this means reliability and consistency." : score >= 45 ? "They follow processes but may need to mature their operational framework." : "Ad-hoc operations create risk. A Team Leader needs to bring process discipline to the function."}`;
-  }
-
-  // Pressure / Crisis
-  if (/pressure|stress|crisis|outage|calm|overwhelm|priorit/i.test(lower)) {
-    const score = getDim(scores, "pressure-resilience");
-    const dim = dimMeta("pressure-resilience");
-    return `**Pressure & Crisis Management** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\nAs a Team Leader, they'll face outages, security incidents, and competing urgent priorities regularly. ${score >= 65 ? "This candidate appears well-equipped for the intensity." : score < 45 ? "This is concerning — the role requires someone who thrives under pressure." : "They can handle normal pressure but sustained crises may impact their effectiveness."}`;
+  // Network / Infrastructure
+  if (/network|infrastructure|switch|firewall|vpn|wan|routing|engineer/i.test(lower)) {
+    const score = getDim(scores, "network-infrastructure");
+    const dim = dimMeta("network-infrastructure");
+    return `**Network & Infrastructure Management** — Score: **${score}%** (${labelForScore(dim, score)})\n\n${descForScore(dim, score)}\n\n${score >= 65 ? "They can effectively guide network engineers and oversee complex client infrastructure projects." : score >= 45 ? "They have solid fundamentals but may need to grow in advanced networking to guide engineers on complex projects." : "This gap means they may struggle to manage network engineers effectively — a key part of the Team Leader role at Datapath."}`;
   }
 
   // Should I hire / recommendation
@@ -103,7 +110,7 @@ export function generateResponse(
     const archetype = getArchetype(scores);
     const strong = scores.filter(s => s.normalizedScore >= 65);
     const weak = scores.filter(s => s.normalizedScore < 40);
-    return `**Hiring Recommendation: ${archetype.recommendationLabel}**\n\n${archetype.recommendationDescription}\n\n**Profile: ${archetype.name}**\n${archetype.summary}\n\n${strong.length > 0 ? `**Strengths (${strong.length}):** ${strong.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(", ")}\n\n` : ""}${weak.length > 0 ? `**Gaps (${weak.length}):** ${weak.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(", ")}\n\n` : ""}**Key consideration:** A Team Leader needs breadth across technical depth, leadership, strategy, security, and operations. ${weak.length === 0 ? "This candidate appears well-rounded enough to handle the breadth." : `The gaps in ${weak.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(" and ")} could be challenging without support.`}`;
+    return `**Hiring Recommendation: ${archetype.recommendationLabel}**\n\n${archetype.recommendationDescription}\n\n**Profile: ${archetype.name}**\n${archetype.summary}\n\n${strong.length > 0 ? `**Strengths (${strong.length}):** ${strong.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(", ")}\n\n` : ""}${weak.length > 0 ? `**Gaps (${weak.length}):** ${weak.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(", ")}\n\n` : ""}**Key consideration:** A Team Leader at Datapath needs breadth across leadership, adaptability, technical depth, and client communication. ${weak.length === 0 ? "This candidate appears well-rounded enough to handle the breadth." : `The gaps in ${weak.map(s => dimensions.find(d => d.id === s.dimensionId)!.name).join(" and ")} could be challenging without support.`}`;
   }
 
   // Specific dimension names
@@ -120,20 +127,20 @@ export function generateResponse(
     const d = dimMeta(s.dimensionId);
     return `• **${d.name}**: ${s.normalizedScore}% (${labelForScore(d, s.normalizedScore)})`;
   });
-  return `Here's the candidate's complete competency profile (**${archetypeName}**):\n\n${lines.join("\n")}\n\nScores above 65% indicate strong competency. Below 40% indicates a significant gap for this role.\n\n---\n\nAsk me about **strengths**, **risk areas**, **hiring recommendation**, **Microsoft expertise**, **leadership skills**, **security readiness**, **innovation ability**, **communication skills**, **process maturity**, or **crisis management**.`;
+  return `Here's the candidate's complete competency profile (**${archetypeName}**):\n\n${lines.join("\n")}\n\nScores above 65% indicate strong competency. Below 40% indicates a significant gap for this role.\n\n---\n\nAsk me about **strengths**, **risk areas**, **hiring recommendation**, **Azure expertise**, **M365 skills**, **leadership**, **adaptability**, **problem solving**, **culture & communication**, **security**, or **network management**.`;
 }
 
 export function generateEnvironmentParagraph(scores: DimensionScore[]): string {
   const parts: string[] = [];
 
-  const me = getDim(scores, "microsoft-environment");
-  parts.push(me >= 65 ? "deep Microsoft platform expertise with ability to architect and optimize complex environments" : me <= 35 ? "significant gaps in Microsoft technology knowledge that would require supplemental support" : "solid but developing Microsoft environment skills that will benefit from continued growth");
+  const az = getDim(scores, "azure-cloud");
+  parts.push(az >= 65 ? "deep Azure and cloud expertise with ability to architect and optimize multi-tenant environments" : az <= 35 ? "significant gaps in Azure knowledge that would require supplemental support" : "solid but developing Azure skills that will benefit from continued growth");
 
-  const lp = getDim(scores, "leadership-people");
-  parts.push(lp >= 65 ? "proven leadership ability to build, develop, and inspire teams" : lp <= 35 ? "limited people management experience — may struggle in a team leader role" : "developing leadership skills that would benefit from executive coaching");
+  const le = getDim(scores, "leadership-example");
+  parts.push(le >= 65 ? "proven leadership ability to inspire, guide, and lead teams by example" : le <= 35 ? "limited leadership presence — may struggle to set the pace for an MSP team" : "developing leadership skills that would benefit from mentoring");
 
-  const pr = getDim(scores, "pressure-resilience");
-  parts.push(pr >= 65 ? "the ability to lead calmly and decisively through crises and high-pressure situations" : pr <= 35 ? "difficulty handling the pressure and urgency inherent in team leadership" : "reasonable ability to handle pressure with occasional support during sustained crises");
+  const ad = getDim(scores, "adaptability-dynamics");
+  parts.push(ad >= 65 ? "the dynamic adaptability needed to thrive managing dozens of client accounts simultaneously" : ad <= 35 ? "difficulty handling the rapid context-switching inherent in MSP operations" : "reasonable adaptability with room to grow in multi-client management");
 
-  return `**Candidate Environment Fit**\n\nBased on the competency profile, this candidate would bring:\n\n• ${parts.join("\n• ")}\n\nFor a Team Leader role, consider how these capabilities align with your organization's current needs and growth trajectory.`;
+  return `**Candidate Environment Fit**\n\nBased on the competency profile, this candidate would bring:\n\n• ${parts.join("\n• ")}\n\nFor a Team Leader role at Datapath, consider how these capabilities align with the demands of supporting dozens of client infrastructure environments.`;
 }
