@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle } from "lucide-react";
+import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle, Zap, MessageSquare } from "lucide-react";
 import { dimensions } from "@/data/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,24 +10,24 @@ interface IntroScreenProps {
 
 const competencyAreas = [
   {
-    icon: Monitor,
-    name: "Microsoft & Technical Depth",
-    description: "Azure, M365, Active Directory/Entra ID, Exchange, SharePoint, Teams, and Intune expertise.",
-  },
-  {
     icon: Users,
-    name: "Leadership & People",
-    description: "Leading IT teams, mentoring, performance management, and building trust.",
+    name: "Leadership & Adaptability",
+    description: "Leading by example, inspiring the team, and thriving in a dynamic multi-client MSP environment.",
   },
   {
-    icon: Target,
-    name: "Strategy & Innovation",
-    description: "Aligning IT to business goals, thinking outside the box, and driving continuous improvement.",
+    icon: Monitor,
+    name: "Azure, M365 & Technical Depth",
+    description: "Microsoft Azure, M365 administration, and network infrastructure expertise across client environments.",
   },
   {
     icon: Shield,
-    name: "Security & Operations",
-    description: "Cybersecurity, compliance frameworks, ITIL processes, and crisis management.",
+    name: "Security & Problem Solving",
+    description: "Cybersecurity, compliance, critical thinking, and creative problem-solving across diverse client accounts.",
+  },
+  {
+    icon: MessageSquare,
+    name: "Culture & Communication",
+    description: "Building positive team culture, strong client relationships, and effective cross-functional communication.",
   },
 ];
 
@@ -43,7 +43,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
             Team Leader Assessment
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto">
-            Evaluate whether this candidate has the technical depth, leadership qualities, and strategic vision to lead as a Team Leader.
+            Evaluate whether this candidate has the leadership, technical depth, and dynamic personality to lead as a Team Leader at Datapath.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
 
           {/* Info note */}
           <div className="text-xs text-muted-foreground bg-secondary/30 rounded-lg p-3 mb-6">
-            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all leadership dimensions.
+            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all leadership and technical dimensions.
           </div>
 
           {/* CTA */}

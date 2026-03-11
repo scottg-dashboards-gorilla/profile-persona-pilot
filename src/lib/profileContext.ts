@@ -24,12 +24,12 @@ export function buildProfileContext(scores: DimensionScore[]): string {
     return `- ${dim.name}: ${s.normalizedScore}% → ${label}. ${desc}`;
   });
 
-  return `Team Leader Candidate Profile: ${archetype.name}
+  return `Datapath MSP Team Leader Candidate Profile: ${archetype.name}
 Hiring Recommendation: ${archetype.recommendationLabel}
 Summary: ${archetype.summary}
 
 Competency Scores:
 ${lines.join("\n")}
 
-Context: This candidate is being assessed for a Team Leader role at a client's organization. The role requires leading the IT function — managing Microsoft environments, leading IT teams, driving technology strategy, ensuring security and compliance, solving complex problems creatively, communicating across the business, building operational processes, and performing under pressure during crises.`;
+Context: This candidate is being assessed for a Team Leader role at Datapath, a managed service provider (MSP) that supports dozens of clients' infrastructure. The role requires leading by example, being a dynamic personality who thrives in a fast-paced multi-client environment, strong leadership and people skills, excellent problem solving, cultural fit, technical expertise across Microsoft Azure, M365, and security, and the ability to manage network engineers overseeing client infrastructure.`;
 }

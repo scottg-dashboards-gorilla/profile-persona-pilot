@@ -18,9 +18,10 @@ const SUGGESTION_CHIPS = [
   "Should I hire this person?",
   "What are their biggest strengths?",
   "What are the risk areas?",
-  "How strong is their Microsoft expertise?",
-  "Can they lead and develop a team?",
-  "How do they handle pressure and crises?",
+  "How strong is their Azure expertise?",
+  "Can they lead and inspire a team?",
+  "How adaptable are they for MSP work?",
+  "How do they handle network infrastructure?",
 ];
 
 function renderMarkdown(text: string) {

@@ -20,7 +20,7 @@ const InsightsTab = ({ scores }: InsightsTabProps) => {
           Strongest Competencies
         </h3>
         {strengths.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No dimensions scored above 60%. This is a significant concern for a Team Leader role.</p>
+          <p className="text-sm text-muted-foreground">No dimensions scored above 60%. This is a significant concern for a Team Leader role at Datapath.</p>
         ) : (
           <div className="space-y-3">
             {strengths.map((s) => {
@@ -81,17 +81,17 @@ const InsightsTab = ({ scores }: InsightsTabProps) => {
         </h3>
         <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
           <p>
-            This assessment evaluates readiness for a <strong>Team Leader</strong> role. The ideal candidate needs to:
+            This assessment evaluates readiness for a <strong>Team Leader</strong> role at <strong>Datapath</strong>, an MSP supporting dozens of clients' infrastructure. The ideal candidate needs to:
           </p>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li>Manage and optimize a Microsoft-centric environment (Azure, M365, AD/Entra ID)</li>
-            <li>Lead, mentor, and develop IT teams with strong people management skills</li>
-            <li>Align IT strategy with business goals and drive technology as a competitive advantage</li>
-            <li>Ensure cybersecurity, compliance, and risk management across the organization</li>
-            <li>Solve complex problems creatively and drive continuous improvement</li>
-            <li>Communicate effectively with technical and non-technical stakeholders</li>
-            <li>Build structured IT processes and operational excellence</li>
-            <li>Lead calmly and decisively during crises, outages, and high-pressure situations</li>
+            <li>Lead by example — set high standards and inspire the engineering team through visible leadership</li>
+            <li>Thrive in a dynamic MSP environment — juggling multiple client accounts with shifting priorities</li>
+            <li>Solve complex problems creatively across diverse client environments</li>
+            <li>Build positive team culture and strong client relationships through excellent communication</li>
+            <li>Manage and optimize Microsoft Azure and cloud infrastructure across client tenants</li>
+            <li>Administer Microsoft 365 environments including Exchange, Teams, SharePoint, and Intune</li>
+            <li>Ensure cybersecurity and compliance across all client accounts</li>
+            <li>Guide and manage network engineers on infrastructure projects including switches, firewalls, and VPNs</li>
           </ul>
         </div>
       </div>

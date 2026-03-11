@@ -1,59 +1,59 @@
 import { Question } from "@/types/assessment";
 
 export const questions: Question[] = [
-  // Microsoft Environment Expertise
-  { id: "me-1", dimensionId: "microsoft-environment", text: "I can architect and manage complex Azure environments including hybrid cloud configurations, virtual networking, and identity management", reverseScored: false },
-  { id: "me-2", dimensionId: "microsoft-environment", text: "I primarily rely on external consultants or vendors for advanced Microsoft 365 and Azure administration tasks", reverseScored: true },
-  { id: "me-3", dimensionId: "microsoft-environment", text: "I have deep experience managing Active Directory/Entra ID including group policies, conditional access, and identity governance", reverseScored: false },
-  { id: "me-4", dimensionId: "microsoft-environment", text: "I've successfully planned and executed Microsoft platform migrations (e.g., on-prem to cloud, Exchange to Exchange Online, AD to Entra ID)", reverseScored: false },
-  { id: "me-5", dimensionId: "microsoft-environment", text: "I find it challenging to troubleshoot complex issues spanning multiple Microsoft services (Teams, SharePoint, Exchange, Intune) simultaneously", reverseScored: true },
+  // Leadership & Leading by Example
+  { id: "le-1", dimensionId: "leadership-example", text: "I regularly roll up my sleeves and work alongside my team on complex client issues rather than only delegating from a distance", reverseScored: false },
+  { id: "le-2", dimensionId: "leadership-example", text: "I set clear performance standards for my team and hold myself to the same or higher standards", reverseScored: false },
+  { id: "le-3", dimensionId: "leadership-example", text: "I find it easier to direct work from behind the scenes than to be visibly involved in day-to-day operations", reverseScored: true },
+  { id: "le-4", dimensionId: "leadership-example", text: "I take ownership of failures and share credit for successes with my team", reverseScored: false },
+  { id: "le-5", dimensionId: "leadership-example", text: "I sometimes struggle to motivate team members who are disengaged or resistant to change", reverseScored: true },
 
-  // Leadership & People Management
-  { id: "lp-1", dimensionId: "leadership-people", text: "I regularly invest time in mentoring and developing my team members' technical and professional skills", reverseScored: false },
-  { id: "lp-2", dimensionId: "leadership-people", text: "I find it easier to do technical work myself than to delegate and develop others to handle it", reverseScored: true },
-  { id: "lp-3", dimensionId: "leadership-people", text: "I've built and managed IT teams, including hiring, performance reviews, and handling difficult personnel situations", reverseScored: false },
-  { id: "lp-4", dimensionId: "leadership-people", text: "I create an environment where my team members feel safe to raise concerns, make mistakes, and grow", reverseScored: false },
-  { id: "lp-5", dimensionId: "leadership-people", text: "I sometimes struggle to address underperformance directly and tend to avoid difficult conversations with team members", reverseScored: true },
+  // Adaptability & MSP Dynamics
+  { id: "ad-1", dimensionId: "adaptability-dynamics", text: "I thrive when managing multiple client environments simultaneously and enjoy the variety of an MSP setting", reverseScored: false },
+  { id: "ad-2", dimensionId: "adaptability-dynamics", text: "I can quickly reprioritize when urgent issues arise across different client accounts without losing track of existing commitments", reverseScored: false },
+  { id: "ad-3", dimensionId: "adaptability-dynamics", text: "I prefer working in a single, predictable environment rather than constantly switching between different client systems and priorities", reverseScored: true },
+  { id: "ad-4", dimensionId: "adaptability-dynamics", text: "I've successfully managed situations where multiple clients had competing urgent needs at the same time", reverseScored: false },
+  { id: "ad-5", dimensionId: "adaptability-dynamics", text: "Rapid context-switching between different client environments and technologies feels overwhelming to me", reverseScored: true },
 
-  // Strategic IT Vision
-  { id: "sv-1", dimensionId: "strategic-thinking", text: "I regularly align IT initiatives directly to measurable business outcomes like revenue growth, efficiency gains, or competitive advantage", reverseScored: false },
-  { id: "sv-2", dimensionId: "strategic-thinking", text: "I'm more comfortable handling day-to-day IT operations than presenting technology strategy to the executive team", reverseScored: true },
-  { id: "sv-3", dimensionId: "strategic-thinking", text: "I build technology roadmaps that anticipate future business needs and proactively address them before they become urgent", reverseScored: false },
-  { id: "sv-4", dimensionId: "strategic-thinking", text: "I use data and metrics to inform technology investment decisions and demonstrate IT's value to the organization", reverseScored: false },
-  { id: "sv-5", dimensionId: "strategic-thinking", text: "I primarily see my role as keeping systems running rather than shaping the organization's technology direction", reverseScored: true },
+  // Problem Solving & Critical Thinking
+  { id: "ps-1", dimensionId: "problem-solving", text: "When faced with a complex technical issue that spans multiple systems or client environments, I enjoy working through it methodically to find the root cause", reverseScored: false },
+  { id: "ps-2", dimensionId: "problem-solving", text: "I tend to stick with proven troubleshooting methods rather than exploring unconventional approaches to difficult problems", reverseScored: true },
+  { id: "ps-3", dimensionId: "problem-solving", text: "I regularly identify patterns across client environments that help prevent recurring issues before they escalate", reverseScored: false },
+  { id: "ps-4", dimensionId: "problem-solving", text: "I challenge assumptions and encourage my team to think critically about the real root cause rather than just fixing symptoms", reverseScored: false },
+  { id: "ps-5", dimensionId: "problem-solving", text: "I find ambiguous, open-ended technical problems frustrating and prefer clear-cut issues with established resolution paths", reverseScored: true },
+
+  // Culture & Communication
+  { id: "cc-1", dimensionId: "culture-communication", text: "I actively build relationships with client stakeholders and ensure they feel well-supported and informed about their IT environment", reverseScored: false },
+  { id: "cc-2", dimensionId: "culture-communication", text: "I sometimes struggle to explain technical decisions or constraints to non-technical clients in a way they find reassuring", reverseScored: true },
+  { id: "cc-3", dimensionId: "culture-communication", text: "I contribute to building a positive, supportive team culture where people enjoy coming to work and collaborating", reverseScored: false },
+  { id: "cc-4", dimensionId: "culture-communication", text: "I proactively share knowledge across the team and create opportunities for collaboration rather than working in silos", reverseScored: false },
+  { id: "cc-5", dimensionId: "culture-communication", text: "I tend to keep to myself and focus on my own work rather than investing time in team relationships and culture-building", reverseScored: true },
+
+  // Microsoft Azure & Cloud Infrastructure
+  { id: "az-1", dimensionId: "azure-cloud", text: "I can architect and manage complex Azure environments including virtual networks, identity management, and hybrid cloud configurations across client tenants", reverseScored: false },
+  { id: "az-2", dimensionId: "azure-cloud", text: "I primarily rely on external consultants or senior engineers for advanced Azure administration and troubleshooting", reverseScored: true },
+  { id: "az-3", dimensionId: "azure-cloud", text: "I have deep experience with Entra ID including conditional access policies, identity governance, and multi-tenant identity management", reverseScored: false },
+  { id: "az-4", dimensionId: "azure-cloud", text: "I've successfully planned and executed cloud migrations for clients — moving workloads from on-premises to Azure with minimal disruption", reverseScored: false },
+  { id: "az-5", dimensionId: "azure-cloud", text: "I find it challenging to troubleshoot complex Azure networking issues or diagnose performance problems in cloud environments", reverseScored: true },
+
+  // Microsoft 365 Administration
+  { id: "m3-1", dimensionId: "m365-admin", text: "I can confidently manage multi-tenant M365 environments including Exchange Online, SharePoint, Teams, and Intune across dozens of client accounts", reverseScored: false },
+  { id: "m3-2", dimensionId: "m365-admin", text: "I have deep experience with Intune device management including autopilot deployment, compliance policies, and configuration profiles", reverseScored: false },
+  { id: "m3-3", dimensionId: "m365-admin", text: "I sometimes struggle with advanced M365 administration tasks like mail flow rules, DLP policies, or complex SharePoint configurations", reverseScored: true },
+  { id: "m3-4", dimensionId: "m365-admin", text: "I've successfully executed M365 tenant migrations and can plan these projects end-to-end for client environments", reverseScored: false },
+  { id: "m3-5", dimensionId: "m365-admin", text: "I rely heavily on documentation or vendor support for M365 troubleshooting rather than being able to diagnose issues independently", reverseScored: true },
 
   // Security & Compliance
-  { id: "sc-1", dimensionId: "security-compliance", text: "I proactively assess and address security vulnerabilities before they become incidents, including regular penetration testing and security audits", reverseScored: false },
-  { id: "sc-2", dimensionId: "security-compliance", text: "I have hands-on experience implementing and managing compliance frameworks such as SOC 2, ISO 27001, or HIPAA", reverseScored: false },
-  { id: "sc-3", dimensionId: "security-compliance", text: "I've sometimes discovered security gaps only after they were exploited or flagged by an audit", reverseScored: true },
-  { id: "sc-4", dimensionId: "security-compliance", text: "I implement zero-trust security principles and maintain comprehensive incident response plans", reverseScored: false },
-  { id: "sc-5", dimensionId: "security-compliance", text: "Keeping up with evolving cybersecurity threats and compliance requirements feels overwhelming to me", reverseScored: true },
+  { id: "sc-1", dimensionId: "security-compliance", text: "I proactively assess and address security vulnerabilities across client environments before they become incidents", reverseScored: false },
+  { id: "sc-2", dimensionId: "security-compliance", text: "I have hands-on experience implementing security frameworks and can maintain consistent security baselines across multiple client accounts", reverseScored: false },
+  { id: "sc-3", dimensionId: "security-compliance", text: "I've sometimes discovered security gaps in client environments only after they were exploited or flagged by an audit", reverseScored: true },
+  { id: "sc-4", dimensionId: "security-compliance", text: "I implement zero-trust security principles and maintain incident response plans tailored to the MSP context", reverseScored: false },
+  { id: "sc-5", dimensionId: "security-compliance", text: "Keeping up with evolving cybersecurity threats and managing security across many different client environments feels overwhelming", reverseScored: true },
 
-  // Problem Solving & Innovation
-  { id: "ps-1", dimensionId: "problem-solving", text: "When faced with a complex problem that doesn't fit familiar patterns, I enjoy finding creative, unconventional solutions", reverseScored: false },
-  { id: "ps-2", dimensionId: "problem-solving", text: "I tend to stick with proven approaches rather than experimenting with new technologies or methods", reverseScored: true },
-  { id: "ps-3", dimensionId: "problem-solving", text: "I regularly identify opportunities to automate processes, reduce costs, or improve efficiency through innovative technology use", reverseScored: false },
-  { id: "ps-4", dimensionId: "problem-solving", text: "I challenge assumptions and encourage my team to think differently about how we deliver IT services", reverseScored: false },
-  { id: "ps-5", dimensionId: "problem-solving", text: "I prefer following established procedures and find ambiguous, open-ended problems frustrating", reverseScored: true },
-
-  // Communication & Culture Fit
-  { id: "cc-1", dimensionId: "communication-culture", text: "I can effectively translate complex technical concepts into business language that executives and non-technical stakeholders understand", reverseScored: false },
-  { id: "cc-2", dimensionId: "communication-culture", text: "I sometimes struggle to explain technical decisions or constraints to non-technical colleagues in a way they find compelling", reverseScored: true },
-  { id: "cc-3", dimensionId: "communication-culture", text: "I actively build relationships with leaders across departments to understand their needs and ensure IT is seen as a trusted partner", reverseScored: false },
-  { id: "cc-4", dimensionId: "communication-culture", text: "I contribute to and help shape a positive, collaborative workplace culture beyond just the IT department", reverseScored: false },
-  { id: "cc-5", dimensionId: "communication-culture", text: "I tend to keep to myself and my team rather than engaging broadly across the organization", reverseScored: true },
-
-  // Process & IT Operations
-  { id: "po-1", dimensionId: "process-operations", text: "I've implemented structured IT service management processes (ITIL, change management, incident management) that improved reliability and accountability", reverseScored: false },
-  { id: "po-2", dimensionId: "process-operations", text: "I maintain comprehensive documentation, runbooks, and standard operating procedures for critical IT systems", reverseScored: false },
-  { id: "po-3", dimensionId: "process-operations", text: "Our IT processes tend to be informal and dependent on tribal knowledge rather than documented procedures", reverseScored: true },
-  { id: "po-4", dimensionId: "process-operations", text: "I define and track service level agreements (SLAs) with internal stakeholders and continuously work to improve them", reverseScored: false },
-  { id: "po-5", dimensionId: "process-operations", text: "I find process documentation and formalization tedious and prefer to handle things on a case-by-case basis", reverseScored: true },
-
-  // Pressure & Crisis Management
-  { id: "pm-1", dimensionId: "pressure-resilience", text: "During major outages or security incidents, I remain calm, take charge, and communicate clearly with stakeholders at all levels", reverseScored: false },
-  { id: "pm-2", dimensionId: "pressure-resilience", text: "I maintain organized systems for tracking IT projects, incidents, and priorities even during high-pressure periods", reverseScored: false },
-  { id: "pm-3", dimensionId: "pressure-resilience", text: "During high-stress periods, important tasks or follow-ups sometimes fall through the cracks", reverseScored: true },
-  { id: "pm-4", dimensionId: "pressure-resilience", text: "I perform at my best when there are critical issues to resolve and the stakes are high", reverseScored: false },
-  { id: "pm-5", dimensionId: "pressure-resilience", text: "I need a relatively calm and predictable environment to produce my best work", reverseScored: true },
+  // Network & Infrastructure Management
+  { id: "ni-1", dimensionId: "network-infrastructure", text: "I can effectively guide and manage network engineers on complex infrastructure projects including switches, firewalls, VPNs, and WAN configurations", reverseScored: false },
+  { id: "ni-2", dimensionId: "network-infrastructure", text: "I have strong foundational knowledge of networking that allows me to make informed decisions and ask the right questions when overseeing infrastructure work", reverseScored: false },
+  { id: "ni-3", dimensionId: "network-infrastructure", text: "I sometimes feel out of my depth when network engineers discuss advanced routing, firewall rules, or complex multi-site networking configurations", reverseScored: true },
+  { id: "ni-4", dimensionId: "network-infrastructure", text: "I've successfully overseen infrastructure assessments and network upgrades for clients, coordinating engineers and managing timelines effectively", reverseScored: false },
+  { id: "ni-5", dimensionId: "network-infrastructure", text: "I tend to defer entirely to network engineers on infrastructure decisions rather than providing technical guidance or direction", reverseScored: true },
 ];
