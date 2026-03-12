@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
-import { calculateDISCProfile } from "@/lib/scoring";
+import { calculateDISCProfile, calculateTruthfulness } from "@/lib/scoring";
 import { getArchetype } from "@/lib/archetypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ interface EmployeeProfile {
   scores: DimensionScore[];
   elapsed_seconds: number;
   created_at: string;
+  disc_profile?: DISCProfile | null;
+  truthfulness?: TruthtfulnessResult | null;
 }
 
 const PUBLISHED_APP_URL = "https://profile-persona-pilot.lovable.app";
@@ -75,12 +77,14 @@ const Dashboard = () => {
 
   const selectedDiscProfile = useMemo<DISCProfile | null>(() => {
     if (!selected) return null;
+    if (selected.disc_profile) return selected.disc_profile;
     return calculateDISCProfile(selected.scores);
   }, [selected]);
 
-  const defaultTruthfulness: TruthtfulnessResult = {
-    score: -1, pairCount: 0, inconsistentPairs: [], label: "N/A"
-  };
+  const selectedTruthfulness = useMemo<TruthtfulnessResult>(() => {
+    if (selected?.truthfulness) return selected.truthfulness;
+    return { score: -1, pairCount: 0, inconsistentPairs: [], label: "N/A" };
+  }, [selected]);
 
   if (view === "profile" && selected && selectedDiscProfile) {
     return (
@@ -93,7 +97,7 @@ const Dashboard = () => {
         <ResultsScreen
           scores={selected.scores}
           discProfile={selectedDiscProfile}
-          truthfulness={defaultTruthfulness}
+          truthfulness={selectedTruthfulness}
           elapsedSeconds={selected.elapsed_seconds}
           employeeName={selected.employee_name}
           onRestart={() => setView("list")}

@@ -45,6 +45,8 @@ const Index = () => {
       employee_name: employeeName,
       scores: scores as unknown as any,
       elapsed_seconds: elapsed,
+      disc_profile: discProfile as unknown as any,
+      truthfulness: truthfulness as unknown as any,
     });
     if (error) {
       console.error("Failed to save profile:", error);
