@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
 import { calculateDISCProfile, calculateTruthfulness } from "@/lib/scoring";
 import { getArchetype } from "@/lib/archetypes";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CoachingChat from "@/components/assessment/CoachingChat";
 import ResultsScreen from "@/components/assessment/ResultsScreen";
-import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2 } from "lucide-react";
+import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2, LogOut } from "lucide-react";
 
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,6 +36,7 @@ const getAssessmentShareUrl = () => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -149,6 +151,9 @@ const Dashboard = () => {
             </Button>
             <Button onClick={() => navigate("/assessment")} className="gap-1.5">
               <Plus className="w-4 h-4" /> New Assessment
+            </Button>
+            <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground">
+              <LogOut className="w-4 h-4" /> Logout
             </Button>
           </div>
         </div>
