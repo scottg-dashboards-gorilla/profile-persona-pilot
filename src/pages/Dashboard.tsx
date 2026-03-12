@@ -97,7 +97,7 @@ const Dashboard = () => {
         <ResultsScreen
           scores={selected.scores}
           discProfile={selectedDiscProfile}
-          truthfulness={defaultTruthfulness}
+          truthfulness={selectedTruthfulness}
           elapsedSeconds={selected.elapsed_seconds}
           employeeName={selected.employee_name}
           onRestart={() => setView("list")}
