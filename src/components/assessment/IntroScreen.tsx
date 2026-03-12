@@ -94,7 +94,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
           {/* Candidate Name */}
           <div className="mb-6">
             <label htmlFor="employee-name" className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-              Candidate Name
+              Resource Name
             </label>
             <Input
               id="employee-name"

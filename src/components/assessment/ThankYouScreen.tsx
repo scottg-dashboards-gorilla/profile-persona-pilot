@@ -28,7 +28,7 @@ const ThankYouScreen = ({ employeeName, elapsedSeconds, onRestart }: ThankYouScr
               Thank You, {employeeName}!
             </h1>
             <p className="text-muted-foreground">
-              Your Team Leader assessment has been submitted successfully. The hiring team will review your responses.
+              Your Datapath Technical Resource Assessment has been submitted successfully. The team will review your responses.
             </p>
           </div>
 
