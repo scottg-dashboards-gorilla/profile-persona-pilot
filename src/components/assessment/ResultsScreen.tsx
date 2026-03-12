@@ -1,7 +1,8 @@
 import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, FileDown } from "lucide-react";
+import { usePDFExport } from "@/lib/pdfExport";
 import OverviewTab from "./OverviewTab";
 import DimensionsTab from "./DimensionsTab";
 import InsightsTab from "./InsightsTab";
@@ -19,6 +20,8 @@ interface ResultsScreenProps {
 }
 
 const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, employeeName, onRestart }: ResultsScreenProps) => {
+  const { exportPDF } = usePDFExport();
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
@@ -27,10 +30,21 @@ const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, empl
           <h1 className="text-xl font-bold font-display text-foreground">
             {employeeName ? `${employeeName}'s Assessment` : "Datapath Technical Resource Assessment"}
           </h1>
-          <Button variant="ghost" size="sm" onClick={onRestart} className="gap-1.5 text-muted-foreground">
-            <RotateCcw className="w-3.5 h-3.5" />
-            New Assessment
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportPDF({ scores, discProfile, truthfulness, elapsedSeconds, employeeName })}
+              className="gap-1.5"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              Export PDF
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onRestart} className="gap-1.5 text-muted-foreground">
+              <RotateCcw className="w-3.5 h-3.5" />
+              New Assessment
+            </Button>
+          </div>
         </div>
 
         {/* Tabs */}
