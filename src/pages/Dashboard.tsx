@@ -26,59 +26,6 @@ interface EmployeeProfile {
 }
 
 const PUBLISHED_APP_URL = "https://profile-persona-pilot.lovable.app";
-const ACCESS_CODE = "datapath2026";
-
-const getAssessmentShareUrl = () => {
-  const isPreviewHost = window.location.hostname.includes("id-preview--");
-  const baseUrl = isPreviewHost ? PUBLISHED_APP_URL : window.location.origin;
-  return `${baseUrl}/assessment`;
-};
-
-const AccessGate = ({ onUnlock }: { onUnlock: () => void }) => {
-  const [code, setCode] = useState("");
-  const [error, setError] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (code === ACCESS_CODE) {
-      sessionStorage.setItem("dashboard_access", "granted");
-      onUnlock();
-    } else {
-      setError(true);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-sm animate-fade-in">
-        <div className="card-elevated p-8 space-y-6">
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
-              <Lock className="w-6 h-6 text-primary" />
-            </div>
-            <h1 className="text-xl font-bold font-display text-foreground">Manager Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Enter the access code to view results</p>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Input
-                type="password"
-                value={code}
-                onChange={(e) => { setCode(e.target.value); setError(false); }}
-                placeholder="Access code"
-                className={error ? "border-destructive" : ""}
-                autoFocus
-              />
-              {error && <p className="text-sm text-destructive">Invalid access code</p>}
-            </div>
-            <Button type="submit" className="w-full">Unlock Dashboard</Button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("dashboard_access") === "granted");
