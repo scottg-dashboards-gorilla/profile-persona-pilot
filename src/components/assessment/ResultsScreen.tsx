@@ -17,10 +17,11 @@ interface ResultsScreenProps {
   truthfulness: TruthtfulnessResult;
   elapsedSeconds: number;
   employeeName?: string;
+  employeeProfileId?: string;
   onRestart: () => void;
 }
 
-const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, employeeName, onRestart }: ResultsScreenProps) => {
+const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, employeeName, employeeProfileId, onRestart }: ResultsScreenProps) => {
   const { exportPDF } = usePDFExport();
 
   return (
@@ -80,7 +81,7 @@ const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, empl
           </TabsContent>
 
           <TabsContent value="coaching">
-            <CoachingChat scores={scores} />
+            <CoachingChat scores={scores} employeeProfileId={employeeProfileId} employeeName={employeeName} />
           </TabsContent>
         </Tabs>
       </div>

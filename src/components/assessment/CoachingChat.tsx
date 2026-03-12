@@ -6,9 +6,12 @@ import { Send, Bot, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import ManagerNotes, { ManagerNote } from "./ManagerNotes";
 
 interface CoachingChatProps {
   scores: DimensionScore[];
+  employeeProfileId?: string;
+  employeeName?: string;
 }
 
 interface ChatMessage {
@@ -29,12 +32,13 @@ const SUGGESTION_CHIPS = [
   "What motivates this person and what would make them disengage?",
 ];
 
-const CoachingChat = ({ scores }: CoachingChatProps) => {
+const CoachingChat = ({ scores, employeeProfileId, employeeName }: CoachingChatProps) => {
   const archetype = getArchetype(scores);
   const profileContext = buildProfileContext(scores);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [managerNotes, setManagerNotes] = useState<ManagerNote[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,6 +46,16 @@ const CoachingChat = ({ scores }: CoachingChatProps) => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isStreaming]);
+
+  const buildNotesContext = useCallback(() => {
+    if (managerNotes.length === 0) return "";
+    const noteLines = managerNotes.map((n) => {
+      let line = `- [${n.note_type.replace("_", " ")}] ${n.content}`;
+      if (n.outcome) line += ` → Outcome: ${n.outcome}`;
+      return line;
+    });
+    return `\n\nManager's Interaction Notes (use these to refine your coaching advice):\n${noteLines.join("\n")}`;
+  }, [managerNotes]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -54,6 +68,7 @@ const CoachingChat = ({ scores }: CoachingChatProps) => {
       setIsStreaming(true);
 
       let assistantContent = "";
+      const fullContext = profileContext + buildNotesContext();
 
       try {
         const resp = await fetch(COACHING_URL, {
@@ -64,7 +79,7 @@ const CoachingChat = ({ scores }: CoachingChatProps) => {
           },
           body: JSON.stringify({
             messages: allMessages.map((m) => ({ role: m.role, content: m.content })),
-            profileContext,
+            profileContext: fullContext,
           }),
         });
 
@@ -147,7 +162,6 @@ const CoachingChat = ({ scores }: CoachingChatProps) => {
           description: e instanceof Error ? e.message : "Failed to get AI response",
           variant: "destructive",
         });
-        // Remove the user message if no assistant response was generated
         if (!assistantContent) {
           setMessages((prev) => prev.slice(0, -1));
         }
@@ -155,7 +169,7 @@ const CoachingChat = ({ scores }: CoachingChatProps) => {
         setIsStreaming(false);
       }
     },
-    [messages, isStreaming, profileContext]
+    [messages, isStreaming, profileContext, buildNotesContext]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -171,19 +185,34 @@ const CoachingChat = ({ scores }: CoachingChatProps) => {
           <Sparkles className="w-4 h-4 text-accent" />
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-foreground">AI Coaching Assistant</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            AI Coaching Assistant{employeeName ? ` — ${employeeName}` : ""}
+          </h3>
           <p className="text-xs text-muted-foreground">
             Powered by AI · Coaching for a <strong>{archetype.name}</strong>
           </p>
         </div>
       </div>
 
+      {/* Manager Notes Panel */}
+      {employeeProfileId && (
+        <div className="mb-3">
+          <ManagerNotes
+            employeeProfileId={employeeProfileId}
+            onNotesChanged={setManagerNotes}
+          />
+        </div>
+      )}
+
       {/* Intro */}
       {messages.length === 0 && (
         <div className="card-elevated p-4 mb-4 animate-fade-in">
           <p className="text-sm text-muted-foreground mb-3">
             Ask me anything about coaching, managing, or giving feedback to someone with this{" "}
-            <strong>{archetype.name}</strong> profile. I'll provide specific, actionable advice based on their personality dimensions.
+            <strong>{archetype.name}</strong> profile.
+            {managerNotes.length > 0 && (
+              <> I'll also factor in your <strong>{managerNotes.length} saved note{managerNotes.length !== 1 ? "s" : ""}</strong> about past interactions.</>
+            )}
           </p>
           <div className="flex flex-wrap gap-2">
             {SUGGESTION_CHIPS.map((chip) => (

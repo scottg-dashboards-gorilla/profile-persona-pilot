@@ -44,6 +44,41 @@ export type Database = {
         }
         Relationships: []
       }
+      manager_notes: {
+        Row: {
+          content: string
+          created_at: string
+          employee_profile_id: string
+          id: string
+          note_type: string
+          outcome: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          employee_profile_id: string
+          id?: string
+          note_type?: string
+          outcome?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          employee_profile_id?: string
+          id?: string
+          note_type?: string
+          outcome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manager_notes_employee_profile_id_fkey"
+            columns: ["employee_profile_id"]
+            isOneToOne: false
+            referencedRelation: "employee_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
