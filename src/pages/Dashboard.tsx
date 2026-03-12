@@ -144,9 +144,6 @@ const Dashboard = () => {
             <Button onClick={() => navigate("/assessment")} className="gap-1.5">
               <Plus className="w-4 h-4" /> New Assessment
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { sessionStorage.removeItem("dashboard_access"); setUnlocked(false); }} className="gap-1.5 text-muted-foreground">
-              <Lock className="w-4 h-4" /> Lock
-            </Button>
           </div>
         </div>
 
