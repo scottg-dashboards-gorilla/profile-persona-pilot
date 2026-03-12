@@ -71,7 +71,7 @@ const ManagerNotes = ({ employeeProfileId, onNotesChanged }: ManagerNotesProps) 
 
   useEffect(() => {
     loadNotes();
-  }, [employeeProfileId]);
+  }, [employeeProfileId, dateFrom, dateTo]);
 
   const handleSave = async () => {
     if (!content.trim()) return;
