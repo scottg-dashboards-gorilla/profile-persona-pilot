@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2, StickyNote, ChevronDown, ChevronUp } from "lucide-react";
-import { format } from "date-fns";
+import { Plus, Trash2, StickyNote, ChevronDown, ChevronUp, CalendarIcon, X } from "lucide-react";
+import { format, startOfDay, endOfDay } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export interface ManagerNote {
   id: string;
@@ -37,13 +40,24 @@ const ManagerNotes = ({ employeeProfileId, onNotesChanged }: ManagerNotesProps) 
   const [content, setContent] = useState("");
   const [outcome, setOutcome] = useState("");
   const [saving, setSaving] = useState(false);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   const loadNotes = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from("manager_notes")
       .select("*")
       .eq("employee_profile_id", employeeProfileId)
       .order("created_at", { ascending: false });
+
+    if (dateFrom) {
+      query = query.gte("created_at", startOfDay(dateFrom).toISOString());
+    }
+    if (dateTo) {
+      query = query.lte("created_at", endOfDay(dateTo).toISOString());
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Failed to load notes:", error);
@@ -57,7 +71,7 @@ const ManagerNotes = ({ employeeProfileId, onNotesChanged }: ManagerNotesProps) 
 
   useEffect(() => {
     loadNotes();
-  }, [employeeProfileId]);
+  }, [employeeProfileId, dateFrom, dateTo]);
 
   const handleSave = async () => {
     if (!content.trim()) return;
@@ -109,6 +123,39 @@ const ManagerNotes = ({ employeeProfileId, onNotesChanged }: ManagerNotesProps) 
           <p className="text-xs text-muted-foreground">
             Log interactions, coaching sessions, and observations. The AI Coach uses these to give better advice.
           </p>
+
+          {/* Date filter */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1.5", !dateFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="w-3 h-3" />
+                  {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} disabled={(d) => d > new Date() || (dateTo ? d > dateTo : false)} initialFocus />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1.5", !dateTo && "text-muted-foreground")}>
+                  <CalendarIcon className="w-3 h-3" />
+                  {dateTo ? format(dateTo, "MMM d, yyyy") : "To"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} disabled={(d) => d > new Date() || (dateFrom ? d < dateFrom : false)} initialFocus />
+              </PopoverContent>
+            </Popover>
+
+            {(dateFrom || dateTo) && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
+                <X className="w-3 h-3" /> Clear
+              </Button>
+            )}
+          </div>
 
           {/* Add note button / form */}
           {!showForm ? (
