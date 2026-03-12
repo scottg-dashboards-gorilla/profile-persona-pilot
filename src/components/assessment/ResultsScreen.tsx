@@ -21,7 +21,7 @@ interface ResultsScreenProps {
   onRestart: () => void;
 }
 
-const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, employeeName, onRestart }: ResultsScreenProps) => {
+const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, employeeName, employeeProfileId, onRestart }: ResultsScreenProps) => {
   const { exportPDF } = usePDFExport();
 
   return (
