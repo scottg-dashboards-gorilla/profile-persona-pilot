@@ -1,6 +1,7 @@
 import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
 import { dimensions, competencyDimensions, comptiaDimensions } from "@/data/dimensions";
 import { getArchetype } from "@/lib/archetypes";
+import { classifyTier, TIER_COLORS, TIER_ICONS } from "@/lib/tierClassification";
 import { Clock, Award, CheckCircle2, AlertTriangle, XCircle, ThumbsUp, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
 import {
   RadarChart,
@@ -34,9 +35,12 @@ const recommendationIcons: Record<string, typeof CheckCircle2> = {
 
 const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: OverviewTabProps) => {
   const archetype = getArchetype(scores);
+  const tier = classifyTier(scores);
   const RecIcon = recommendationIcons[archetype.recommendation] ?? AlertTriangle;
+  const tierColor = TIER_COLORS[tier.tier];
+  const tierIcon = TIER_ICONS[tier.tier];
 
-  // Only show competency + comptia dimensions on radar (not DISC)
+  // Only show competency + comptia dimensions on radar (not DISC or coaching)
   const radarDims = [...competencyDimensions, ...comptiaDimensions];
   const radarData = radarDims.map((dim) => {
     const s = scores.find(sc => sc.dimensionId === dim.id);
@@ -73,7 +77,7 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* Hiring Recommendation */}
+      {/* Assessment Complete Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-4 py-1.5 text-xs font-semibold mb-3">
           <Award className="w-3.5 h-3.5" />
@@ -94,6 +98,22 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
             DISC: {discProfile.primaryType}{discProfile.secondaryType}
           </span>
         </div>
+      </div>
+
+      {/* Tier Classification */}
+      <div className="card-elevated p-5 text-center" style={{ borderLeft: `4px solid ${tierColor}` }}>
+        <div className="text-3xl mb-2">{tierIcon}</div>
+        <h3 className="text-xl font-bold font-display" style={{ color: tierColor }}>
+          {tier.label}
+        </h3>
+        <div className="flex items-center justify-center gap-2 mt-1 mb-3">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${tierColor}20`, color: tierColor }}>
+            {tier.confidence}% confidence
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+          {tier.reasoning}
+        </p>
       </div>
 
       {/* Truthfulness Indicator - only show if we have actual data */}

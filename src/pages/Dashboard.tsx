@@ -124,7 +124,7 @@ const Dashboard = () => {
               <Users className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold font-display text-foreground">Team Leader Assessments</h1>
+              <h1 className="text-2xl font-bold font-display text-foreground">Datapath Technical Resource Assessments</h1>
               <p className="text-sm text-muted-foreground">{profiles.length} assessment{profiles.length !== 1 ? "s" : ""}</p>
             </div>
           </div>

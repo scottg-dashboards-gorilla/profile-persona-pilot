@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle, Zap, MessageSquare } from "lucide-react";
-import { dimensions } from "@/data/dimensions";
+import { competencyDimensions, comptiaDimensions, discDimensions } from "@/data/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -40,10 +40,10 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display text-foreground mb-3 leading-tight">
-            Team Leader Assessment
+            Datapath Technical Resource Assessment
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto">
-            Evaluate whether this candidate has the leadership, technical depth, and dynamic personality to lead as a Team Leader at Datapath.
+            Evaluate this resource's technical depth, leadership capability, behavioral style, and determine their ideal tier placement at Datapath.
           </p>
         </div>
 
@@ -76,10 +76,10 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
           {/* Dimensions List */}
           <div className="mb-6">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              8 Competency Dimensions
+              Assessment Dimensions
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {dimensions.map((dim) => (
+              {[...competencyDimensions, ...comptiaDimensions, ...discDimensions].map((dim) => (
                 <div key={dim.id} className="flex items-center gap-2 text-sm py-1.5">
                   <div
                     className="w-2 h-2 rounded-full flex-shrink-0"
@@ -94,7 +94,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
           {/* Candidate Name */}
           <div className="mb-6">
             <label htmlFor="employee-name" className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-              Candidate Name
+              Resource Name
             </label>
             <Input
               id="employee-name"
@@ -110,15 +110,15 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
           <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-6 py-3 border-t border-b border-border">
             <span className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
-              Estimated time: 10–15 minutes
+              Estimated time: 20–30 minutes
             </span>
             <span className="text-border">|</span>
-            <span>40 questions</span>
+            <span>93 questions</span>
           </div>
 
           {/* Info note */}
           <div className="text-xs text-muted-foreground bg-secondary/30 rounded-lg p-3 mb-6">
-            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all leadership and technical dimensions.
+            <strong>Note:</strong> This assessment should be completed by the resource themselves. Results will include a tier placement recommendation, DISC behavioral profile, response consistency score, and competency analysis across leadership and technical dimensions.
           </div>
 
           {/* CTA */}

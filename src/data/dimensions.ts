@@ -2,7 +2,7 @@ import { Dimension } from "@/types/assessment";
 
 export interface DimensionMeta extends Dimension {
   color: string;
-  category: "competency" | "disc" | "comptia";
+  category: "competency" | "disc" | "comptia" | "coaching";
   scoreDescriptions: { low: string; mid: string; high: string };
   growthSuggestion: string;
 }
@@ -238,8 +238,41 @@ export const dimensions: DimensionMeta[] = [
     },
     growthSuggestion: "Use your analytical strengths for process improvement while practicing comfort with making decisions on imperfect information.",
   },
+
+  // ========== COACHING & SELF-ASSESSMENT ==========
+  {
+    id: "coaching-preferences",
+    name: "Coaching & Feedback Preferences",
+    lowLabel: "Prefers Independence",
+    highLabel: "Prefers Structure & Support",
+    description: "How this person prefers to receive feedback, learn, and grow. Used to tailor coaching and management approaches.",
+    color: "#f472b6",
+    category: "coaching",
+    scoreDescriptions: {
+      low: "They prefer autonomy and self-directed learning. Give them space to figure things out, check in periodically, and deliver feedback directly when needed.",
+      mid: "They appreciate a balanced approach — some structure and support mixed with independence. Regular check-ins work well alongside independent work time.",
+      high: "They thrive with structured support — regular check-ins, hands-on coaching, and positive reinforcement. Invest time in relationship-building before delivering critical feedback.",
+    },
+    growthSuggestion: "Understand your learning preferences and communicate them to your manager so they can support your growth effectively.",
+  },
+  {
+    id: "self-assessment",
+    name: "Self-Assessed Experience Level",
+    lowLabel: "Early Career / Learning",
+    highLabel: "Senior / Leadership-Ready",
+    description: "How the candidate perceives their own experience level, readiness for leadership, and ability to mentor others. Cross-referenced with technical scores for calibration.",
+    color: "#78716c",
+    category: "coaching",
+    scoreDescriptions: {
+      low: "They see themselves as still developing — needing guidance and mentorship. This honest self-awareness is positive if it aligns with technical scores.",
+      mid: "They see themselves as a capable mid-level contributor — handling escalations and starting to mentor others. Suitable for Tier 2 with growth potential.",
+      high: "They see themselves as senior-level — ready to lead, mentor, and be accountable for team performance. Verify this self-assessment against their technical scores.",
+    },
+    growthSuggestion: "Reflect honestly on your current capabilities and where you need to grow. Self-awareness is a key leadership trait.",
+  },
 ];
 
 export const competencyDimensions = dimensions.filter(d => d.category === "competency");
 export const comptiaDimensions = dimensions.filter(d => d.category === "comptia");
 export const discDimensions = dimensions.filter(d => d.category === "disc");
+export const coachingDimensions = dimensions.filter(d => d.category === "coaching");

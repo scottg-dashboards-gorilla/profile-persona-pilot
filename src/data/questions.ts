@@ -115,44 +115,39 @@ export const questions: Question[] = [
   { id: "dc-4", dimensionId: "disc-conscientiousness", text: "I hold myself and others to high quality standards and am uncomfortable cutting corners even under time pressure", reverseScored: false },
 
   // ==========================================
+  // COACHING & FEEDBACK PREFERENCES (5 questions)
+  // ==========================================
+  { id: "fb-1", dimensionId: "coaching-preferences", text: "I prefer receiving feedback directly and bluntly rather than having it softened or sugar-coated", reverseScored: false },
+  { id: "fb-2", dimensionId: "coaching-preferences", text: "I learn best when someone shows me how to do something hands-on rather than explaining it verbally or through documentation", reverseScored: false },
+  { id: "fb-3", dimensionId: "coaching-preferences", text: "I respond better to encouragement and positive reinforcement than to criticism or correction", reverseScored: false },
+  { id: "fb-4", dimensionId: "coaching-preferences", text: "I prefer to work through challenges independently before asking for help, and I value having space to figure things out on my own", reverseScored: false },
+  { id: "fb-5", dimensionId: "coaching-preferences", text: "I find regular one-on-one check-ins with my manager more helpful than occasional performance reviews", reverseScored: false },
+
+  // ==========================================
+  // SELF-ASSESSMENT LEVEL (5 questions)
+  // These help calibrate self-perceived tier alongside objective scores
+  // ==========================================
+  { id: "sa-1", dimensionId: "self-assessment", text: "I'm confident I could mentor and develop junior technicians, helping them grow their technical and professional skills", reverseScored: false },
+  { id: "sa-2", dimensionId: "self-assessment", text: "I regularly handle complex escalations that other team members can't resolve on their own", reverseScored: false },
+  { id: "sa-3", dimensionId: "self-assessment", text: "I've led projects or initiatives that required coordinating multiple people and managing timelines across client accounts", reverseScored: false },
+  { id: "sa-4", dimensionId: "self-assessment", text: "I still have a lot to learn about the technologies we support and often need guidance from more experienced colleagues", reverseScored: true },
+  { id: "sa-5", dimensionId: "self-assessment", text: "I'm comfortable being the primary point of accountability for an entire team's performance and client satisfaction", reverseScored: false },
+
+  // ==========================================
   // CONSISTENCY/TRUTHFULNESS PAIRS (12 questions)
-  // These rephrase existing questions to detect inconsistent responding
   // ==========================================
 
-  // Pair with le-1 (rolling up sleeves)
   { id: "tp-1", dimensionId: "leadership-example", text: "When a critical client issue arises, I jump in and work alongside the team rather than simply assigning it and checking back later", reverseScored: false, consistencyPairId: "le-1" },
-
-  // Pair with le-3 (directing from behind scenes) — rephrase, same direction
   { id: "tp-2", dimensionId: "leadership-example", text: "I prefer to manage through emails and reports rather than being physically present and engaged with my team's daily work", reverseScored: true, consistencyPairId: "le-3" },
-
-  // Pair with ad-3 (prefer single environment)
   { id: "tp-3", dimensionId: "adaptability-dynamics", text: "I would be happier in a role where I focus on one company's systems rather than juggling many different client environments", reverseScored: true, consistencyPairId: "ad-3" },
-
-  // Pair with ad-5 (context-switching overwhelming)
   { id: "tp-4", dimensionId: "adaptability-dynamics", text: "I handle switching between different client projects throughout the day without difficulty or stress", reverseScored: false, consistencyPairId: "ad-5" },
-
-  // Pair with ps-2 (stick with proven methods)
   { id: "tp-5", dimensionId: "problem-solving", text: "I actively seek out new and creative approaches when standard troubleshooting methods don't resolve a complex issue", reverseScored: false, consistencyPairId: "ps-2" },
-
-  // Pair with cc-5 (keep to myself)
   { id: "tp-6", dimensionId: "culture-communication", text: "Building strong working relationships with colleagues is something I actively prioritize in my daily routine", reverseScored: false, consistencyPairId: "cc-5" },
-
-  // Pair with dd-1 (take charge immediately)
   { id: "tp-7", dimensionId: "disc-dominance", text: "In crisis situations, I wait for clear direction from leadership before taking action on my own", reverseScored: true, consistencyPairId: "dd-1" },
-
-  // Pair with di-3 (rather work quietly alone)
   { id: "tp-8", dimensionId: "disc-influence", text: "I seek out opportunities to connect with colleagues and clients socially because I genuinely enjoy building relationships", reverseScored: false, consistencyPairId: "di-3" },
-
-  // Pair with sc-1 (proactively assess vulnerabilities)
   { id: "tp-9", dimensionId: "security-compliance", text: "I schedule regular security reviews and vulnerability scans for client environments without waiting to be asked", reverseScored: false, consistencyPairId: "sc-1" },
-
-  // Pair with az-2 (rely on external consultants)
   { id: "tp-10", dimensionId: "azure-cloud", text: "I can independently resolve most Azure issues without needing to escalate to outside experts or senior staff", reverseScored: false, consistencyPairId: "az-2" },
-
-  // Pair with ds-3 (get restless with routine)
   { id: "tp-11", dimensionId: "disc-steadiness", text: "I'm comfortable with established routines and don't feel the need to constantly change things that are working", reverseScored: false, consistencyPairId: "ds-3" },
-
-  // Pair with dc-3 (skip procedural details)
   { id: "tp-12", dimensionId: "disc-conscientiousness", text: "I always follow documented procedures carefully, even when I'm confident I know the right answer without checking", reverseScored: false, consistencyPairId: "dc-3" },
 ];
 
