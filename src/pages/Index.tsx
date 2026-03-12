@@ -82,6 +82,7 @@ const Index = () => {
     <ThankYouScreen
       employeeName={employeeName}
       elapsedSeconds={elapsedSeconds}
+      scores={scores}
       onRestart={handleRestart}
     />
   );
