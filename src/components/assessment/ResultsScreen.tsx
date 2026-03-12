@@ -2,7 +2,7 @@ import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assess
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, FileDown } from "lucide-react";
-import DatapathLogo from "@/components/DatapathLogo";
+
 import { usePDFExport } from "@/lib/pdfExport";
 import OverviewTab from "./OverviewTab";
 import DimensionsTab from "./DimensionsTab";
