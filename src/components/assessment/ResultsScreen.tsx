@@ -17,6 +17,7 @@ interface ResultsScreenProps {
   truthfulness: TruthtfulnessResult;
   elapsedSeconds: number;
   employeeName?: string;
+  employeeProfileId?: string;
   onRestart: () => void;
 }
 
