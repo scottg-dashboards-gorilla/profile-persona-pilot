@@ -40,10 +40,10 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display text-foreground mb-3 leading-tight">
-            Team Leader Assessment
+            Datapath Technical Resource Assessment
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto">
-            Evaluate whether this candidate has the leadership, technical depth, and dynamic personality to lead as a Team Leader at Datapath.
+            Evaluate this resource's technical depth, leadership capability, behavioral style, and determine their ideal tier placement at Datapath.
           </p>
         </div>
 
