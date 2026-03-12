@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle, Zap, MessageSquare } from "lucide-react";
-import { dimensions } from "@/data/dimensions";
+import { competencyDimensions, comptiaDimensions, discDimensions } from "@/data/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
