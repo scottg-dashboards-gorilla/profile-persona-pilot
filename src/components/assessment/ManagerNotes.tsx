@@ -40,13 +40,24 @@ const ManagerNotes = ({ employeeProfileId, onNotesChanged }: ManagerNotesProps) 
   const [content, setContent] = useState("");
   const [outcome, setOutcome] = useState("");
   const [saving, setSaving] = useState(false);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   const loadNotes = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from("manager_notes")
       .select("*")
       .eq("employee_profile_id", employeeProfileId)
       .order("created_at", { ascending: false });
+
+    if (dateFrom) {
+      query = query.gte("created_at", startOfDay(dateFrom).toISOString());
+    }
+    if (dateTo) {
+      query = query.lte("created_at", endOfDay(dateTo).toISOString());
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Failed to load notes:", error);
