@@ -17,24 +17,30 @@ export type Database = {
       employee_profiles: {
         Row: {
           created_at: string
+          disc_profile: Json | null
           elapsed_seconds: number
           employee_name: string
           id: string
           scores: Json
+          truthfulness: Json | null
         }
         Insert: {
           created_at?: string
+          disc_profile?: Json | null
           elapsed_seconds?: number
           employee_name: string
           id?: string
           scores: Json
+          truthfulness?: Json | null
         }
         Update: {
           created_at?: string
+          disc_profile?: Json | null
           elapsed_seconds?: number
           employee_name?: string
           id?: string
           scores?: Json
+          truthfulness?: Json | null
         }
         Relationships: []
       }
