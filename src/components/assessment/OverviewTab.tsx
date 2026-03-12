@@ -173,21 +173,21 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
         <div className="w-full" style={{ height: 360 }}>
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="65%">
-              <PolarGrid stroke="hsl(234, 20%, 91%)" />
+              <PolarGrid stroke="hsl(220, 12%, 18%)" />
               <PolarAngleAxis
                 dataKey="dimension"
-                tick={{ fontSize: 9, fill: "hsl(234, 12%, 46%)" }}
+                tick={{ fontSize: 9, fill: "hsl(220, 10%, 55%)" }}
               />
               <PolarRadiusAxis
                 angle={90}
                 domain={[0, 100]}
-                tick={{ fontSize: 10, fill: "hsl(234, 12%, 46%)" }}
+                tick={{ fontSize: 10, fill: "hsl(220, 10%, 55%)" }}
                 tickCount={5}
               />
               <Radar
                 dataKey="score"
-                stroke="hsl(234, 89%, 56%)"
-                fill="hsl(234, 89%, 56%)"
+                stroke="hsl(155, 100%, 45%)"
+                fill="hsl(155, 100%, 45%)"
                 fillOpacity={0.2}
                 strokeWidth={2}
               />
