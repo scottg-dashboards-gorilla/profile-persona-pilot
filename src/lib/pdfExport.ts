@@ -90,7 +90,14 @@ export function usePDFExport() {
   <button class="print-btn no-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
 
   <div class="header">
-    <h1>${employeeName ? `${employeeName}'s Assessment Report` : "Datapath Technical Resource Assessment"}</h1>
+    <div style="text-align:center;margin-bottom:12px;">
+      <svg width="180" height="36" viewBox="0 0 160 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 3L4 7.5V15C4 22.18 8.38 28.92 14 31C19.62 28.92 24 22.18 24 15V7.5L14 3Z" fill="#00a651"/>
+        <text x="13.5" y="20" text-anchor="middle" fill="white" font-family="'Segoe UI',system-ui,sans-serif" font-weight="700" font-size="14">D</text>
+        <text x="32" y="22" fill="#1a1a2e" font-family="'Segoe UI',system-ui,sans-serif" font-weight="600" font-size="16" letter-spacing="3">DATAPATH</text>
+      </svg>
+    </div>
+    <h1>${employeeName ? `${employeeName}'s Assessment Report` : "Technical Resource Assessment"}</h1>
     <p>Datapath Technical Resource Assessment · Generated ${new Date().toLocaleDateString()}</p>
     <div class="meta">
       <span>⏱ ${formatDuration(elapsedSeconds)}</span>

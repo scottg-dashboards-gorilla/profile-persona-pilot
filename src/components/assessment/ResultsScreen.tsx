@@ -2,6 +2,7 @@ import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assess
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, FileDown } from "lucide-react";
+import DatapathLogo from "@/components/DatapathLogo";
 import { usePDFExport } from "@/lib/pdfExport";
 import OverviewTab from "./OverviewTab";
 import DimensionsTab from "./DimensionsTab";
@@ -27,9 +28,13 @@ const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, empl
       <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold font-display text-foreground">
-            {employeeName ? `${employeeName}'s Assessment` : "Datapath Technical Resource Assessment"}
-          </h1>
+          <div className="flex items-center gap-3">
+            <DatapathLogo height={28} />
+            <span className="text-border">|</span>
+            <h1 className="text-lg font-bold font-display text-foreground">
+              {employeeName ? `${employeeName}'s Assessment` : "Assessment Results"}
+            </h1>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
