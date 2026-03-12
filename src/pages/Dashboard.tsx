@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
 import { calculateDISCProfile, calculateTruthfulness } from "@/lib/scoring";
 import { getArchetype } from "@/lib/archetypes";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CoachingChat from "@/components/assessment/CoachingChat";
 import ResultsScreen from "@/components/assessment/ResultsScreen";
-import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2 } from "lucide-react";
+import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2, LogOut } from "lucide-react";
 
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
