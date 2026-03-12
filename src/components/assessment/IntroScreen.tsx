@@ -79,7 +79,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
               Assessment Dimensions
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {dimensions.map((dim) => (
+              {[...competencyDimensions, ...comptiaDimensions, ...discDimensions].map((dim) => (
                 <div key={dim.id} className="flex items-center gap-2 text-sm py-1.5">
                   <div
                     className="w-2 h-2 rounded-full flex-shrink-0"
