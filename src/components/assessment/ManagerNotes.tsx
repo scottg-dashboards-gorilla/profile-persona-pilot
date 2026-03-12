@@ -124,6 +124,39 @@ const ManagerNotes = ({ employeeProfileId, onNotesChanged }: ManagerNotesProps) 
             Log interactions, coaching sessions, and observations. The AI Coach uses these to give better advice.
           </p>
 
+          {/* Date filter */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1.5", !dateFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="w-3 h-3" />
+                  {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} disabled={(d) => d > new Date() || (dateTo ? d > dateTo : false)} initialFocus />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1.5", !dateTo && "text-muted-foreground")}>
+                  <CalendarIcon className="w-3 h-3" />
+                  {dateTo ? format(dateTo, "MMM d, yyyy") : "To"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} disabled={(d) => d > new Date() || (dateFrom ? d < dateFrom : false)} initialFocus />
+              </PopoverContent>
+            </Popover>
+
+            {(dateFrom || dateTo) && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
+                <X className="w-3 h-3" /> Clear
+              </Button>
+            )}
+          </div>
+
           {/* Add note button / form */}
           {!showForm ? (
             <Button variant="outline" size="sm" onClick={() => setShowForm(true)} className="gap-1.5 w-full">
