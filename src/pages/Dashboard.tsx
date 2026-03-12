@@ -35,8 +35,8 @@ const Dashboard = () => {
   const [view, setView] = useState<"list" | "profile" | "coach">("list");
 
   useEffect(() => {
-    if (unlocked) loadProfiles();
-  }, [unlocked]);
+    loadProfiles();
+  }, []);
 
   const loadProfiles = async () => {
     const { data, error } = await supabase
