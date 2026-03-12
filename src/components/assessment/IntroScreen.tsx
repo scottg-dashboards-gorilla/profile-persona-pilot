@@ -42,8 +42,11 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
       <div className="w-full max-w-2xl animate-fade-in">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-5">
+            <DatapathLogo height={36} />
+          </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display text-foreground mb-3 leading-tight">
-            Datapath Technical Resource Assessment
+            Technical Resource Assessment
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto">
             Evaluate this resource's technical depth, leadership capability, behavioral style, and determine their ideal tier placement at Datapath.
