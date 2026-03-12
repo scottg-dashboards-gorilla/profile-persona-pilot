@@ -80,7 +80,6 @@ const Dashboard = () => {
     return { score: -1, pairCount: 0, inconsistentPairs: [], label: "N/A" };
   }, [selected]);
 
-  if (!unlocked) return <AccessGate onUnlock={() => setUnlocked(true)} />;
 
   if (view === "profile" && selected && selectedDiscProfile) {
     return (
