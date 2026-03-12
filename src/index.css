@@ -9,51 +9,51 @@
     --font-sans: 'DM Sans', system-ui, sans-serif;
     --font-display: 'Space Grotesk', system-ui, sans-serif;
 
-    /* Datapath dark theme — charcoal + mint green */
-    --background: 220 20% 7%;
-    --foreground: 0 0% 96%;
+    /* Datapath light theme — white + green accents */
+    --background: 0 0% 99%;
+    --foreground: 220 20% 12%;
 
-    --card: 220 18% 11%;
-    --card-foreground: 0 0% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
 
-    --popover: 220 18% 11%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
 
-    --primary: 155 100% 45%;
-    --primary-foreground: 220 20% 7%;
+    --primary: 155 100% 32%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 16%;
-    --secondary-foreground: 0 0% 85%;
+    --secondary: 155 20% 95%;
+    --secondary-foreground: 220 20% 20%;
 
-    --muted: 220 12% 14%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 10% 42%;
 
-    --accent: 155 80% 38%;
-    --accent-foreground: 220 20% 7%;
+    --accent: 155 80% 28%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 12% 18%;
-    --input: 220 12% 18%;
-    --ring: 155 100% 45%;
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 155 100% 32%;
 
     --radius: 0.75rem;
 
-    --chart-1: 155 100% 45%;
-    --chart-2: 200 80% 55%;
-    --chart-3: 40 90% 55%;
-    --chart-4: 280 70% 60%;
-    --chart-5: 0 70% 55%;
+    --chart-1: 155 80% 35%;
+    --chart-2: 200 80% 50%;
+    --chart-3: 40 90% 50%;
+    --chart-4: 280 70% 55%;
+    --chart-5: 0 70% 50%;
 
-    --sidebar-background: 220 18% 9%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 155 100% 45%;
-    --sidebar-primary-foreground: 220 20% 7%;
-    --sidebar-accent: 220 12% 14%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 220 12% 18%;
-    --sidebar-ring: 155 100% 45%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-primary: 155 100% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 155 15% 94%;
+    --sidebar-accent-foreground: 220 15% 25%;
+    --sidebar-border: 220 15% 90%;
+    --sidebar-ring: 155 100% 32%;
   }
 }
 
@@ -74,7 +74,7 @@
 
 @layer components {
   .gradient-progress {
-    background: linear-gradient(90deg, hsl(155, 100%, 45%), hsl(155, 80%, 38%));
+    background: linear-gradient(90deg, hsl(155, 100%, 32%), hsl(155, 80%, 28%));
   }
 
   .card-elevated {
