@@ -3,7 +3,7 @@ import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle, Zap, Mes
 import { competencyDimensions, comptiaDimensions, discDimensions } from "@/data/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import DatapathLogo from "@/components/DatapathLogo";
+
 
 interface IntroScreenProps {
   onBegin: (name: string) => void;
