@@ -152,6 +152,9 @@ const Dashboard = () => {
             <Button onClick={() => navigate("/assessment")} className="gap-1.5">
               <Plus className="w-4 h-4" /> New Assessment
             </Button>
+            <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground">
+              <LogOut className="w-4 h-4" /> Logout
+            </Button>
           </div>
         </div>
 
