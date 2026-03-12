@@ -26,6 +26,13 @@ interface EmployeeProfile {
 }
 
 const PUBLISHED_APP_URL = "https://profile-persona-pilot.lovable.app";
+
+const getAssessmentShareUrl = () => {
+  const isPreviewHost = window.location.hostname.includes("id-preview--");
+  const baseUrl = isPreviewHost ? PUBLISHED_APP_URL : window.location.origin;
+  return `${baseUrl}/assessment`;
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
