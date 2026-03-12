@@ -110,15 +110,15 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
           <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-6 py-3 border-t border-b border-border">
             <span className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
-              Estimated time: 10–15 minutes
+              Estimated time: 20–30 minutes
             </span>
             <span className="text-border">|</span>
-            <span>40 questions</span>
+            <span>93 questions</span>
           </div>
 
           {/* Info note */}
           <div className="text-xs text-muted-foreground bg-secondary/30 rounded-lg p-3 mb-6">
-            <strong>Note:</strong> This assessment should be completed by the candidate themselves. Results will include a hiring recommendation based on their self-reported competencies across all leadership and technical dimensions.
+            <strong>Note:</strong> This assessment should be completed by the resource themselves. Results will include a tier placement recommendation, DISC behavioral profile, response consistency score, and competency analysis across leadership and technical dimensions.
           </div>
 
           {/* CTA */}
