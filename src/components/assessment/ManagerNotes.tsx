@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2, StickyNote, ChevronDown, ChevronUp } from "lucide-react";
-import { format } from "date-fns";
+import { Plus, Trash2, StickyNote, ChevronDown, ChevronUp, CalendarIcon, X } from "lucide-react";
+import { format, startOfDay, endOfDay } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export interface ManagerNote {
   id: string;
