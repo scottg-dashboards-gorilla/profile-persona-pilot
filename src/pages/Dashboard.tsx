@@ -114,7 +114,7 @@ const Dashboard = () => {
           <Button variant="ghost" size="sm" onClick={() => setView("list")} className="gap-1.5 mb-4">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
           </Button>
-          <CoachingChat scores={selected.scores} />
+          <CoachingChat scores={selected.scores} employeeProfileId={selected.id} employeeName={selected.employee_name} />
         </div>
       </div>
     );

@@ -81,7 +81,7 @@ const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, empl
           </TabsContent>
 
           <TabsContent value="coaching">
-            <CoachingChat scores={scores} />
+            <CoachingChat scores={scores} employeeProfileId={employeeProfileId} employeeName={employeeName} />
           </TabsContent>
         </Tabs>
       </div>
