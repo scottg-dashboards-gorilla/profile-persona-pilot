@@ -77,12 +77,14 @@ const Dashboard = () => {
 
   const selectedDiscProfile = useMemo<DISCProfile | null>(() => {
     if (!selected) return null;
+    if (selected.disc_profile) return selected.disc_profile;
     return calculateDISCProfile(selected.scores);
   }, [selected]);
 
-  const defaultTruthfulness: TruthtfulnessResult = {
-    score: -1, pairCount: 0, inconsistentPairs: [], label: "N/A"
-  };
+  const selectedTruthfulness = useMemo<TruthtfulnessResult>(() => {
+    if (selected?.truthfulness) return selected.truthfulness;
+    return { score: -1, pairCount: 0, inconsistentPairs: [], label: "N/A" };
+  }, [selected]);
 
   if (view === "profile" && selected && selectedDiscProfile) {
     return (
