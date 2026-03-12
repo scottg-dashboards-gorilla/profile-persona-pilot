@@ -36,6 +36,7 @@ const getAssessmentShareUrl = () => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
