@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
 import { calculateDISCProfile, calculateTruthfulness } from "@/lib/scoring";
 import { getArchetype } from "@/lib/archetypes";
@@ -9,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CoachingChat from "@/components/assessment/CoachingChat";
 import ResultsScreen from "@/components/assessment/ResultsScreen";
-import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2, LogOut } from "lucide-react";
+import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2, Lock } from "lucide-react";
 
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,6 +26,7 @@ interface EmployeeProfile {
 }
 
 const PUBLISHED_APP_URL = "https://profile-persona-pilot.lovable.app";
+const ACCESS_CODE = "datapath2026";
 
 const getAssessmentShareUrl = () => {
   const isPreviewHost = window.location.hostname.includes("id-preview--");
@@ -34,9 +34,54 @@ const getAssessmentShareUrl = () => {
   return `${baseUrl}/assessment`;
 };
 
+const AccessGate = ({ onUnlock }: { onUnlock: () => void }) => {
+  const [code, setCode] = useState("");
+  const [error, setError] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code === ACCESS_CODE) {
+      sessionStorage.setItem("dashboard_access", "granted");
+      onUnlock();
+    } else {
+      setError(true);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-sm animate-fade-in">
+        <div className="card-elevated p-8 space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+              <Lock className="w-6 h-6 text-primary" />
+            </div>
+            <h1 className="text-xl font-bold font-display text-foreground">Manager Dashboard</h1>
+            <p className="text-sm text-muted-foreground">Enter the access code to view results</p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                type="password"
+                value={code}
+                onChange={(e) => { setCode(e.target.value); setError(false); }}
+                placeholder="Access code"
+                className={error ? "border-destructive" : ""}
+                autoFocus
+              />
+              {error && <p className="text-sm text-destructive">Invalid access code</p>}
+            </div>
+            <Button type="submit" className="w-full">Unlock Dashboard</Button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("dashboard_access") === "granted");
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -44,8 +89,8 @@ const Dashboard = () => {
   const [view, setView] = useState<"list" | "profile" | "coach">("list");
 
   useEffect(() => {
-    loadProfiles();
-  }, []);
+    if (unlocked) loadProfiles();
+  }, [unlocked]);
 
   const loadProfiles = async () => {
     const { data, error } = await supabase
@@ -88,6 +133,8 @@ const Dashboard = () => {
     if (selected?.truthfulness) return selected.truthfulness;
     return { score: -1, pairCount: 0, inconsistentPairs: [], label: "N/A" };
   }, [selected]);
+
+  if (!unlocked) return <AccessGate onUnlock={() => setUnlocked(true)} />;
 
   if (view === "profile" && selected && selectedDiscProfile) {
     return (
@@ -152,8 +199,8 @@ const Dashboard = () => {
             <Button onClick={() => navigate("/assessment")} className="gap-1.5">
               <Plus className="w-4 h-4" /> New Assessment
             </Button>
-            <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground">
-              <LogOut className="w-4 h-4" /> Logout
+            <Button variant="ghost" size="sm" onClick={() => { sessionStorage.removeItem("dashboard_access"); setUnlocked(false); }} className="gap-1.5 text-muted-foreground">
+              <Lock className="w-4 h-4" /> Lock
             </Button>
           </div>
         </div>
