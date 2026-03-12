@@ -28,7 +28,6 @@ interface EmployeeProfile {
 const PUBLISHED_APP_URL = "https://profile-persona-pilot.lovable.app";
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("dashboard_access") === "granted");
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
