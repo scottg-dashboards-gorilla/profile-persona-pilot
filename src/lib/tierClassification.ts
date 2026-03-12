@@ -101,8 +101,8 @@ export function classifyTier(scores: DimensionScore[]): TierClassification {
 
 export const TIER_COLORS: Record<TierLevel, string> = {
   "tier-1": "#f59e0b",
-  "tier-2": "#6366f1",
-  "team-leader": "#10b981",
+  "tier-2": "#38bdf8",
+  "team-leader": "#00e676",
 };
 
 export const TIER_ICONS: Record<TierLevel, string> = {
