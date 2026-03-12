@@ -25,7 +25,7 @@ const ResultsScreen = ({ scores, discProfile, truthfulness, elapsedSeconds, empl
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold font-display text-foreground">
-            {employeeName ? `${employeeName}'s Assessment` : "Team Leader Assessment"}
+            {employeeName ? `${employeeName}'s Assessment` : "Datapath Technical Resource Assessment"}
           </h1>
           <Button variant="ghost" size="sm" onClick={onRestart} className="gap-1.5 text-muted-foreground">
             <RotateCcw className="w-3.5 h-3.5" />
