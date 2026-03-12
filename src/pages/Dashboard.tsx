@@ -20,6 +20,8 @@ interface EmployeeProfile {
   scores: DimensionScore[];
   elapsed_seconds: number;
   created_at: string;
+  disc_profile?: DISCProfile | null;
+  truthfulness?: TruthtfulnessResult | null;
 }
 
 const PUBLISHED_APP_URL = "https://profile-persona-pilot.lovable.app";
