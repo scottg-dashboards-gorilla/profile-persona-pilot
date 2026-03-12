@@ -76,7 +76,7 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
           {/* Dimensions List */}
           <div className="mb-6">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              8 Competency Dimensions
+              Assessment Dimensions
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {dimensions.map((dim) => (
