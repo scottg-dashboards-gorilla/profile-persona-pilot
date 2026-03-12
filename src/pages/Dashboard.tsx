@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import CoachingChat from "@/components/assessment/CoachingChat";
 import ResultsScreen from "@/components/assessment/ResultsScreen";
 import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2 } from "lucide-react";
-import DatapathLogo from "@/components/DatapathLogo";
+
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TeamAnalytics from "@/components/dashboard/TeamAnalytics";
