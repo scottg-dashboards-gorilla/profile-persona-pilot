@@ -19,14 +19,14 @@ interface ChatMessage {
 const COACHING_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/coaching-chat`;
 
 const SUGGESTION_CHIPS = [
+  "What tier should this person be placed in and why?",
   "How should I deliver tough feedback to this person?",
-  "What are the early warning signs they're stressed?",
-  "How much oversight should I give them?",
-  "How do I build trust with this person?",
-  "What will make them feel like they belong here?",
-  "How will they handle conflict with a teammate?",
-  "What kind of work environment helps them focus?",
-  "What would make them leave the company?",
+  "What coaching style works best for them based on their DISC profile?",
+  "What specific training or certifications should they pursue?",
+  "How do I help them grow from their current tier to the next level?",
+  "What are the early warning signs they're struggling?",
+  "How should I structure one-on-ones with this person?",
+  "What motivates this person and what would make them disengage?",
 ];
 
 const CoachingChat = ({ scores }: CoachingChatProps) => {
