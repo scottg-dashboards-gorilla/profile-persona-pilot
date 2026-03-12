@@ -88,6 +88,8 @@ const Dashboard = () => {
   const [selected, setSelected] = useState<EmployeeProfile | null>(null);
   const [view, setView] = useState<"list" | "profile" | "coach">("list");
 
+  if (!unlocked) return <AccessGate onUnlock={() => setUnlocked(true)} />;
+
   useEffect(() => {
     loadProfiles();
   }, []);
