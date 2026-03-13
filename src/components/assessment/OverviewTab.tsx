@@ -186,10 +186,11 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
               />
               <Radar
                 dataKey="score"
-                stroke="hsl(155, 100%, 32%)"
-                fill="hsl(155, 100%, 32%)"
-                fillOpacity={0.2}
-                strokeWidth={2}
+                stroke="hsl(var(--primary))"
+                fill="hsl(var(--primary))"
+                fillOpacity={0.35}
+                strokeWidth={2.5}
+                dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 0 }}
               />
             </RadarChart>
           </ResponsiveContainer>
