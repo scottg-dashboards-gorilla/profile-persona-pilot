@@ -180,17 +180,10 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="68%">
               <defs>
-                <radialGradient id="radarGradient" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
+                <radialGradient id={radarGradientId} cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.7} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
                 </radialGradient>
-                <filter id="radarGlow">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
               </defs>
               <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
               <PolarAngleAxis
@@ -204,14 +197,15 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
                 tickCount={5}
               />
               <Radar
+                name="Competency Score"
                 dataKey="score"
                 stroke="hsl(var(--primary))"
-                fill="url(#radarGradient)"
+                fill={`url(#${radarGradientId})`}
                 fillOpacity={1}
-                strokeWidth={2.5}
-                dot={{ r: 5, fill: "hsl(var(--primary))", stroke: "hsl(var(--background))", strokeWidth: 2 }}
-                filter="url(#radarGlow)"
-                animationDuration={1200}
+                strokeWidth={3}
+                dot={{ r: 4.5, fill: "hsl(var(--primary))", stroke: "hsl(var(--background))", strokeWidth: 2 }}
+                isAnimationActive
+                animationDuration={1000}
                 animationEasing="ease-out"
               />
             </RadarChart>
