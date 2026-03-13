@@ -42,9 +42,13 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
   const tierIcon = TIER_ICONS[tier.tier];
 
   // Only show competency + comptia dimensions on radar (not DISC or coaching)
+  const radarGradientId = useId().replace(/:/g, "");
   const radarDims = [...competencyDimensions, ...comptiaDimensions];
   const radarData = radarDims.map((dim) => {
-    const s = scores.find(sc => sc.dimensionId === dim.id);
+    const scoreEntry = scores.find((sc) => sc.dimensionId === dim.id);
+    const normalized = Number(scoreEntry?.normalizedScore ?? 0);
+    const safeScore = Number.isFinite(normalized) ? normalized : 0;
+
     const shortName = dim.name
       .replace("Microsoft ", "")
       .replace(" & Cloud Infrastructure", "")
@@ -60,9 +64,10 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
       .replace("Advanced Cybersecurity ", "")
       .replace(/\(.*\)/, "")
       .trim();
+
     return {
-      dimension: shortName,
-      score: s?.normalizedScore ?? 50,
+      dimension: shortName || dim.name.split(" ")[0],
+      score: safeScore,
       fullMark: 100,
     };
   });
