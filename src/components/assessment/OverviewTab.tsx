@@ -166,31 +166,47 @@ const OverviewTab = ({ scores, discProfile, truthfulness, elapsedSeconds }: Over
       </div>
 
       {/* Radar Chart */}
-      <div className="card-elevated p-4 sm:p-6">
+      <div className="card-elevated p-4 sm:p-6 animate-fade-in">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 text-center">
           Competency Map
         </h3>
-        <div className="w-full" style={{ height: 360 }}>
+        <div className="w-full" style={{ height: 380 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="65%">
-              <PolarGrid stroke="hsl(220, 15%, 90%)" />
+            <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="68%">
+              <defs>
+                <radialGradient id="radarGradient" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
+                </radialGradient>
+                <filter id="radarGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
               <PolarAngleAxis
                 dataKey="dimension"
-                tick={{ fontSize: 9, fill: "hsl(220, 10%, 42%)" }}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", fontWeight: 500 }}
               />
               <PolarRadiusAxis
                 angle={90}
                 domain={[0, 100]}
-                tick={{ fontSize: 10, fill: "hsl(220, 10%, 42%)" }}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 tickCount={5}
               />
               <Radar
                 dataKey="score"
                 stroke="hsl(var(--primary))"
-                fill="hsl(var(--primary))"
-                fillOpacity={0.35}
+                fill="url(#radarGradient)"
+                fillOpacity={1}
                 strokeWidth={2.5}
-                dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 0 }}
+                dot={{ r: 5, fill: "hsl(var(--primary))", stroke: "hsl(var(--background))", strokeWidth: 2 }}
+                filter="url(#radarGlow)"
+                animationDuration={1200}
+                animationEasing="ease-out"
               />
             </RadarChart>
           </ResponsiveContainer>
