@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { DimensionScore, DISCProfile, TruthtfulnessResult } from "@/types/assessment";
 import { dimensions, competencyDimensions, comptiaDimensions } from "@/data/dimensions";
 import { getArchetype } from "@/lib/archetypes";
