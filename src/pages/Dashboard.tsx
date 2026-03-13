@@ -140,10 +140,16 @@ const Dashboard = () => {
               variant="outline"
               size="sm"
               className="gap-1.5"
-              onClick={() => {
+              onClick={async () => {
                 const url = getAssessmentShareUrl();
-                navigator.clipboard.writeText(url);
-                toast({ title: "Link copied!", description: "Share this link for someone to take the assessment." });
+                try {
+                  await navigator.clipboard.writeText(url);
+                  toast({ title: "Link copied!", description: "Share this public assessment link with candidates." });
+                } catch (error) {
+                  console.error("Clipboard copy failed:", error);
+                  window.prompt("Copy this public assessment link:", url);
+                  toast({ title: "Copy manually", description: "Clipboard was blocked, so we opened a manual copy prompt." });
+                }
               }}
             >
               <Link2 className="w-4 h-4" /> Share Link
