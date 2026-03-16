@@ -57,8 +57,8 @@ const Index = () => {
   const handleRestart = useCallback(() => {
     reset();
     setEmployeeName("");
-    navigate("/");
-  }, [reset, navigate]);
+    setScreen("intro");
+  }, [reset]);
 
   if (screen === "intro") {
     return <IntroScreen onBegin={handleBegin} />;
