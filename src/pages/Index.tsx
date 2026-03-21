@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAssessment } from "@/hooks/useAssessment";
+import { useAssessment, getSavedProgress, clearSavedProgress } from "@/hooks/useAssessment";
 import { supabase } from "@/integrations/supabase/client";
 import IntroScreen from "@/components/assessment/IntroScreen";
 import QuestionScreen from "@/components/assessment/QuestionScreen";
@@ -17,22 +17,34 @@ const Index = () => {
     scores,
     discProfile,
     truthfulness,
+    employeeName,
+    startTime,
+    setEmployeeName,
+    setStartTime,
     setAnswer,
     goToQuestion,
     completeAssessment,
     reset,
+    restoreProgress,
   } = useAssessment();
 
   const [screen, setScreen] = useState<Screen>("intro");
-  const [startTime, setStartTime] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [employeeName, setEmployeeName] = useState("");
 
   const handleBegin = useCallback((name: string) => {
+    clearSavedProgress();
     setEmployeeName(name);
     setStartTime(Date.now());
     setScreen("questions");
-  }, []);
+  }, [setEmployeeName, setStartTime]);
+
+  const handleResume = useCallback(() => {
+    const saved = getSavedProgress();
+    if (saved) {
+      restoreProgress(saved);
+      setScreen("questions");
+    }
+  }, [restoreProgress]);
 
   const handleComplete = useCallback(async () => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -40,7 +52,6 @@ const Index = () => {
     completeAssessment();
     setScreen("results");
 
-    // Save to database
     const { error } = await supabase.from("employee_profiles").insert({
       employee_name: employeeName,
       scores: scores as unknown as any,
@@ -52,16 +63,15 @@ const Index = () => {
       console.error("Failed to save profile:", error);
       toast({ title: "Warning", description: "Profile completed but failed to save. Results are shown below.", variant: "destructive" });
     }
-  }, [startTime, completeAssessment, employeeName, scores]);
+  }, [startTime, completeAssessment, employeeName, scores, discProfile, truthfulness]);
 
   const handleRestart = useCallback(() => {
     reset();
-    setEmployeeName("");
     setScreen("intro");
   }, [reset]);
 
   if (screen === "intro") {
-    return <IntroScreen onBegin={handleBegin} />;
+    return <IntroScreen onBegin={handleBegin} onResume={handleResume} />;
   }
 
   if (screen === "questions") {
