@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle, Zap, MessageSquare } from "lucide-react";
+import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle, Zap, MessageSquare, RotateCcw, PlayCircle } from "lucide-react";
 import { competencyDimensions, comptiaDimensions, discDimensions } from "@/data/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { getSavedProgress } from "@/hooks/useAssessment";
 
 interface IntroScreenProps {
   onBegin: (name: string) => void;
+  onResume: () => void;
 }
 
 const competencyAreas = [
@@ -32,8 +33,12 @@ const competencyAreas = [
   },
 ];
 
-const IntroScreen = ({ onBegin }: IntroScreenProps) => {
+const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
   const [name, setName] = useState("");
+  const savedProgress = getSavedProgress();
+
+  const answeredCount = savedProgress ? Object.keys(savedProgress.answers).length : 0;
+  const savedName = savedProgress?.employeeName ?? "";
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-8">
@@ -47,6 +52,50 @@ const IntroScreen = ({ onBegin }: IntroScreenProps) => {
             Evaluate this resource's technical depth, leadership capability, behavioral style, and determine their ideal tier placement at Datapath.
           </p>
         </div>
+
+        {/* Saved Progress Banner */}
+        {savedProgress && (
+          <div className="mb-6 rounded-xl border-2 border-primary/30 bg-primary/5 p-5 animate-fade-in">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
+                <PlayCircle className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-foreground mb-1">
+                  Welcome back, {savedName}!
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  You have saved progress — <span className="font-semibold text-primary">{answeredCount} of 93 questions</span> answered. Pick up where you left off or start a new assessment.
+                </p>
+                {/* Progress bar */}
+                <div className="h-2 w-full rounded-full bg-muted mb-4 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-500"
+                    style={{ width: `${(answeredCount / 93) * 100}%` }}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button onClick={onResume} className="gap-2">
+                    <PlayCircle className="w-4 h-4" />
+                    Resume Assessment
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // Clear saved and let them start fresh via the form below
+                      localStorage.removeItem("datapath-assessment-progress");
+                      window.location.reload();
+                    }}
+                    className="gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Start Fresh
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Card */}
         <div className="card-elevated p-6 sm:p-8">
