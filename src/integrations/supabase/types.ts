@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_attempts: {
+        Row: {
+          created_at: string
+          cycle_id: string | null
+          disc_primary: string | null
+          disc_scores: Json
+          employee_uuid: string
+          id: string
+          raw_answers: Json | null
+          review_id: string | null
+          submitted_at: string | null
+          taken_at: string
+          technical_scores: Json
+          tier: string | null
+          truthfulness_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_id?: string | null
+          disc_primary?: string | null
+          disc_scores?: Json
+          employee_uuid: string
+          id?: string
+          raw_answers?: Json | null
+          review_id?: string | null
+          submitted_at?: string | null
+          taken_at?: string
+          technical_scores?: Json
+          tier?: string | null
+          truthfulness_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cycle_id?: string | null
+          disc_primary?: string | null
+          disc_scores?: Json
+          employee_uuid?: string
+          id?: string
+          raw_answers?: Json | null
+          review_id?: string | null
+          submitted_at?: string | null
+          taken_at?: string
+          technical_scores?: Json
+          tier?: string | null
+          truthfulness_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_attempts_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "review_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_attempts_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_profiles: {
         Row: {
           created_at: string
@@ -250,6 +316,7 @@ export type Database = {
       performance_reviews: {
         Row: {
           aggregation_method: string
+          assessment_attempt_id: string | null
           comp_adjustment_amount: number | null
           comp_adjustment_percent: number | null
           comp_effective_date: string | null
@@ -282,6 +349,7 @@ export type Database = {
         }
         Insert: {
           aggregation_method?: string
+          assessment_attempt_id?: string | null
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
           comp_effective_date?: string | null
@@ -314,6 +382,7 @@ export type Database = {
         }
         Update: {
           aggregation_method?: string
+          assessment_attempt_id?: string | null
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
           comp_effective_date?: string | null
@@ -345,6 +414,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "performance_reviews_assessment_attempt_id_fkey"
+            columns: ["assessment_attempt_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_attempts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "performance_reviews_cycle_id_fkey"
             columns: ["cycle_id"]
@@ -602,11 +678,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_attempt_manager: { Args: { _attempt_id: string }; Returns: boolean }
       is_review_contributor: {
         Args: { _contributor_id: string }
         Returns: boolean
       }
       is_review_manager: { Args: { _review_id: string }; Returns: boolean }
+      is_self_employee: { Args: { _employee_uuid: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "hr" | "manager"
