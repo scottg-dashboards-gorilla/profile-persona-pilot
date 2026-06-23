@@ -484,3 +484,111 @@ function ContributorFeedbackDialog({
     </Dialog>
   );
 }
+
+function ContributorHistoryDialog({
+  contributor,
+  onOpenChange,
+}: {
+  contributor: ReviewContributor | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [versions, setVersions] = useState<ContributorVersion[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!contributor) {
+      setVersions([]);
+      return;
+    }
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("review_contributor_versions")
+        .select("*")
+        .eq("contributor_id", contributor.id)
+        .order("version", { ascending: false });
+      setVersions((data ?? []) as ContributorVersion[]);
+      setLoading(false);
+    })();
+  }, [contributor]);
+
+  if (!contributor) return null;
+
+  return (
+    <Dialog open={!!contributor} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Submission history · {contributor.contributor_name}</DialogTitle>
+          <DialogDescription>
+            {versions.length} submission{versions.length === 1 ? "" : "s"}
+            {versions.length > 1 && " · resubmissions shown below the current version"}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="max-h-[60vh] overflow-y-auto rounded-md border divide-y">
+          {loading && (
+            <div className="p-4 text-sm text-center text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading…
+            </div>
+          )}
+          {!loading && versions.length === 0 && (
+            <div className="p-4 text-sm text-center text-muted-foreground">No submissions yet.</div>
+          )}
+          {!loading &&
+            versions.map((v) => {
+              const isCurrent = contributor.current_version_id === v.id;
+              return (
+                <div key={v.id} className="p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-semibold">v{v.version}</span>
+                    {isCurrent ? (
+                      <StatusPill tone="completed" label="Current" />
+                    ) : (
+                      <StatusPill tone="cancelled" label="Superseded" />
+                    )}
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      Submitted {format(parseISO(v.submitted_at), "MMM d, yyyy · h:mm a")}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-xs">
+                    <RatingChip label="Overall" value={v.rating_overall} />
+                    <RatingChip label="Collaboration" value={v.rating_collaboration} />
+                    <RatingChip label="Impact" value={v.rating_impact} />
+                  </div>
+                  {(v.strengths || v.improvements) && (
+                    <div className="grid md:grid-cols-2 gap-2 text-xs">
+                      {v.strengths && (
+                        <div>
+                          <div className="font-medium text-muted-foreground">Strengths</div>
+                          <div className="whitespace-pre-wrap">{v.strengths}</div>
+                        </div>
+                      )}
+                      {v.improvements && (
+                        <div>
+                          <div className="font-medium text-muted-foreground">Improvements</div>
+                          <div className="whitespace-pre-wrap">{v.improvements}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RatingChip({ label, value }: { label: string; value: number | null }) {
+  return (
+    <div className="rounded border bg-muted/40 px-2 py-1">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-sm font-semibold">{value == null ? "—" : value.toFixed(1)}</div>
+    </div>
+  );
+}
