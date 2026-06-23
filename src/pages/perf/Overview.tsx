@@ -331,7 +331,7 @@ export default function Overview() {
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <Link to={`/reviews?focus=${r.id}`} aria-label={`Open review for ${r.employee_name}`}>
+                        <Link to={`/people/${r.employee_uuid}`} aria-label={`Open ${r.employee_name}`}>
                           <ArrowRight className="h-4 w-4" />
                         </Link>
                       </Button>
