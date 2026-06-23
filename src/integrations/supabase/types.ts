@@ -246,6 +246,7 @@ export type Database = {
       }
       performance_reviews: {
         Row: {
+          aggregation_method: string
           comp_adjustment_amount: number | null
           comp_adjustment_percent: number | null
           comp_effective_date: string | null
@@ -269,6 +270,7 @@ export type Database = {
           review_type: string
           reviewer_uuid: string | null
           scheduled_date: string
+          selected_contributor_versions: Json | null
           self_assessment_response: string | null
           self_assessment_sent_at: string | null
           status: string
@@ -276,6 +278,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          aggregation_method?: string
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
           comp_effective_date?: string | null
@@ -299,6 +302,7 @@ export type Database = {
           review_type?: string
           reviewer_uuid?: string | null
           scheduled_date: string
+          selected_contributor_versions?: Json | null
           self_assessment_response?: string | null
           self_assessment_sent_at?: string | null
           status?: string
@@ -306,6 +310,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          aggregation_method?: string
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
           comp_effective_date?: string | null
@@ -329,6 +334,7 @@ export type Database = {
           review_type?: string
           reviewer_uuid?: string | null
           scheduled_date?: string
+          selected_contributor_versions?: Json | null
           self_assessment_response?: string | null
           self_assessment_sent_at?: string | null
           status?: string
@@ -345,14 +351,63 @@ export type Database = {
           },
         ]
       }
+      review_contributor_versions: {
+        Row: {
+          contributor_id: string
+          created_at: string
+          id: string
+          improvements: string | null
+          rating_collaboration: number | null
+          rating_impact: number | null
+          rating_overall: number | null
+          strengths: string | null
+          submitted_at: string
+          version: number
+        }
+        Insert: {
+          contributor_id: string
+          created_at?: string
+          id?: string
+          improvements?: string | null
+          rating_collaboration?: number | null
+          rating_impact?: number | null
+          rating_overall?: number | null
+          strengths?: string | null
+          submitted_at?: string
+          version: number
+        }
+        Update: {
+          contributor_id?: string
+          created_at?: string
+          id?: string
+          improvements?: string | null
+          rating_collaboration?: number | null
+          rating_impact?: number | null
+          rating_overall?: number | null
+          strengths?: string | null
+          submitted_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_contributor_versions_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "review_contributors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_contributors: {
         Row: {
+          allow_resubmission: boolean
           anonymous: boolean
           contributor_department: string | null
           contributor_name: string
           contributor_title: string | null
           contributor_uuid: string
           created_at: string
+          current_version_id: string | null
           id: string
           improvements: string | null
           invited_at: string
@@ -362,16 +417,20 @@ export type Database = {
           review_id: string
           status: string
           strengths: string | null
+          submission_count: number
           submitted_at: string | null
           updated_at: string
+          weight: number
         }
         Insert: {
+          allow_resubmission?: boolean
           anonymous?: boolean
           contributor_department?: string | null
           contributor_name: string
           contributor_title?: string | null
           contributor_uuid: string
           created_at?: string
+          current_version_id?: string | null
           id?: string
           improvements?: string | null
           invited_at?: string
@@ -381,16 +440,20 @@ export type Database = {
           review_id: string
           status?: string
           strengths?: string | null
+          submission_count?: number
           submitted_at?: string | null
           updated_at?: string
+          weight?: number
         }
         Update: {
+          allow_resubmission?: boolean
           anonymous?: boolean
           contributor_department?: string | null
           contributor_name?: string
           contributor_title?: string | null
           contributor_uuid?: string
           created_at?: string
+          current_version_id?: string | null
           id?: string
           improvements?: string | null
           invited_at?: string
@@ -400,10 +463,19 @@ export type Database = {
           review_id?: string
           status?: string
           strengths?: string | null
+          submission_count?: number
           submitted_at?: string | null
           updated_at?: string
+          weight?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "review_contributors_current_version_id_fkey"
+            columns: ["current_version_id"]
+            isOneToOne: false
+            referencedRelation: "review_contributor_versions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "review_contributors_review_id_fkey"
             columns: ["review_id"]
