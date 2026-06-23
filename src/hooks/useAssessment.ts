@@ -3,6 +3,7 @@ import { AssessmentState, LikertValue, DimensionScore, DISCProfile, Truthtfulnes
 import { Question } from "@/types/assessment";
 import { generateQuestionOrder } from "@/lib/questionOrder";
 import { calculateScores, calculateDISCProfile, calculateTruthfulness } from "@/lib/scoring";
+import { RoleId, DEFAULT_ROLE, getDimensionsForRole } from "@/data/roles";
 
 const STORAGE_KEY = "datapath-assessment-progress";
 
@@ -12,6 +13,7 @@ interface SavedProgress {
   employeeName: string;
   startTime: number;
   savedAt: number;
+  role?: RoleId;
 }
 
 const initialState: AssessmentState = {
@@ -44,9 +46,17 @@ export function clearSavedProgress() {
 
 export function useAssessment() {
   const [state, setState] = useState<AssessmentState>(initialState);
-  const [orderedQuestions] = useState<Question[]>(() => generateQuestionOrder());
+  const [role, setRoleState] = useState<RoleId>(DEFAULT_ROLE);
+  const [orderedQuestions, setOrderedQuestions] = useState<Question[]>(() =>
+    generateQuestionOrder(getDimensionsForRole(DEFAULT_ROLE))
+  );
   const [employeeName, setEmployeeName] = useState("");
   const [startTime, setStartTime] = useState(0);
+
+  const setRole = useCallback((nextRole: RoleId) => {
+    setRoleState(nextRole);
+    setOrderedQuestions(generateQuestionOrder(getDimensionsForRole(nextRole)));
+  }, []);
 
   useEffect(() => {
     if (Object.keys(state.answers).length > 0 && !state.isComplete && employeeName) {
@@ -56,12 +66,16 @@ export function useAssessment() {
         employeeName,
         startTime,
         savedAt: Date.now(),
+        role,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
     }
-  }, [state.answers, state.currentQuestionIndex, state.isComplete, employeeName, startTime]);
+  }, [state.answers, state.currentQuestionIndex, state.isComplete, employeeName, startTime, role]);
 
   const restoreProgress = useCallback((saved: SavedProgress) => {
+    const restoredRole = (saved.role as RoleId) ?? DEFAULT_ROLE;
+    setRoleState(restoredRole);
+    setOrderedQuestions(generateQuestionOrder(getDimensionsForRole(restoredRole)));
     setState({
       answers: saved.answers,
       currentQuestionIndex: saved.currentQuestionIndex,
@@ -97,6 +111,8 @@ export function useAssessment() {
     setState(initialState);
     setEmployeeName("");
     setStartTime(0);
+    setRoleState(DEFAULT_ROLE);
+    setOrderedQuestions(generateQuestionOrder(getDimensionsForRole(DEFAULT_ROLE)));
     clearSavedProgress();
   }, []);
 
@@ -130,6 +146,8 @@ export function useAssessment() {
     truthfulness,
     employeeName,
     startTime,
+    role,
+    setRole,
     setEmployeeName,
     setStartTime,
     setAnswer,

@@ -14,6 +14,9 @@ import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TeamAnalytics from "@/components/dashboard/TeamAnalytics";
 import CompareView from "@/components/dashboard/CompareView";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ROLES, getRole } from "@/data/roles";
+import { Badge } from "@/components/ui/badge";
 
 interface EmployeeProfile {
   id: string;
@@ -23,6 +26,7 @@ interface EmployeeProfile {
   created_at: string;
   disc_profile?: DISCProfile | null;
   truthfulness?: TruthtfulnessResult | null;
+  role?: string | null;
 }
 
 const PUBLISHED_APP_URL = "https://profile-persona-pilot.lovable.app";
@@ -38,6 +42,7 @@ const Dashboard = () => {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<EmployeeProfile | null>(null);
   const [view, setView] = useState<"list" | "profile" | "coach">("list");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
 
   useEffect(() => {
     loadProfiles();
@@ -70,9 +75,11 @@ const Dashboard = () => {
     }
   };
 
-  const filtered = profiles.filter((p) =>
-    p.employee_name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = profiles.filter((p) => {
+    const matchesName = p.employee_name.toLowerCase().includes(search.toLowerCase());
+    const matchesRole = roleFilter === "all" || (p.role ?? "technical") === roleFilter;
+    return matchesName && matchesRole;
+  });
 
   const selectedDiscProfile = useMemo<DISCProfile | null>(() => {
     if (!selected) return null;
@@ -172,14 +179,27 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="profiles">
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search candidates..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
+            <div className="mb-4 flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search candidates..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="sm:w-56">
+                  <SelectValue placeholder="All roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All roles</SelectItem>
+                  {ROLES.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {loading ? (
@@ -195,6 +215,7 @@ const Dashboard = () => {
               <div className="space-y-2">
                 {filtered.map((profile) => {
                   const archetype = getArchetype(profile.scores);
+                  const roleLabel = getRole(profile.role ?? "technical").label;
                   return (
                     <div
                       key={profile.id}
@@ -203,7 +224,10 @@ const Dashboard = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-foreground truncate">{profile.employee_name}</h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-foreground truncate">{profile.employee_name}</h3>
+                            <Badge variant="secondary" className="text-xs">{roleLabel}</Badge>
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {archetype.name} · {new Date(profile.created_at).toLocaleDateString()}
                           </p>

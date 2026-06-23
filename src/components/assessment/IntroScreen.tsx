@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle, Zap, MessageSquare, RotateCcw, PlayCircle } from "lucide-react";
 import { competencyDimensions, comptiaDimensions, discDimensions } from "@/data/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getSavedProgress } from "@/hooks/useAssessment";
+import { ROLES, RoleId, DEFAULT_ROLE, getDimensionsForRole } from "@/data/roles";
+import { questions as allQuestions } from "@/data/questions";
 
 interface IntroScreenProps {
-  onBegin: (name: string) => void;
+  onBegin: (name: string, role: RoleId) => void;
   onResume: () => void;
 }
 
@@ -35,10 +38,18 @@ const competencyAreas = [
 
 const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
   const [name, setName] = useState("");
+  const [role, setRole] = useState<RoleId>(DEFAULT_ROLE);
   const savedProgress = getSavedProgress();
 
   const answeredCount = savedProgress ? Object.keys(savedProgress.answers).length : 0;
   const savedName = savedProgress?.employeeName ?? "";
+
+  const questionCount = useMemo(() => {
+    const allowed = new Set(getDimensionsForRole(role));
+    return allQuestions.filter((q) => allowed.has(q.dimensionId)).length;
+  }, [role]);
+
+  const estMinutes = Math.max(3, Math.round(questionCount * 0.2));
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-8">
@@ -65,15 +76,8 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
                   Welcome back, {savedName}!
                 </h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  You have saved progress — <span className="font-semibold text-primary">{answeredCount} of 93 questions</span> answered. Pick up where you left off or start a new assessment.
+                  You have saved progress — <span className="font-semibold text-primary">{answeredCount} question{answeredCount === 1 ? "" : "s"}</span> answered. Pick up where you left off or start a new assessment.
                 </p>
-                {/* Progress bar */}
-                <div className="h-2 w-full rounded-full bg-muted mb-4 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all duration-500"
-                    style={{ width: `${(answeredCount / 93) * 100}%` }}
-                  />
-                </div>
                 <div className="flex items-center gap-3">
                   <Button onClick={onResume} className="gap-2">
                     <PlayCircle className="w-4 h-4" />
@@ -156,14 +160,36 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
             />
           </div>
 
+          {/* Role selector */}
+          <div className="mb-6">
+            <label htmlFor="employee-role" className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+              Role
+            </label>
+            <Select value={role} onValueChange={(v) => setRole(v as RoleId)}>
+              <SelectTrigger id="employee-role" className="h-11">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                {ROLES.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {ROLES.find((r) => r.id === role)?.description}
+            </p>
+          </div>
+
           {/* Meta Info */}
           <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-6 py-3 border-t border-b border-border">
             <span className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
-              Estimated time: 20–30 minutes
+              About {estMinutes} minute{estMinutes === 1 ? "" : "s"}
             </span>
             <span className="text-border">|</span>
-            <span>93 questions</span>
+            <span>{questionCount} questions</span>
           </div>
 
           {/* Info note */}
@@ -173,7 +199,7 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
 
           {/* CTA */}
           <Button
-            onClick={() => onBegin(name.trim())}
+            onClick={() => onBegin(name.trim(), role)}
             disabled={!name.trim()}
             className="w-full h-12 text-base font-semibold gap-2"
             size="lg"

@@ -1,5 +1,5 @@
 import { Question } from "@/types/assessment";
-import { questions } from "@/data/questions";
+import { questions as allQuestions } from "@/data/questions";
 import { dimensions } from "@/data/dimensions";
 
 function shuffle<T>(arr: T[]): T[] {
@@ -16,12 +16,21 @@ function shuffle<T>(arr: T[]): T[] {
  * For each round, pick one question per dimension (order shuffled).
  * Consistency-pair questions are spread throughout but separated from their originals.
  */
-export function generateQuestionOrder(): Question[] {
-  const dimIds = dimensions.map((d) => d.id);
+export function generateQuestionOrder(allowedDimensionIds?: string[]): Question[] {
+  const allowed = allowedDimensionIds ? new Set(allowedDimensionIds) : null;
+  const pool = allowed
+    ? allQuestions.filter((q) => allowed.has(q.dimensionId))
+    : allQuestions;
 
-  // Separate regular questions from truthfulness pairs
-  const regularQuestions = questions.filter(q => !q.consistencyPairId);
-  const truthfulnessQuestions = questions.filter(q => q.consistencyPairId);
+  const poolIds = new Set(pool.map((q) => q.id));
+  const dimIds = dimensions.map((d) => d.id).filter((id) => !allowed || allowed.has(id));
+
+  // Separate regular questions from truthfulness pairs.
+  // Only keep a truthfulness pair if both halves survived the filter.
+  const regularQuestions = pool.filter((q) => !q.consistencyPairId);
+  const truthfulnessQuestions = pool.filter(
+    (q) => q.consistencyPairId && poolIds.has(q.consistencyPairId)
+  );
 
   // Group regular questions by dimension
   const questionsByDim = new Map<string, Question[]>();

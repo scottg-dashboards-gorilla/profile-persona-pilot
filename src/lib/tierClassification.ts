@@ -23,6 +23,19 @@ function get(scores: DimensionScore[], dimId: string): number {
  * Team Leader: Strong technical + leadership, can mentor others, manages client relationships
  */
 export function classifyTier(scores: DimensionScore[]): TierClassification {
+  // If no technical dimensions were answered (non-technical role), return a
+  // behavioral-only classification instead of forcing a technical tier.
+  const answeredTechnical = scores.some((s) => TECHNICAL_DIMS.includes(s.dimensionId));
+  if (!answeredTechnical) {
+    const leadershipAvg = avg(scores, LEADERSHIP_DIMS);
+    return {
+      tier: "tier-2",
+      label: "Behavioral Profile (non-technical role)",
+      confidence: 0,
+      reasoning: `This assessment was taken for a non-technical role, so no tier placement is calculated. Leadership & soft-skill average: ${Math.round(leadershipAvg)}%. Review the DISC and behavioral sections for full insight.`,
+    };
+  }
+
   const overallAvg = avg(scores, [...COMPETENCY_DIMS, ...COMPTIA_DIMS]);
   const leadershipAvg = avg(scores, LEADERSHIP_DIMS);
   const technicalAvg = avg(scores, TECHNICAL_DIMS);
