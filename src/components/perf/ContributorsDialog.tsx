@@ -364,7 +364,8 @@ function ContributorFeedbackDialog({
   }, [contributor]);
 
   if (!contributor) return null;
-  const readOnly = contributor.status === "submitted";
+  const locked = contributor.status === "submitted" && !contributor.allow_resubmission;
+  const readOnly = locked;
 
   async function save() {
     if (!contributor) return;
@@ -372,7 +373,36 @@ function ContributorFeedbackDialog({
       toast({ title: "Overall rating required", variant: "destructive" });
       return;
     }
+    if (contributor.status === "submitted" && !contributor.allow_resubmission) {
+      toast({
+        title: "Resubmission locked",
+        description: "HR needs to enable resubmission for this reviewer first.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSaving(true);
+    const nextVersion = (contributor.submission_count ?? 0) + 1;
+    const submittedAt = new Date().toISOString();
+    const { data: version, error: vErr } = await supabase
+      .from("review_contributor_versions")
+      .insert({
+        contributor_id: contributor.id,
+        version: nextVersion,
+        submitted_at: submittedAt,
+        rating_overall: overall,
+        rating_collaboration: collab,
+        rating_impact: impact,
+        strengths: strengths || null,
+        improvements: improvements || null,
+      })
+      .select()
+      .single();
+    if (vErr || !version) {
+      setSaving(false);
+      toast({ title: "Couldn't save version", description: vErr?.message, variant: "destructive" });
+      return;
+    }
     const { error } = await supabase
       .from("review_contributors")
       .update({
@@ -382,7 +412,10 @@ function ContributorFeedbackDialog({
         strengths: strengths || null,
         improvements: improvements || null,
         status: "submitted",
-        submitted_at: new Date().toISOString(),
+        submitted_at: submittedAt,
+        current_version_id: version.id,
+        submission_count: nextVersion,
+        allow_resubmission: false,
       })
       .eq("id", contributor.id);
     setSaving(false);
@@ -390,7 +423,9 @@ function ContributorFeedbackDialog({
       toast({ title: "Couldn't submit", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Feedback submitted" });
+    toast({
+      title: nextVersion === 1 ? "Feedback submitted" : `Feedback resubmitted (v${nextVersion})`,
+    });
     onSaved();
   }
 
@@ -400,9 +435,15 @@ function ContributorFeedbackDialog({
         <DialogHeader>
           <DialogTitle>
             {readOnly ? "Feedback from" : "Feedback as"} {contributor.contributor_name}
+            {contributor.submission_count > 0 && (
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                v{contributor.submission_count}
+              </span>
+            )}
           </DialogTitle>
           <DialogDescription>
             Anonymous to the employee. Visible to the manager and HR. Ratings are 1–5.
+            {locked && " Resubmission locked — HR can re-open this in the contributors panel."}
           </DialogDescription>
         </DialogHeader>
 
