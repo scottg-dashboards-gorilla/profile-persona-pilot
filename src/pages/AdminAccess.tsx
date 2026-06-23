@@ -142,6 +142,7 @@ export default function AdminAccess() {
       return;
     }
     const payload = {
+      uuid: crypto.randomUUID(),
       first_name: newEmp.first_name.trim(),
       last_name: newEmp.last_name.trim(),
       email: newEmp.email.trim(),
