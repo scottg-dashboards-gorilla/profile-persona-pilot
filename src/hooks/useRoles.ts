@@ -2,7 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLES as DEFAULT_ROLES, RoleConfig, RoleId, DEFAULT_ROLE } from "@/data/roles";
 
-export interface StoredRoleConfig extends RoleConfig {
+export interface StoredRoleConfig extends Omit<RoleConfig, "id"> {
+  /** Free-form slug — admin can create new IDs beyond the built-in RoleId union. */
+  id: string;
   sort_order: number;
   is_active: boolean;
 }
