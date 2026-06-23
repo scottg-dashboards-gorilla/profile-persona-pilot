@@ -65,6 +65,22 @@ export default function Overview() {
   const [tab, setTab] = useState<ContextTab>("org");
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   const [empNames, setEmpNames] = useState<Record<string, string>>({});
+  const [dbReviews, setDbReviews] = useState<
+    {
+      id: string;
+      employee_uuid: string;
+      employee_name: string;
+      department: string | null;
+      scheduled_date: string;
+      completed_date: string | null;
+      status: string;
+      overall_rating: string | null;
+      comp_adjustment_amount: number | null;
+      comp_adjustment_percent: number | null;
+      promotion: boolean | null;
+    }[]
+  >([]);
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -85,6 +101,40 @@ export default function Overview() {
         });
         setEmpNames(m);
       }
+    })();
+  }, []);
+
+  // Load real performance_reviews (joined with employees for name/department)
+  useEffect(() => {
+    (async () => {
+      const { data: pr } = await supabase
+        .from("performance_reviews")
+        .select(
+          "id,employee_uuid,scheduled_date,completed_date,status,overall_rating,comp_adjustment_amount,comp_adjustment_percent,promotion",
+        )
+        .order("scheduled_date", { ascending: true });
+      const ids = Array.from(new Set((pr ?? []).map((r: any) => r.employee_uuid)));
+      const empMap: Record<string, { name: string; department: string | null }> = {};
+      if (ids.length) {
+        const { data: emps } = await supabase
+          .from("employees")
+          .select("uuid,first_name,last_name,department")
+          .in("uuid", ids);
+        (emps ?? []).forEach((e: any) => {
+          empMap[e.uuid] = {
+            name: `${e.first_name ?? ""} ${e.last_name ?? ""}`.trim() || e.uuid,
+            department: e.department ?? null,
+          };
+        });
+      }
+      setDbReviews(
+        (pr ?? []).map((r: any) => ({
+          ...r,
+          employee_name: empMap[r.employee_uuid]?.name ?? r.employee_uuid,
+          department: empMap[r.employee_uuid]?.department ?? null,
+        })),
+      );
+      setReviewsLoaded(true);
     })();
   }, []);
 
@@ -124,40 +174,47 @@ export default function Overview() {
     return { improvers, declining, avgTierShift, sampleSize: withPrev };
   }, [attempts, empNames]);
 
+  // Prefer real DB reviews; fall back to mock data only if the DB has none yet
+  const reviewSource = useMemo(
+    () => (dbReviews.length > 0 ? dbReviews : (mockReviews as any[])),
+    [dbReviews],
+  );
+  const usingMock = dbReviews.length === 0;
+
   const stats = useMemo(() => {
     const now = new Date();
-    const overdue = mockReviews.filter(
+    const overdue = reviewSource.filter(
       (r) => r.status !== "completed" && r.status !== "cancelled" && differenceInDays(parseISO(r.scheduled_date), now) < 0,
     ).length;
-    const dueIn30 = mockReviews.filter((r) => {
+    const dueIn30 = reviewSource.filter((r) => {
       if (r.status === "completed" || r.status === "cancelled") return false;
       const d = differenceInDays(parseISO(r.scheduled_date), now);
       return d >= 0 && d <= 30;
     }).length;
-    const inProgress = mockReviews.filter((r) => r.status === "in_progress").length;
+    const inProgress = reviewSource.filter((r) => r.status === "in_progress").length;
     const quarterAgo = subMonths(now, 3);
-    const completedQ = mockReviews.filter(
+    const completedQ = reviewSource.filter(
       (r) => r.status === "completed" && r.completed_date && isAfter(parseISO(r.completed_date), quarterAgo),
     ).length;
     return { overdue, dueIn30, inProgress, completedQ };
-  }, []);
+  }, [reviewSource]);
 
   const upcoming = useMemo(
     () =>
-      mockReviews
+      reviewSource
         .filter((r) => r.status !== "completed" && r.status !== "cancelled")
         .sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))
         .slice(0, 5),
-    [],
+    [reviewSource],
   );
 
   const recent = useMemo(
     () =>
-      mockReviews
+      reviewSource
         .filter((r) => r.status === "completed" && r.completed_date)
         .sort((a, b) => (b.completed_date ?? "").localeCompare(a.completed_date ?? ""))
         .slice(0, 5),
-    [],
+    [reviewSource],
   );
 
   const cycleProgress = Math.round((mockActiveCycle.completed / mockActiveCycle.total) * 100);
@@ -307,7 +364,14 @@ export default function Overview() {
       <div className="grid lg:grid-cols-2 gap-5">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Up next</CardTitle>
+            <CardTitle className="text-base flex items-center justify-between gap-2">
+              <span>Up next</span>
+              {reviewsLoaded && usingMock && (
+                <span className="text-[10px] font-normal text-muted-foreground">
+                  Showing sample data — no reviews scheduled yet
+                </span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -331,13 +395,31 @@ export default function Overview() {
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <Link to={`/people/${r.employee_uuid}`} aria-label={`Open ${r.employee_name}`}>
+                        <Link
+                          to={
+                            usingMock
+                              ? `/people/${r.employee_uuid}`
+                              : `/reviews?focus=${r.id}`
+                          }
+                          aria-label={`Open ${r.employee_name}`}
+                        >
                           <ArrowRight className="h-4 w-4" />
                         </Link>
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
+                {reviewsLoaded && upcoming.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-6">
+                      No upcoming reviews. Schedule one from{" "}
+                      <Link to="/reviews" className="text-primary underline">
+                        Reviews
+                      </Link>
+                      .
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>
