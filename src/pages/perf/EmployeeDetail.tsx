@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, parseISO } from "date-fns";
-import { ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, FileDown } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -32,6 +32,7 @@ import {
 } from "@/lib/assessmentDeltas";
 import { ActionItemsPanel } from "@/components/perf/ActionItemsPanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { exportCycleComparisonPdf } from "@/lib/cycleComparisonPdf";
 
 type Employee = {
   uuid: string;
@@ -291,8 +292,25 @@ export default function EmployeeDetail() {
 
           <TabsContent value="comparison">
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Cycle-to-cycle comparison</CardTitle>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    exportCycleComparisonPdf(
+                      {
+                        name: emp ? `${emp.first_name ?? ""} ${emp.last_name ?? ""}`.trim() : uuid,
+                        title: emp?.title,
+                        department: emp?.department,
+                      },
+                      attempts,
+                    )
+                  }
+                  disabled={attempts.length === 0}
+                >
+                  <FileDown className="h-3.5 w-3.5 mr-1" /> Export PDF
+                </Button>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
