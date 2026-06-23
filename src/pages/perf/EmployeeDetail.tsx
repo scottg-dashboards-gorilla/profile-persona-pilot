@@ -30,6 +30,8 @@ import {
   readableTier,
   pickLatestPair,
 } from "@/lib/assessmentDeltas";
+import { ActionItemsPanel } from "@/components/perf/ActionItemsPanel";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type Employee = {
   uuid: string;
@@ -100,6 +102,21 @@ export default function EmployeeDetail() {
     [previous, current],
   );
 
+  const cycleComparison = useMemo(() => {
+    const sorted = [...attempts].sort((a, b) => a.taken_at.localeCompare(b.taken_at));
+    return sorted.map((curr, idx) => {
+      const prev = idx > 0 ? sorted[idx - 1] : null;
+      const disc = discDelta(prev, curr);
+      const tech = technicalDelta(prev, curr);
+      const techDeltaSum = tech.reduce((s, d) => s + (d.delta ?? 0), 0);
+      const techAvg = tech.length ? techDeltaSum / tech.length : 0;
+      const tier = tierChange(prev, curr);
+      const topUp = [...tech].filter((d) => d.delta != null).sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))[0];
+      const topDown = [...tech].filter((d) => d.delta != null).sort((a, b) => (a.delta ?? 0) - (b.delta ?? 0))[0];
+      return { attempt: curr, prev, disc, tier, techAvg, topUp, topDown };
+    });
+  }, [attempts]);
+
   const radarData = useMemo(() => {
     if (!current) return [];
     return techDeltas.map((d) => ({
@@ -165,7 +182,15 @@ export default function EmployeeDetail() {
       )}
 
       {attempts.length > 0 && (
-        <>
+        <Tabs defaultValue="growth">
+          <TabsList>
+            <TabsTrigger value="growth">Growth</TabsTrigger>
+            <TabsTrigger value="comparison">Cycle-to-cycle</TabsTrigger>
+            <TabsTrigger value="actions">Action items</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="growth" className="space-y-5">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">DISC over time</CardTitle>
@@ -262,7 +287,92 @@ export default function EmployeeDetail() {
               </CardContent>
             </Card>
           </div>
+          </TabsContent>
 
+          <TabsContent value="comparison">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Cycle-to-cycle comparison</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Attempt</TableHead>
+                      <TableHead>Tier shift</TableHead>
+                      <TableHead>DISC shift</TableHead>
+                      <TableHead>Avg technical Δ</TableHead>
+                      <TableHead>Top improvement</TableHead>
+                      <TableHead>Biggest drop</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[...cycleComparison].reverse().map(({ attempt, prev, disc, tier, techAvg, topUp, topDown }) => (
+                      <TableRow key={attempt.id}>
+                        <TableCell>
+                          <div className="font-medium">{format(parseISO(attempt.taken_at), "MMM d, yyyy")}</div>
+                          {prev && (
+                            <div className="text-xs text-muted-foreground">
+                              vs {format(parseISO(prev.taken_at), "MMM d, yyyy")}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {prev
+                            ? `${readableTier(tier.from)} → ${readableTier(tier.to)}`
+                            : readableTier(tier.to)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {disc.map((d) => (
+                              <span
+                                key={d.letter}
+                                className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[11px] ${deltaTone(d.delta)}`}
+                              >
+                                {d.letter} {d.delta >= 0 ? "+" : ""}
+                                {d.delta.toFixed(0)}
+                              </span>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className={`text-sm ${deltaTone(techAvg)}`}>
+                          {prev ? `${techAvg >= 0 ? "+" : ""}${techAvg.toFixed(1)}` : "—"}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {topUp?.delta != null ? (
+                            <span className="text-emerald-700">
+                              {topUp.id} +{topUp.delta.toFixed(0)}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {topDown?.delta != null && topDown.delta < 0 ? (
+                            <span className="text-red-700">
+                              {topDown.id} {topDown.delta.toFixed(0)}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="actions">
+            <ActionItemsPanel
+              employeeUuid={uuid}
+              attemptId={current?.id ?? null}
+              title="Action items & follow-ups"
+            />
+          </TabsContent>
+
+          <TabsContent value="history">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Attempt history</CardTitle>
@@ -296,7 +406,8 @@ export default function EmployeeDetail() {
               </Table>
             </CardContent>
           </Card>
-        </>
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
