@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect as useEffectAlias } from "react";
 
 export type ReviewRow = {
   id: string;
@@ -54,6 +55,13 @@ const today = () => new Date().toISOString().slice(0, 10);
 export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [contribStats, setContribStats] = useState<{
+    submitted: number;
+    invited: number;
+    avgOverall: number | null;
+    avgCollab: number | null;
+    avgImpact: number | null;
+  } | null>(null);
 
   const [rating, setRating] = useState<string>("meets");
   const [compAmount, setCompAmount] = useState<string>("");
@@ -70,6 +78,37 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     setPromotion(review.promotion ?? false);
     setNewTitle(review.new_title ?? "");
     setNotes(review.notes ?? "");
+  }, [review]);
+
+  useEffectAlias(() => {
+    if (!review) {
+      setContribStats(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("review_contributors")
+        .select("status, rating_overall, rating_collaboration, rating_impact")
+        .eq("review_id", review.id);
+      const rows = data ?? [];
+      const submitted = rows.filter((r) => r.status === "submitted");
+      const avg = (key: "rating_overall" | "rating_collaboration" | "rating_impact") => {
+        const vals = submitted.map((r) => r[key]).filter((v): v is number => v != null);
+        return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+      };
+      const avgOverall = avg("rating_overall");
+      setContribStats({
+        submitted: submitted.length,
+        invited: rows.length,
+        avgOverall,
+        avgCollab: avg("rating_collaboration"),
+        avgImpact: avg("rating_impact"),
+      });
+      // Suggest a rating based on the contributor average if the manager hasn't set one yet
+      if (!review.overall_rating && avgOverall != null) {
+        setRating(avgOverall >= 4 ? "exceeds" : avgOverall < 3 ? "below" : "meets");
+      }
+    })();
   }, [review]);
 
   if (!review) return null;
@@ -114,6 +153,28 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         </DialogHeader>
 
         <div className="grid gap-4">
+          {contribStats && contribStats.invited > 0 && (
+            <div className="rounded-md border bg-muted/40 p-3 text-sm">
+              <div className="flex items-center justify-between">
+                <div className="font-medium">Contributor feedback</div>
+                <div className="text-xs text-muted-foreground">
+                  {contribStats.submitted} of {contribStats.invited} submitted
+                </div>
+              </div>
+              {contribStats.submitted > 0 ? (
+                <div className="mt-2 grid grid-cols-3 gap-3 text-center">
+                  <Stat label="Overall" value={contribStats.avgOverall} />
+                  <Stat label="Collaboration" value={contribStats.avgCollab} />
+                  <Stat label="Impact" value={contribStats.avgImpact} />
+                </div>
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  No submissions yet. The rating below stays your call.
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="grid gap-2">
             <Label>Overall rating</Label>
             <Select value={rating} onValueChange={setRating}>
@@ -124,6 +185,11 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
                 <SelectItem value="below">Below expectations</SelectItem>
               </SelectContent>
             </Select>
+            {contribStats?.avgOverall != null && (
+              <p className="text-xs text-muted-foreground">
+                Suggested from contributor avg ({contribStats.avgOverall.toFixed(2)} / 5). Override anytime.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -185,5 +251,14 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number | null }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-lg font-semibold">{value == null ? "—" : value.toFixed(2)}</div>
+    </div>
   );
 }
