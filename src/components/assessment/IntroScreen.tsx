@@ -1,15 +1,16 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Monitor, Shield, Target, Users, ArrowRight, Clock, HelpCircle, Zap, MessageSquare, RotateCcw, PlayCircle } from "lucide-react";
 import { competencyDimensions, comptiaDimensions, discDimensions } from "@/data/dimensions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getSavedProgress } from "@/hooks/useAssessment";
-import { ROLES, RoleId, DEFAULT_ROLE, getDimensionsForRole } from "@/data/roles";
+import { DEFAULT_ROLE } from "@/data/roles";
+import { useRoles } from "@/hooks/useRoles";
 import { questions as allQuestions } from "@/data/questions";
 
 interface IntroScreenProps {
-  onBegin: (name: string, role: RoleId) => void;
+  onBegin: (name: string, role: string) => void;
   onResume: () => void;
 }
 
@@ -38,16 +39,26 @@ const competencyAreas = [
 
 const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
   const [name, setName] = useState("");
-  const [role, setRole] = useState<RoleId>(DEFAULT_ROLE);
+  const { roles } = useRoles();
+  const [role, setRole] = useState<string>(DEFAULT_ROLE);
   const savedProgress = getSavedProgress();
+
+  // If default role isn't in the active list (e.g. admin hid it), pick the first available.
+  useEffect(() => {
+    if (roles.length > 0 && !roles.some((r) => r.id === role)) {
+      setRole(roles[0].id);
+    }
+  }, [roles, role]);
+
+  const selectedRole = roles.find((r) => r.id === role) ?? roles[0];
 
   const answeredCount = savedProgress ? Object.keys(savedProgress.answers).length : 0;
   const savedName = savedProgress?.employeeName ?? "";
 
   const questionCount = useMemo(() => {
-    const allowed = new Set(getDimensionsForRole(role));
+    const allowed = new Set(selectedRole?.dimensions ?? []);
     return allQuestions.filter((q) => allowed.has(q.dimensionId)).length;
-  }, [role]);
+  }, [selectedRole]);
 
   const estMinutes = Math.max(3, Math.round(questionCount * 0.2));
 
@@ -165,12 +176,12 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
             <label htmlFor="employee-role" className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
               Role
             </label>
-            <Select value={role} onValueChange={(v) => setRole(v as RoleId)}>
+            <Select value={role} onValueChange={(v) => setRole(v)}>
               <SelectTrigger id="employee-role" className="h-11">
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                {ROLES.map((r) => (
+                {roles.map((r) => (
                   <SelectItem key={r.id} value={r.id}>
                     {r.label}
                   </SelectItem>
@@ -178,7 +189,7 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
               </SelectContent>
             </Select>
             <p className="mt-2 text-xs text-muted-foreground">
-              {ROLES.find((r) => r.id === role)?.description}
+              {selectedRole?.description}
             </p>
           </div>
 

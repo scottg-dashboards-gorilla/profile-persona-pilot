@@ -6,12 +6,13 @@ import IntroScreen from "@/components/assessment/IntroScreen";
 import QuestionScreen from "@/components/assessment/QuestionScreen";
 import ThankYouScreen from "@/components/assessment/ThankYouScreen";
 import { toast } from "@/hooks/use-toast";
-import { RoleId } from "@/data/roles";
+import { useRoles } from "@/hooks/useRoles";
 
 type Screen = "intro" | "questions" | "results";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { roles } = useRoles();
   const {
     state,
     questions,
@@ -34,13 +35,14 @@ const Index = () => {
   const [screen, setScreen] = useState<Screen>("intro");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  const handleBegin = useCallback((name: string, selectedRole: RoleId) => {
+  const handleBegin = useCallback((name: string, selectedRoleId: string) => {
     clearSavedProgress();
-    setRole(selectedRole);
+    const cfg = roles.find((r) => r.id === selectedRoleId);
+    setRole(selectedRoleId, cfg?.dimensions);
     setEmployeeName(name);
     setStartTime(Date.now());
     setScreen("questions");
-  }, [setEmployeeName, setStartTime, setRole]);
+  }, [setEmployeeName, setStartTime, setRole, roles]);
 
   const handleResume = useCallback(() => {
     const saved = getSavedProgress();

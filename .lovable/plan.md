@@ -1,52 +1,67 @@
 
-# Role-Based Assessment Tracks
+# Admin: Manage Roles & Question Sets
 
-Let candidates pick a role at the start of the assessment so non-technical staff (Sales, Marketing, Finance, HR, Ops) skip the technical questions, while technical staff still get the full battery.
+Add a `/admin/roles` page where you can create, edit, and delete the roles candidates pick on the intro screen, including which dimensions each role is tested on and whether it counts as "technical" (affects tier classification).
 
-## 1. Define role tracks
+## 1. Database
 
-Add a `roles` config that maps each role to the dimensions it should be assessed on. All roles include DISC, Coaching Preferences, Self-Assessment, Culture & Communication, Adaptability, Leadership, Problem Solving, and the truthfulness pairs tied to those dimensions.
+New table `role_configs`:
 
-| Role | Includes technical dimensions? |
-|---|---|
-| Technical / Engineer / IT Lead | Yes — full 93 questions (current behavior) |
-| Team Leader (non-technical) | No technical dimensions, keeps leadership + DISC |
-| Sales | DISC + Culture + Adaptability + Coaching + Self-Assessment |
-| Marketing | Same as Sales |
-| Finance / Accounting | DISC + Culture + Problem Solving + Coaching + Self-Assessment |
-| HR / People Ops | DISC + Culture + Leadership + Coaching + Self-Assessment |
-| Operations / Admin | DISC + Culture + Adaptability + Coaching + Self-Assessment |
-| Custom / Other | DISC + Coaching only (shortest) |
+| column | type | notes |
+|---|---|---|
+| id | text PK | stable slug like `sales`, `technical` |
+| label | text | shown in dropdown |
+| description | text | helper text under the dropdown |
+| dimension_ids | jsonb (text[]) | dimensions included for this role |
+| includes_technical | bool | whether to compute a technical tier |
+| sort_order | int | ordering in dropdowns |
+| is_active | bool default true | hide instead of delete |
+| created_at / updated_at | timestamptz | |
 
-Technical dimensions excluded for non-technical roles: `azure-cloud`, `m365-admin`, `security-compliance`, `network-infrastructure`, `comptia-fundamentals`, `comptia-data`, `comptia-cyberops`.
+Seeded with the 8 current roles so behavior doesn't change until you edit something. Public read (the intro screen needs it); writes also public for now since the app has no auth yet — flagged as a follow-up.
 
-## 2. Intro screen changes
+## 2. Roles become DB-driven
 
-`IntroScreen.tsx` gets a required **"Select your role"** dropdown next to the name field. The estimated time and question count update live based on the chosen role (e.g. "About 6 minutes — 32 questions" for Sales vs. "About 18 minutes — 93 questions" for Technical).
+`src/data/roles.ts` keeps the existing list as the **default fallback** so the app still works offline and during the first paint. A new `useRoles()` hook fetches `role_configs` and returns the merged list (DB rows replace defaults by id; DB-only rows are appended). `IntroScreen` and `Dashboard` use the hook; `useAssessment` accepts the resolved role config when the user begins.
 
-## 3. Question filtering
+## 3. Admin UI
 
-In `useAssessment.ts`, filter `questions` by the selected role's dimension whitelist before they're presented. Truthfulness pairs are only included when both questions in the pair survive the filter. The role is persisted in `localStorage` alongside the existing resume state so refreshes restore the right track.
+New route `/admin/roles` (linked from a small "Manage Roles" button on the dashboard header).
 
-## 4. Scoring & results
+Layout:
 
-- `scoring.ts` already iterates over whatever answers exist, so unscored dimensions simply won't appear.
-- The Overview radar chart, Dimensions tab, and PDF export render only the dimensions the candidate actually answered.
-- Tier classification only runs for roles that include the technical dimensions; other roles show a "Behavioral profile" summary instead of a tier.
+```text
++--------------------------------------------------------------+
+| Manage Roles                              [+ New Role]       |
++--------------------------------------------------------------+
+| Technical / Engineer / IT      [Technical] 47 dims  [Edit][x]|
+| Sales                                       8 dims  [Edit][x]|
+| ...                                                          |
++--------------------------------------------------------------+
+```
 
-## 5. Dashboard
+Editor (drawer/dialog) shows:
+- Label, description, sort order
+- "Counts as technical role" toggle (drives tier classification)
+- Dimensions grouped by category (Competency, CompTIA Technical, DISC, Coaching, Self-assessment) with checkboxes
+- Live preview: "This role will see N questions (~M minutes)"
+- Save / Cancel
 
-`employee_profiles` gets a new `role` column (text, nullable for backward compatibility). The dashboard list, compare view, and team analytics gain a role filter so you can compare like-for-like (e.g. all Sales people together).
+Deleting a role soft-deletes (`is_active=false`) so historic assessments still resolve the label.
+
+## 4. Tier classifier
+
+`classifyTier` already checks whether any technical dim was answered. Update it to also honor `includes_technical=false` so a custom non-technical role that happens to include `problem-solving` still gets the behavioral summary instead of a technical tier.
 
 ## Technical details
 
-- New file: `src/data/roles.ts` exporting `RoleId`, `ROLES`, and `getDimensionsForRole(roleId)`.
-- New field on `AssessmentState` and on the persisted progress blob: `role: RoleId`.
-- DB migration: `ALTER TABLE public.employee_profiles ADD COLUMN role text;` (no GRANT change needed — table already has the right grants).
-- `ResultsScreen`, `OverviewTab`, `DimensionsTab`, `InsightsTab`, and `pdfExport.ts` read the role to decide which sections to render.
-- Existing saved profiles without a role default to "Technical" so historical data renders unchanged.
+- Files added: `supabase` migration, `src/hooks/useRoles.ts`, `src/pages/AdminRoles.tsx`, `src/components/admin/RoleEditor.tsx`.
+- Files edited: `src/data/roles.ts` (export defaults + types only), `src/components/assessment/IntroScreen.tsx`, `src/pages/Index.tsx`, `src/pages/Dashboard.tsx`, `src/App.tsx` (add `/admin/roles` route), `src/lib/tierClassification.ts` (accept optional `includesTechnical` flag).
+- React Query is already in the app — use it to cache `role_configs`.
+- Seeding runs in the same migration via `INSERT … ON CONFLICT DO NOTHING` so re-runs are safe.
 
 ## Out of scope (ask if you want it)
 
-- Per-role custom questions (e.g. sales-specific selling style questions). Today's plan only filters the existing pool.
-- Manager-assigned roles via invite link (`/assessment?role=sales`) — easy follow-up if useful.
+- Auth-gating `/admin/roles`. Right now the whole app is public per the project's access-control design; locking just the admin route needs an auth layer.
+- Per-role custom questions (still using the existing question pool).
+- Reordering via drag-and-drop (numeric `sort_order` field for now).

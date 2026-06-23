@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CoachingChat from "@/components/assessment/CoachingChat";
 import ResultsScreen from "@/components/assessment/ResultsScreen";
-import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2 } from "lucide-react";
+import { Users, Search, Plus, ArrowLeft, Trash2, BarChart3, GitCompareArrows, Link2, Settings } from "lucide-react";
 
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TeamAnalytics from "@/components/dashboard/TeamAnalytics";
 import CompareView from "@/components/dashboard/CompareView";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ROLES, getRole } from "@/data/roles";
+import { useRoles, getRoleFromList } from "@/hooks/useRoles";
 import { Badge } from "@/components/ui/badge";
 
 interface EmployeeProfile {
@@ -37,6 +37,7 @@ const getAssessmentShareUrl = () => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { roles: roleConfigs } = useRoles({ includeInactive: true });
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -141,6 +142,14 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => navigate("/admin/roles")}
+              >
+                <Settings className="w-4 h-4" /> Manage Roles
+              </Button>
             <Button
               variant="outline"
               size="sm"
@@ -195,7 +204,7 @@ const Dashboard = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All roles</SelectItem>
-                  {ROLES.map((r) => (
+                  {roleConfigs.map((r) => (
                     <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -215,7 +224,7 @@ const Dashboard = () => {
               <div className="space-y-2">
                 {filtered.map((profile) => {
                   const archetype = getArchetype(profile.scores);
-                  const roleLabel = getRole(profile.role ?? "technical").label;
+                  const roleLabel = getRoleFromList(roleConfigs, profile.role ?? "technical").label;
                   return (
                     <div
                       key={profile.id}

@@ -82,6 +82,42 @@ export type Database = {
           },
         ]
       }
+      role_configs: {
+        Row: {
+          created_at: string
+          description: string
+          dimension_ids: Json
+          id: string
+          includes_technical: boolean
+          is_active: boolean
+          label: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          dimension_ids?: Json
+          id: string
+          includes_technical?: boolean
+          is_active?: boolean
+          label: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          dimension_ids?: Json
+          id?: string
+          includes_technical?: boolean
+          is_active?: boolean
+          label?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
