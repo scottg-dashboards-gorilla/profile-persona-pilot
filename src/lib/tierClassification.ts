@@ -22,11 +22,11 @@ function get(scores: DimensionScore[], dimId: string): number {
  * Tier 2 (Senior/Escalation): Strong technical skills, handles escalations, emerging leadership
  * Team Leader: Strong technical + leadership, can mentor others, manages client relationships
  */
-export function classifyTier(scores: DimensionScore[]): TierClassification {
+export function classifyTier(scores: DimensionScore[], includesTechnical?: boolean): TierClassification {
   // If no technical dimensions were answered (non-technical role), return a
   // behavioral-only classification instead of forcing a technical tier.
   const answeredTechnical = scores.some((s) => TECHNICAL_DIMS.includes(s.dimensionId));
-  if (!answeredTechnical) {
+  if (!answeredTechnical || includesTechnical === false) {
     const leadershipAvg = avg(scores, LEADERSHIP_DIMS);
     return {
       tier: "tier-2",
