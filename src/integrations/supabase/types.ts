@@ -63,6 +63,7 @@ export type Database = {
           terminated: boolean
           title: string | null
           updated_at: string
+          user_id: string | null
           uuid: string
         }
         Insert: {
@@ -80,6 +81,7 @@ export type Database = {
           terminated?: boolean
           title?: string | null
           updated_at?: string
+          user_id?: string | null
           uuid: string
         }
         Update: {
@@ -97,6 +99,7 @@ export type Database = {
           terminated?: boolean
           title?: string | null
           updated_at?: string
+          user_id?: string | null
           uuid?: string
         }
         Relationships: [
@@ -566,15 +569,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_review_contributor: {
+        Args: { _contributor_id: string }
+        Returns: boolean
+      }
+      is_review_manager: { Args: { _review_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "hr" | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -701,6 +736,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "hr", "manager"],
+    },
   },
 } as const
