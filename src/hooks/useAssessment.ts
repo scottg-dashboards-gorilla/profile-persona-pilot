@@ -3,7 +3,7 @@ import { AssessmentState, LikertValue, DimensionScore, DISCProfile, Truthtfulnes
 import { Question } from "@/types/assessment";
 import { generateQuestionOrder } from "@/lib/questionOrder";
 import { calculateScores, calculateDISCProfile, calculateTruthfulness } from "@/lib/scoring";
-import { RoleId, DEFAULT_ROLE, getDimensionsForRole } from "@/data/roles";
+import { DEFAULT_ROLE, getDimensionsForRole } from "@/data/roles";
 
 const STORAGE_KEY = "datapath-assessment-progress";
 
@@ -13,7 +13,9 @@ interface SavedProgress {
   employeeName: string;
   startTime: number;
   savedAt: number;
-  role?: RoleId;
+  role?: string;
+  /** Persisted dimension whitelist so custom (DB-defined) roles restore correctly. */
+  roleDimensions?: string[];
 }
 
 const initialState: AssessmentState = {
@@ -46,16 +48,19 @@ export function clearSavedProgress() {
 
 export function useAssessment() {
   const [state, setState] = useState<AssessmentState>(initialState);
-  const [role, setRoleState] = useState<RoleId>(DEFAULT_ROLE);
+  const [role, setRoleState] = useState<string>(DEFAULT_ROLE);
+  const [roleDimensions, setRoleDimensions] = useState<string[]>(() => getDimensionsForRole(DEFAULT_ROLE));
   const [orderedQuestions, setOrderedQuestions] = useState<Question[]>(() =>
     generateQuestionOrder(getDimensionsForRole(DEFAULT_ROLE))
   );
   const [employeeName, setEmployeeName] = useState("");
   const [startTime, setStartTime] = useState(0);
 
-  const setRole = useCallback((nextRole: RoleId) => {
-    setRoleState(nextRole);
-    setOrderedQuestions(generateQuestionOrder(getDimensionsForRole(nextRole)));
+  const setRole = useCallback((nextRoleId: string, nextDimensions?: string[]) => {
+    const dims = nextDimensions ?? getDimensionsForRole(nextRoleId);
+    setRoleState(nextRoleId);
+    setRoleDimensions(dims);
+    setOrderedQuestions(generateQuestionOrder(dims));
   }, []);
 
   useEffect(() => {
@@ -67,15 +72,18 @@ export function useAssessment() {
         startTime,
         savedAt: Date.now(),
         role,
+        roleDimensions,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
     }
-  }, [state.answers, state.currentQuestionIndex, state.isComplete, employeeName, startTime, role]);
+  }, [state.answers, state.currentQuestionIndex, state.isComplete, employeeName, startTime, role, roleDimensions]);
 
   const restoreProgress = useCallback((saved: SavedProgress) => {
-    const restoredRole = (saved.role as RoleId) ?? DEFAULT_ROLE;
+    const restoredRole = saved.role ?? DEFAULT_ROLE;
+    const dims = saved.roleDimensions ?? getDimensionsForRole(restoredRole);
     setRoleState(restoredRole);
-    setOrderedQuestions(generateQuestionOrder(getDimensionsForRole(restoredRole)));
+    setRoleDimensions(dims);
+    setOrderedQuestions(generateQuestionOrder(dims));
     setState({
       answers: saved.answers,
       currentQuestionIndex: saved.currentQuestionIndex,
@@ -112,6 +120,7 @@ export function useAssessment() {
     setEmployeeName("");
     setStartTime(0);
     setRoleState(DEFAULT_ROLE);
+    setRoleDimensions(getDimensionsForRole(DEFAULT_ROLE));
     setOrderedQuestions(generateQuestionOrder(getDimensionsForRole(DEFAULT_ROLE)));
     clearSavedProgress();
   }, []);
