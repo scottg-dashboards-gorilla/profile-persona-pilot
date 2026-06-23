@@ -216,29 +216,71 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
             )}
             {!loading &&
               contributors.map((c) => (
-                <div key={c.id} className="flex items-center gap-3 p-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium text-sm truncate">{c.contributor_name}</div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {c.contributor_title ?? "—"}
-                      {c.contributor_department ? ` · ${c.contributor_department}` : ""}
+                <div key={c.id} className="p-3 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm truncate">{c.contributor_name}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {c.contributor_title ?? "—"}
+                        {c.contributor_department ? ` · ${c.contributor_department}` : ""}
+                      </div>
                     </div>
+                    <div className="text-xs text-muted-foreground text-right">
+                      <div>Invited {format(parseISO(c.invited_at), "MMM d")}</div>
+                      {c.submitted_at && (
+                        <div>
+                          Last submit {format(parseISO(c.submitted_at), "MMM d, h:mma")}
+                          {c.submission_count > 1 && (
+                            <span className="ml-1 text-amber-700">· v{c.submission_count}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <StatusPill
+                      tone={c.status === "submitted" ? "completed" : c.status === "declined" ? "cancelled" : "in_progress"}
+                      label={c.status === "submitted" ? "Submitted" : c.status === "declined" ? "Declined" : "Invited"}
+                    />
+                    <Button size="sm" variant="ghost" onClick={() => setFeedbackFor(c)}>
+                      <MessageSquarePlus className="h-4 w-4 mr-1" />
+                      {c.status === "submitted" ? (c.allow_resubmission ? "Edit" : "View") : "Open form"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setHistoryFor(c)}
+                      disabled={c.submission_count === 0}
+                      title="View history"
+                    >
+                      <History className="h-4 w-4 mr-1" />
+                      {c.submission_count}
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => remove(c.id)}>
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Invited {format(parseISO(c.invited_at), "MMM d")}
-                    {c.submitted_at && ` · Submitted ${format(parseISO(c.submitted_at), "MMM d")}`}
+                  <div className="flex items-center gap-4 text-xs pl-1">
+                    <label className="inline-flex items-center gap-2">
+                      <Switch
+                        checked={c.allow_resubmission}
+                        onCheckedChange={(v) => toggleResubmit(c, !!v)}
+                      />
+                      <span className="text-muted-foreground">Allow resubmission</span>
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <span className="text-muted-foreground">Weight</span>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min={0}
+                        className="h-7 w-20"
+                        defaultValue={c.weight}
+                        onBlur={(e) => {
+                          const n = Number(e.target.value);
+                          if (n !== c.weight) setWeight(c, n);
+                        }}
+                      />
+                    </label>
                   </div>
-                  <StatusPill
-                    tone={c.status === "submitted" ? "completed" : c.status === "declined" ? "cancelled" : "in_progress"}
-                    label={c.status === "submitted" ? "Submitted" : c.status === "declined" ? "Declined" : "Invited"}
-                  />
-                  <Button size="sm" variant="ghost" onClick={() => setFeedbackFor(c)}>
-                    <MessageSquarePlus className="h-4 w-4 mr-1" />
-                    {c.status === "submitted" ? "View" : "Open form"}
-                  </Button>
-                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => remove(c.id)}>
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
                 </div>
               ))}
           </div>
