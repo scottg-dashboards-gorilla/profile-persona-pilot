@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowRight, CalendarRange, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowRight, CalendarRange, TrendingUp, TrendingDown, FlaskConical } from "lucide-react";
 import { format, differenceInDays, parseISO, isAfter, subMonths } from "date-fns";
 import {
   mockReviews,
@@ -22,6 +22,7 @@ import {
   readableTier,
 } from "@/lib/assessmentDeltas";
 import { Link } from "react-router-dom";
+import { TestCycleWizard } from "@/components/perf/TestCycleWizard";
 
 type ContextTab = "org" | "line" | "todos";
 
@@ -63,6 +64,8 @@ function StatTile({
 
 export default function Overview() {
   const [tab, setTab] = useState<ContextTab>("org");
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   const [empNames, setEmpNames] = useState<Record<string, string>>({});
   const [dbReviews, setDbReviews] = useState<
@@ -136,7 +139,7 @@ export default function Overview() {
       );
       setReviewsLoaded(true);
     })();
-  }, []);
+  }, [reloadKey]);
 
   const growth = useMemo(() => {
     const byEmp = new Map<string, AttemptRow[]>();
@@ -222,20 +225,31 @@ export default function Overview() {
   return (
     <div className="space-y-6">
       {/* Context tabs */}
-      <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "px-4 py-1.5 text-sm font-medium rounded-full transition-colors",
-              tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "px-4 py-1.5 text-sm font-medium rounded-full transition-colors",
+                tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <Button size="sm" variant="outline" onClick={() => setWizardOpen(true)}>
+          <FlaskConical className="h-4 w-4 mr-1.5" /> Test review cycle
+        </Button>
       </div>
+
+      <TestCycleWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
+        onCompleted={() => setReloadKey((k) => k + 1)}
+      />
 
       {/* Active cycle */}
       <Card>
