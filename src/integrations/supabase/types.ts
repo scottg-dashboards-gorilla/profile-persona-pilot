@@ -345,6 +345,74 @@ export type Database = {
           },
         ]
       }
+      review_contributors: {
+        Row: {
+          anonymous: boolean
+          contributor_department: string | null
+          contributor_name: string
+          contributor_title: string | null
+          contributor_uuid: string
+          created_at: string
+          id: string
+          improvements: string | null
+          invited_at: string
+          rating_collaboration: number | null
+          rating_impact: number | null
+          rating_overall: number | null
+          review_id: string
+          status: string
+          strengths: string | null
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          anonymous?: boolean
+          contributor_department?: string | null
+          contributor_name: string
+          contributor_title?: string | null
+          contributor_uuid: string
+          created_at?: string
+          id?: string
+          improvements?: string | null
+          invited_at?: string
+          rating_collaboration?: number | null
+          rating_impact?: number | null
+          rating_overall?: number | null
+          review_id: string
+          status?: string
+          strengths?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anonymous?: boolean
+          contributor_department?: string | null
+          contributor_name?: string
+          contributor_title?: string | null
+          contributor_uuid?: string
+          created_at?: string
+          id?: string
+          improvements?: string | null
+          invited_at?: string
+          rating_collaboration?: number | null
+          rating_impact?: number | null
+          rating_overall?: number | null
+          review_id?: string
+          status?: string
+          strengths?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_contributors_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_cycles: {
         Row: {
           created_at: string
