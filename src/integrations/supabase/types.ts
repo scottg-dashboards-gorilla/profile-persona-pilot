@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_action_items: {
+        Row: {
+          action: string | null
+          attempt_id: string | null
+          comment: string | null
+          created_at: string
+          created_by: string | null
+          delta_from: number | null
+          delta_key: string | null
+          delta_kind: string
+          delta_to: number | null
+          employee_uuid: string
+          follow_up_review_id: string | null
+          id: string
+          review_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action?: string | null
+          attempt_id?: string | null
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          delta_from?: number | null
+          delta_key?: string | null
+          delta_kind: string
+          delta_to?: number | null
+          employee_uuid: string
+          follow_up_review_id?: string | null
+          id?: string
+          review_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string | null
+          attempt_id?: string | null
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          delta_from?: number | null
+          delta_key?: string | null
+          delta_kind?: string
+          delta_to?: number | null
+          employee_uuid?: string
+          follow_up_review_id?: string | null
+          id?: string
+          review_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_action_items_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_action_items_follow_up_review_id_fkey"
+            columns: ["follow_up_review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_action_items_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_attempts: {
         Row: {
           created_at: string
@@ -679,6 +755,10 @@ export type Database = {
         Returns: boolean
       }
       is_attempt_manager: { Args: { _attempt_id: string }; Returns: boolean }
+      is_employee_manager: {
+        Args: { _employee_uuid: string }
+        Returns: boolean
+      }
       is_review_contributor: {
         Args: { _contributor_id: string }
         Returns: boolean
