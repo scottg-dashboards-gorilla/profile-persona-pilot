@@ -390,6 +390,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
               </div>
               <div><strong>Review:</strong> overdue manager review</div>
             </div>
+            <ProgressChecklist progress={progress} />
           </div>
         )}
 
