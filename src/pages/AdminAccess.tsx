@@ -97,7 +97,7 @@ export default function AdminAccess() {
     load();
   };
 
-  const linkEmployee = async (uuid: string, userId: string | null) => {
+  const updateEmployeeLink = async (uuid: string, userId: string | null) => {
     const value = userId && userId.trim().length > 0 ? userId.trim() : null;
     const { error } = await supabase.from("employees").update({ user_id: value }).eq("uuid", uuid);
     if (error) return toast.error(error.message);
@@ -121,14 +121,14 @@ export default function AdminAccess() {
   };
 
   const linkExisting = async () => {
-    if (!linkUserId.trim() || !linkEmployee) {
+    if (!linkUserId.trim() || !linkEmployeeUuid) {
       toast.error("Pick an employee and paste a user UUID");
       return;
     }
     const { error } = await supabase
       .from("employees")
       .update({ user_id: linkUserId.trim() })
-      .eq("uuid", linkEmployee);
+      .eq("uuid", linkEmployeeUuid);
     if (error) return toast.error(error.message);
     toast.success("Employee linked");
     setLinkUserId("");
