@@ -77,6 +77,7 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
   const [employees, setEmployees] = useState<EmployeeOpt[]>([]);
   const [pick, setPick] = useState<string>("");
   const [feedbackFor, setFeedbackFor] = useState<ReviewContributor | null>(null);
+  const [historyFor, setHistoryFor] = useState<ReviewContributor | null>(null);
 
   async function load() {
     if (!reviewId) return;
@@ -139,6 +140,31 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
     const { error } = await supabase.from("review_contributors").delete().eq("id", id);
     if (error) {
       toast({ title: "Couldn't remove", description: error.message, variant: "destructive" });
+      return;
+    }
+    load();
+  }
+
+  async function toggleResubmit(c: ReviewContributor, value: boolean) {
+    const { error } = await supabase
+      .from("review_contributors")
+      .update({ allow_resubmission: value })
+      .eq("id", c.id);
+    if (error) {
+      toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+      return;
+    }
+    load();
+  }
+
+  async function setWeight(c: ReviewContributor, value: number) {
+    const safe = Number.isFinite(value) && value >= 0 ? value : 1;
+    const { error } = await supabase
+      .from("review_contributors")
+      .update({ weight: safe })
+      .eq("id", c.id);
+    if (error) {
+      toast({ title: "Couldn't update weight", description: error.message, variant: "destructive" });
       return;
     }
     load();
