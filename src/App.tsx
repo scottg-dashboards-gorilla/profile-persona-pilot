@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import AdminRoles from "./pages/AdminRoles";
+import AdminAccess from "./pages/AdminAccess";
 import PerfLayout from "./components/perf/PerfLayout";
 import Overview from "./pages/perf/Overview";
 import Reviews from "./pages/perf/Reviews";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/goals" element={<Goals />} />
             <Route path="/assessments" element={<Dashboard />} />
             <Route path="/admin/roles" element={<AdminRoles />} />
+            <Route path="/admin/access" element={<AdminAccess />} />
           </Route>
 
           {/* Candidate-facing assessment (no shell) */}

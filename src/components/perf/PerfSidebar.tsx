@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, FileSpreadsheet, Settings } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, FileSpreadsheet, Settings, ShieldCheck } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +24,7 @@ const primary = [
 const secondary = [
   { title: "Assessments", url: "/assessments", icon: FileSpreadsheet },
   { title: "Role Configs", url: "/admin/roles", icon: Settings },
+  { title: "Access", url: "/admin/access", icon: ShieldCheck },
 ];
 
 export function PerfSidebar() {
