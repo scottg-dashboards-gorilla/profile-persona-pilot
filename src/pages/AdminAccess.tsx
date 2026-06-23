@@ -9,6 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Trash2, Link2, ShieldCheck, UserPlus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type AppRole = "admin" | "hr" | "manager";
 type RoleRow = { id: string; user_id: string; role: AppRole; created_at: string };
@@ -35,6 +44,16 @@ export default function AdminAccess() {
   const [newRole, setNewRole] = useState<AppRole>("manager");
   const [linkEdits, setLinkEdits] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
+  const [linkUserId, setLinkUserId] = useState("");
+  const [linkEmployee, setLinkEmployeeUuid] = useState<string>("");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newEmp, setNewEmp] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    title: "",
+    department: "",
+  });
 
   const load = async () => {
     setLoading(true);
@@ -99,6 +118,49 @@ export default function AdminAccess() {
     } else {
       toast.error("Not signed in");
     }
+  };
+
+  const linkExisting = async () => {
+    if (!linkUserId.trim() || !linkEmployee) {
+      toast.error("Pick an employee and paste a user UUID");
+      return;
+    }
+    const { error } = await supabase
+      .from("employees")
+      .update({ user_id: linkUserId.trim() })
+      .eq("uuid", linkEmployee);
+    if (error) return toast.error(error.message);
+    toast.success("Employee linked");
+    setLinkUserId("");
+    setLinkEmployeeUuid("");
+    load();
+  };
+
+  const createAndLink = async () => {
+    if (!newEmp.first_name.trim() || !newEmp.last_name.trim() || !newEmp.email.trim()) {
+      toast.error("First name, last name, and email are required");
+      return;
+    }
+    const payload = {
+      first_name: newEmp.first_name.trim(),
+      last_name: newEmp.last_name.trim(),
+      email: newEmp.email.trim(),
+      title: newEmp.title.trim() || null,
+      department: newEmp.department.trim() || null,
+      user_id: linkUserId.trim() || null,
+      terminated: false,
+    };
+    const { data, error } = await supabase
+      .from("employees")
+      .insert(payload)
+      .select("uuid")
+      .single();
+    if (error) return toast.error(error.message);
+    toast.success(linkUserId.trim() ? "Employee created and linked" : "Employee created");
+    setCreateOpen(false);
+    setNewEmp({ first_name: "", last_name: "", email: "", title: "", department: "" });
+    if (data?.uuid) setLinkEmployeeUuid(data.uuid);
+    load();
   };
 
   const filteredEmployees = employees.filter((e) => {
@@ -225,6 +287,110 @@ export default function AdminAccess() {
               </TableBody>
             </Table>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Link2 className="h-4 w-4" /> Link an auth user to an employee
+          </CardTitle>
+          <CardDescription>
+            Pick an existing employee or create a new record on the fly, then attach the auth user UUID.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
+            <div>
+              <Label htmlFor="link-uid">Auth user UUID</Label>
+              <Input
+                id="link-uid"
+                placeholder="00000000-0000-0000-0000-000000000000"
+                value={linkUserId}
+                onChange={(e) => setLinkUserId(e.target.value)}
+                className="font-mono text-xs"
+              />
+            </div>
+            <div>
+              <Label>Employee</Label>
+              <Select value={linkEmployee} onValueChange={setLinkEmployeeUuid}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an employee…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {employees.map((e) => (
+                    <SelectItem key={e.uuid} value={e.uuid}>
+                      {e.first_name} {e.last_name}
+                      {e.email ? ` · ${e.email}` : ""}
+                      {e.user_id ? " (linked)" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" type="button">
+                  <UserPlus className="h-4 w-4 mr-1" /> New employee
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create employee</DialogTitle>
+                  <DialogDescription>
+                    Add a new employee record. If a user UUID is filled in above, it will be linked automatically.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <Label>First name</Label>
+                    <Input
+                      value={newEmp.first_name}
+                      onChange={(e) => setNewEmp({ ...newEmp, first_name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Last name</Label>
+                    <Input
+                      value={newEmp.last_name}
+                      onChange={(e) => setNewEmp({ ...newEmp, last_name: e.target.value })}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={newEmp.email}
+                      onChange={(e) => setNewEmp({ ...newEmp, email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Title</Label>
+                    <Input
+                      value={newEmp.title}
+                      onChange={(e) => setNewEmp({ ...newEmp, title: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Department</Label>
+                    <Input
+                      value={newEmp.department}
+                      onChange={(e) => setNewEmp({ ...newEmp, department: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setCreateOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createAndLink}>
+                    {linkUserId.trim() ? "Create & link" : "Create"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Button onClick={linkExisting}>Link</Button>
+          </div>
         </CardContent>
       </Card>
 
