@@ -299,6 +299,11 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
           load();
         }}
       />
+
+      <ContributorHistoryDialog
+        contributor={historyFor}
+        onOpenChange={(open) => !open && setHistoryFor(null)}
+      />
     </>
   );
 }
