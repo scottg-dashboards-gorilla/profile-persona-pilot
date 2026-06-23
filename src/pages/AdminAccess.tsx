@@ -45,7 +45,7 @@ export default function AdminAccess() {
   const [linkEdits, setLinkEdits] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [linkUserId, setLinkUserId] = useState("");
-  const [linkEmployee, setLinkEmployeeUuid] = useState<string>("");
+  const [linkEmployeeUuid, setLinkEmployeeUuid] = useState<string>("");
   const [createOpen, setCreateOpen] = useState(false);
   const [newEmp, setNewEmp] = useState({
     first_name: "",
@@ -313,7 +313,7 @@ export default function AdminAccess() {
             </div>
             <div>
               <Label>Employee</Label>
-              <Select value={linkEmployee} onValueChange={setLinkEmployeeUuid}>
+              <Select value={linkEmployeeUuid} onValueChange={setLinkEmployeeUuid}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select an employee…" />
                 </SelectTrigger>
@@ -470,7 +470,7 @@ export default function AdminAccess() {
                         <Button
                           size="sm"
                           disabled={!dirty}
-                          onClick={() => linkEmployee(emp.uuid, current)}
+                          onClick={() => updateEmployeeLink(emp.uuid, current)}
                         >
                           Save
                         </Button>
@@ -478,7 +478,7 @@ export default function AdminAccess() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => linkEmployee(emp.uuid, null)}
+                            onClick={() => updateEmployeeLink(emp.uuid, null)}
                           >
                             Clear
                           </Button>
