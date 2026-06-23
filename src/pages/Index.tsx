@@ -6,6 +6,7 @@ import IntroScreen from "@/components/assessment/IntroScreen";
 import QuestionScreen from "@/components/assessment/QuestionScreen";
 import ThankYouScreen from "@/components/assessment/ThankYouScreen";
 import { toast } from "@/hooks/use-toast";
+import { RoleId } from "@/data/roles";
 
 type Screen = "intro" | "questions" | "results";
 
@@ -19,6 +20,8 @@ const Index = () => {
     truthfulness,
     employeeName,
     startTime,
+    role,
+    setRole,
     setEmployeeName,
     setStartTime,
     setAnswer,
@@ -31,12 +34,13 @@ const Index = () => {
   const [screen, setScreen] = useState<Screen>("intro");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  const handleBegin = useCallback((name: string) => {
+  const handleBegin = useCallback((name: string, selectedRole: RoleId) => {
     clearSavedProgress();
+    setRole(selectedRole);
     setEmployeeName(name);
     setStartTime(Date.now());
     setScreen("questions");
-  }, [setEmployeeName, setStartTime]);
+  }, [setEmployeeName, setStartTime, setRole]);
 
   const handleResume = useCallback(() => {
     const saved = getSavedProgress();
@@ -54,6 +58,7 @@ const Index = () => {
 
     const { error } = await supabase.from("employee_profiles").insert({
       employee_name: employeeName,
+      role,
       scores: scores as unknown as any,
       elapsed_seconds: elapsed,
       disc_profile: discProfile as unknown as any,
@@ -63,7 +68,7 @@ const Index = () => {
       console.error("Failed to save profile:", error);
       toast({ title: "Warning", description: "Profile completed but failed to save. Results are shown below.", variant: "destructive" });
     }
-  }, [startTime, completeAssessment, employeeName, scores, discProfile, truthfulness]);
+  }, [startTime, completeAssessment, employeeName, role, scores, discProfile, truthfulness]);
 
   const handleRestart = useCallback(() => {
     reset();
