@@ -364,7 +364,14 @@ export default function Overview() {
       <div className="grid lg:grid-cols-2 gap-5">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Up next</CardTitle>
+            <CardTitle className="text-base flex items-center justify-between gap-2">
+              <span>Up next</span>
+              {reviewsLoaded && usingMock && (
+                <span className="text-[10px] font-normal text-muted-foreground">
+                  Showing sample data — no reviews scheduled yet
+                </span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -388,13 +395,31 @@ export default function Overview() {
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <Link to={`/people/${r.employee_uuid}`} aria-label={`Open ${r.employee_name}`}>
+                        <Link
+                          to={
+                            usingMock
+                              ? `/people/${r.employee_uuid}`
+                              : `/reviews?focus=${r.id}`
+                          }
+                          aria-label={`Open ${r.employee_name}`}
+                        >
                           <ArrowRight className="h-4 w-4" />
                         </Link>
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
+                {reviewsLoaded && upcoming.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-6">
+                      No upcoming reviews. Schedule one from{" "}
+                      <Link to="/reviews" className="text-primary underline">
+                        Reviews
+                      </Link>
+                      .
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>
