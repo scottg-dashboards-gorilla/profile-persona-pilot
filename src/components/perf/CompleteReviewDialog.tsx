@@ -29,6 +29,15 @@ import {
   type AggregationMethod,
 } from "@/lib/contributorAggregation";
 import { format, parseISO } from "date-fns";
+import {
+  AttemptRow,
+  discDelta,
+  technicalDelta,
+  tierChange,
+  readableTier,
+  topMovers,
+} from "@/lib/assessmentDeltas";
+import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 
 export type ReviewRow = {
   id: string;
@@ -49,6 +58,7 @@ export type ReviewRow = {
   self_assessment_sent_at: string | null;
   manager_review_sent_at: string | null;
   aggregation_method?: string | null;
+  assessment_attempt_id?: string | null;
 };
 
 type ContribRow = {
@@ -77,6 +87,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [saving, setSaving] = useState(false);
   const [contribs, setContribs] = useState<ContribRow[]>([]);
   const [method, setMethod] = useState<AggregationMethod>("mean");
+  const [currentAttempt, setCurrentAttempt] = useState<AttemptRow | null>(null);
+  const [previousAttempt, setPreviousAttempt] = useState<AttemptRow | null>(null);
 
   const [rating, setRating] = useState<string>("meets");
   const [autoSuggest, setAutoSuggest] = useState(true);
@@ -112,6 +124,26 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     })();
   }, [review]);
 
+  useEffect(() => {
+    if (!review) {
+      setCurrentAttempt(null);
+      setPreviousAttempt(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("assessment_attempts")
+        .select("id,employee_uuid,review_id,cycle_id,taken_at,submitted_at,disc_scores,disc_primary,tier,technical_scores,truthfulness_score")
+        .eq("employee_uuid", review.employee_uuid)
+        .order("taken_at", { ascending: false });
+      const list = (data ?? []) as AttemptRow[];
+      const forThis = list.find((a) => a.review_id === review.id) ?? null;
+      const prior = list.find((a) => a.id !== forThis?.id) ?? null;
+      setCurrentAttempt(forThis);
+      setPreviousAttempt(prior);
+    })();
+  }, [review]);
+
   if (!review) return null;
 
   const baseComp = Number(review.current_annual_comp ?? 0);
@@ -133,6 +165,14 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   }, [suggestedBucket, autoSuggest]);
 
   async function handleSave() {
+    if (!currentAttempt) {
+      toast({
+        title: "Assessment required",
+        description: "Send the assessment link and wait for submission before completing this review.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSaving(true);
     const selected_contributor_versions = contribs.reduce<Record<string, string>>((acc, c) => {
       if (c.current_version_id) acc[c.id] = c.current_version_id;
@@ -152,6 +192,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         notes: notes || null,
         aggregation_method: method,
         selected_contributor_versions,
+        assessment_attempt_id: currentAttempt.id,
       })
       .eq("id", review.id);
     setSaving(false);
@@ -174,6 +215,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         </DialogHeader>
 
         <div className="grid gap-4">
+          <AssessmentDelta current={currentAttempt} previous={previousAttempt} />
           {contribs.length > 0 && (
             <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
