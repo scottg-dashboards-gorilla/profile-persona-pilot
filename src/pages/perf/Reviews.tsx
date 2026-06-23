@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { format, parseISO } from "date-fns";
-import { Loader2, Mail, Play, CheckCircle2, Search } from "lucide-react";
+import { Loader2, Mail, Play, CheckCircle2, Search, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { formatCompDelta } from "@/data/mockEmployees";
 import { CompleteReviewDialog, type ReviewRow } from "@/components/perf/CompleteReviewDialog";
+import { ContributorsDialog } from "@/components/perf/ContributorsDialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ export default function Reviews() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<ReviewRow | null>(null);
+  const [contributorsFor, setContributorsFor] = useState<ReviewRow | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function fetchRows() {
@@ -240,6 +242,14 @@ export default function Reviews() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
+                                  onClick={() => setContributorsFor(r)}
+                                  title="Manage contributors"
+                                >
+                                  <Users className="h-3.5 w-3.5 mr-1" /> Contributors
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
                                   disabled={busy}
                                   onClick={() => sendSelf(r)}
                                   title="Send self-assessment"
@@ -287,6 +297,13 @@ export default function Reviews() {
           setEditing(null);
           fetchRows();
         }}
+      />
+
+      <ContributorsDialog
+        reviewId={contributorsFor?.id ?? null}
+        employeeUuid={contributorsFor?.employee_uuid}
+        employeeName={contributorsFor?.employee_name}
+        onOpenChange={(open) => !open && setContributorsFor(null)}
       />
     </div>
   );
