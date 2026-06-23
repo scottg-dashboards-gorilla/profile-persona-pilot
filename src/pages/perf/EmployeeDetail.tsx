@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, parseISO } from "date-fns";
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, FileDown } from "lucide-react";
+import { AlertCircle, Copy, ClipboardList } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { differenceInDays } from "date-fns";
 import {
   LineChart,
   Line,
@@ -43,6 +46,14 @@ type Employee = {
   department: string | null;
 };
 
+type PerfReviewLite = {
+  id: string;
+  scheduled_date: string;
+  completed_date: string | null;
+  status: string;
+  assessment_attempt_id: string | null;
+};
+
 function deltaTone(d: number) {
   if (d > 0) return "text-emerald-600";
   if (d < 0) return "text-red-600";
@@ -57,14 +68,16 @@ function DeltaIcon({ d }: { d: number }) {
 
 export default function EmployeeDetail() {
   const { uuid = "" } = useParams<{ uuid: string }>();
+  const { toast } = useToast();
   const [emp, setEmp] = useState<Employee | null>(null);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<PerfReviewLite[]>([]);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [empRes, attemptsRes] = await Promise.all([
+      const [empRes, attemptsRes, reviewsRes] = await Promise.all([
         supabase
           .from("employees")
           .select("uuid,first_name,last_name,email,title,department")
@@ -77,9 +90,15 @@ export default function EmployeeDetail() {
           )
           .eq("employee_uuid", uuid)
           .order("taken_at", { ascending: true }),
+        supabase
+          .from("performance_reviews")
+          .select("id,scheduled_date,completed_date,status,assessment_attempt_id")
+          .eq("employee_uuid", uuid)
+          .order("scheduled_date", { ascending: false }),
       ]);
       setEmp((empRes.data as Employee | null) ?? null);
       setAttempts((attemptsRes.data ?? []) as AttemptRow[]);
+      setReviews((reviewsRes.data ?? []) as PerfReviewLite[]);
       setLoading(false);
     })();
   }, [uuid]);
@@ -174,13 +193,78 @@ export default function EmployeeDetail() {
         </CardContent>
       </Card>
 
-      {attempts.length === 0 && !loading && (
-        <Card>
-          <CardContent className="p-8 text-center text-muted-foreground">
-            No assessment attempts on file yet. Request one from this employee's next review.
-          </CardContent>
-        </Card>
-      )}
+      {attempts.length === 0 && !loading && (() => {
+        const now = new Date();
+        const overdueReviews = reviews.filter(
+          (r) =>
+            r.status !== "completed" &&
+            r.status !== "cancelled" &&
+            !r.assessment_attempt_id &&
+            differenceInDays(parseISO(r.scheduled_date), now) < 0,
+        );
+        const openReview =
+          reviews.find((r) => r.status !== "completed" && r.status !== "cancelled") ?? null;
+        const link = openReview
+          ? `${window.location.origin}/assessment?review=${openReview.id}&employee=${uuid}`
+          : `${window.location.origin}/assessment?employee=${uuid}`;
+        const copy = () =>
+          navigator.clipboard.writeText(link).then(
+            () => toast({ title: "Assessment link copied" }),
+            () => toast({ title: "Couldn't copy link", variant: "destructive" }),
+          );
+        return (
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-amber-100 text-amber-700 p-2">
+                  <AlertCircle className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <div className="font-semibold">No assessment attempts on file yet</div>
+                  <p className="text-sm text-muted-foreground max-w-2xl">
+                    Growth charts, DISC trends and cycle-to-cycle deltas appear here after this
+                    employee submits their first assessment. {openReview
+                      ? "There's an open review for them — send the assessment link below to populate this view."
+                      : "Schedule a review or send a one-off assessment link to get started."}
+                  </p>
+                </div>
+              </div>
+
+              {overdueReviews.length > 0 && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                  <div className="font-medium">
+                    {overdueReviews.length} overdue review
+                    {overdueReviews.length === 1 ? "" : "s"} require an assessment
+                  </div>
+                  <ul className="mt-1 list-disc list-inside text-xs space-y-0.5">
+                    {overdueReviews.slice(0, 3).map((r) => (
+                      <li key={r.id}>
+                        Scheduled {format(parseISO(r.scheduled_date), "MMM d, yyyy")} — review
+                        can't be completed until the employee submits an attempt.
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button size="sm" onClick={copy}>
+                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy assessment link
+                </Button>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/reviews">
+                    <ClipboardList className="h-3.5 w-3.5 mr-1.5" /> Open reviews
+                  </Link>
+                </Button>
+              </div>
+
+              <div className="text-[11px] text-muted-foreground break-all border-t pt-2">
+                {link}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {attempts.length > 0 && (
         <Tabs defaultValue="growth">
