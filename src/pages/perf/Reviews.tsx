@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { format, parseISO } from "date-fns";
-import { Loader2, Mail, Play, CheckCircle2, Search, Users } from "lucide-react";
+import { Loader2, Mail, Play, CheckCircle2, Search, Users, Link as LinkIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { formatCompDelta } from "@/data/mockEmployees";
@@ -38,6 +38,7 @@ export default function Reviews() {
   const [editing, setEditing] = useState<ReviewRow | null>(null);
   const [contributorsFor, setContributorsFor] = useState<ReviewRow | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [attemptByReview, setAttemptByReview] = useState<Record<string, string | null>>({});
 
   async function fetchRows() {
     setLoading(true);
@@ -49,8 +50,27 @@ export default function Reviews() {
       toast({ title: "Couldn't load reviews", description: error.message, variant: "destructive" });
     } else {
       setRows((data ?? []) as ReviewRow[]);
+      const ids = (data ?? []).map((r: any) => r.id);
+      if (ids.length > 0) {
+        const { data: atts } = await supabase
+          .from("assessment_attempts")
+          .select("id, review_id, submitted_at")
+          .in("review_id", ids);
+        const map: Record<string, string | null> = {};
+        (atts ?? []).forEach((a: any) => {
+          if (!map[a.review_id]) map[a.review_id] = a.submitted_at ? "submitted" : "in_progress";
+        });
+        setAttemptByReview(map);
+      }
     }
     setLoading(false);
+  }
+  function copyAssessmentLink(row: ReviewRow) {
+    const url = `${window.location.origin}/assessment?review=${row.id}&employee=${row.employee_uuid}`;
+    navigator.clipboard.writeText(url).then(
+      () => toast({ title: "Assessment link copied", description: url }),
+      () => toast({ title: "Couldn't copy", description: url, variant: "destructive" }),
+    );
   }
 
   useEffect(() => {
@@ -239,6 +259,18 @@ export default function Reviews() {
                                     <Play className="h-3.5 w-3.5 mr-1" /> Kickoff
                                   </Button>
                                 )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => copyAssessmentLink(r)}
+                                  title="Copy assessment link for this cycle"
+                                >
+                                  <LinkIcon className="h-3.5 w-3.5 mr-1" />
+                                  Assess
+                                  {attemptByReview[r.id] === "submitted" && (
+                                    <span className="ml-1 text-emerald-600">✓</span>
+                                  )}
+                                </Button>
                                 <Button
                                   size="sm"
                                   variant="ghost"
