@@ -20,6 +20,7 @@ import { CompleteReviewDialog, type ReviewRow } from "@/components/perf/Complete
 import { ContributorsDialog } from "@/components/perf/ContributorsDialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from "react-router-dom";
 
 type TabKey = "upcoming" | "in_progress" | "completed";
 
@@ -33,6 +34,7 @@ export default function Reviews() {
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>("upcoming");
   const [rows, setRows] = useState<ReviewRow[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<ReviewRow | null>(null);
@@ -77,6 +79,22 @@ export default function Reviews() {
     fetchRows();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-open a review when ?focus=<id> is supplied (e.g. from Overview "Up next")
+  useEffect(() => {
+    const focusId = searchParams.get("focus");
+    if (!focusId || rows.length === 0) return;
+    const row = rows.find((r) => r.id === focusId);
+    if (row) {
+      setEditing(row);
+      if (row.status === "in_progress") setTab("in_progress");
+      else if (row.status === "completed") setTab("completed");
+      else setTab("upcoming");
+      const next = new URLSearchParams(searchParams);
+      next.delete("focus");
+      setSearchParams(next, { replace: true });
+    }
+  }, [rows, searchParams, setSearchParams]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

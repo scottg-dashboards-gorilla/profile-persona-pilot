@@ -205,8 +205,8 @@ export default function Overview() {
                 </div>
                 <div className="text-xs text-muted-foreground">{cycleProgress}%</div>
               </div>
-              <Button variant="outline" size="sm">
-                Open cycle
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/cycles">Open cycle</Link>
               </Button>
             </div>
           </div>
@@ -330,8 +330,10 @@ export default function Overview() {
                       <StatusPill tone={computeReviewTone(r.status, r.scheduled_date)} />
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <ArrowRight className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                        <Link to={`/reviews?focus=${r.id}`} aria-label={`Open review for ${r.employee_name}`}>
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
                       </Button>
                     </TableCell>
                   </TableRow>
