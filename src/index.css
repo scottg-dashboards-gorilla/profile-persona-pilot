@@ -116,3 +116,44 @@
     @apply inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs font-medium cursor-pointer transition-all duration-200 hover:border-primary/50 hover:bg-primary/5;
   }
 }
+
+/* Performance Reviews module — indigo on warm light. Scoped so the
+   assessment app's mint theme is untouched. */
+.perf-theme {
+  --background: 30 14% 98%;
+  --foreground: 24 10% 10%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 24 10% 10%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 24 10% 10%;
+
+  --primary: 239 84% 60%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 232 100% 96%;
+  --secondary-foreground: 239 70% 35%;
+
+  --muted: 30 10% 95%;
+  --muted-foreground: 25 5% 45%;
+
+  --accent: 232 100% 96%;
+  --accent-foreground: 239 70% 35%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 30 10% 91%;
+  --input: 30 10% 91%;
+  --ring: 239 84% 60%;
+
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 25 8% 28%;
+  --sidebar-primary: 239 84% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 232 100% 96%;
+  --sidebar-accent-foreground: 239 70% 35%;
+  --sidebar-border: 30 10% 91%;
+  --sidebar-ring: 239 84% 60%;
+}

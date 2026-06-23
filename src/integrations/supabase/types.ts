@@ -47,6 +47,168 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          compensations: Json
+          created_at: string
+          current_annual_comp: number | null
+          department: string | null
+          email: string | null
+          first_name: string
+          hire_date: string | null
+          last_name: string
+          last_synced_at: string
+          manager_uuid: string | null
+          payment_unit: string | null
+          terminated: boolean
+          title: string | null
+          updated_at: string
+          uuid: string
+        }
+        Insert: {
+          compensations?: Json
+          created_at?: string
+          current_annual_comp?: number | null
+          department?: string | null
+          email?: string | null
+          first_name: string
+          hire_date?: string | null
+          last_name: string
+          last_synced_at?: string
+          manager_uuid?: string | null
+          payment_unit?: string | null
+          terminated?: boolean
+          title?: string | null
+          updated_at?: string
+          uuid: string
+        }
+        Update: {
+          compensations?: Json
+          created_at?: string
+          current_annual_comp?: number | null
+          department?: string | null
+          email?: string | null
+          first_name?: string
+          hire_date?: string | null
+          last_name?: string
+          last_synced_at?: string
+          manager_uuid?: string | null
+          payment_unit?: string | null
+          terminated?: boolean
+          title?: string | null
+          updated_at?: string
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_manager_uuid_fkey"
+            columns: ["manager_uuid"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
+      goal_key_results: {
+        Row: {
+          created_at: string
+          current_value: number
+          goal_id: string
+          id: string
+          metric_type: string
+          sort_order: number
+          starting_value: number
+          target_value: number
+          title: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number
+          goal_id: string
+          id?: string
+          metric_type?: string
+          sort_order?: number
+          starting_value?: number
+          target_value?: number
+          title: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number
+          goal_id?: string
+          id?: string
+          metric_type?: string
+          sort_order?: number
+          starting_value?: number
+          target_value?: number
+          title?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_key_results_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          employee_name: string
+          employee_uuid: string
+          id: string
+          parent_goal_id: string | null
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          employee_name: string
+          employee_uuid: string
+          id?: string
+          parent_goal_id?: string | null
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          employee_name?: string
+          employee_uuid?: string
+          id?: string
+          parent_goal_id?: string | null
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_parent_goal_id_fkey"
+            columns: ["parent_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manager_notes: {
         Row: {
           content: string
@@ -81,6 +243,152 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      performance_reviews: {
+        Row: {
+          comp_adjustment_amount: number | null
+          comp_adjustment_percent: number | null
+          comp_effective_date: string | null
+          completed_date: string | null
+          created_at: string
+          current_annual_comp: number | null
+          cycle_id: string | null
+          department: string | null
+          employee_email: string | null
+          employee_name: string
+          employee_uuid: string
+          hire_date: string | null
+          id: string
+          manager_review_response: string | null
+          manager_review_sent_at: string | null
+          new_title: string | null
+          notes: string | null
+          overall_rating: string | null
+          promotion: boolean
+          review_cycle: string
+          review_type: string
+          reviewer_uuid: string | null
+          scheduled_date: string
+          self_assessment_response: string | null
+          self_assessment_sent_at: string | null
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          comp_adjustment_amount?: number | null
+          comp_adjustment_percent?: number | null
+          comp_effective_date?: string | null
+          completed_date?: string | null
+          created_at?: string
+          current_annual_comp?: number | null
+          cycle_id?: string | null
+          department?: string | null
+          employee_email?: string | null
+          employee_name: string
+          employee_uuid: string
+          hire_date?: string | null
+          id?: string
+          manager_review_response?: string | null
+          manager_review_sent_at?: string | null
+          new_title?: string | null
+          notes?: string | null
+          overall_rating?: string | null
+          promotion?: boolean
+          review_cycle?: string
+          review_type?: string
+          reviewer_uuid?: string | null
+          scheduled_date: string
+          self_assessment_response?: string | null
+          self_assessment_sent_at?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          comp_adjustment_amount?: number | null
+          comp_adjustment_percent?: number | null
+          comp_effective_date?: string | null
+          completed_date?: string | null
+          created_at?: string
+          current_annual_comp?: number | null
+          cycle_id?: string | null
+          department?: string | null
+          employee_email?: string | null
+          employee_name?: string
+          employee_uuid?: string
+          hire_date?: string | null
+          id?: string
+          manager_review_response?: string | null
+          manager_review_sent_at?: string | null
+          new_title?: string | null
+          notes?: string | null
+          overall_rating?: string | null
+          promotion?: boolean
+          review_cycle?: string
+          review_type?: string
+          reviewer_uuid?: string | null
+          scheduled_date?: string
+          self_assessment_response?: string | null
+          self_assessment_sent_at?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_reviews_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "review_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_cycles: {
+        Row: {
+          created_at: string
+          description: string | null
+          ends_at: string
+          id: string
+          name: string
+          question_template: Json | null
+          review_types: string[]
+          scope_type: string
+          scope_value: string | null
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          ends_at: string
+          id?: string
+          name: string
+          question_template?: Json | null
+          review_types?: string[]
+          scope_type?: string
+          scope_value?: string | null
+          starts_at: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          id?: string
+          name?: string
+          question_template?: Json | null
+          review_types?: string[]
+          scope_type?: string
+          scope_value?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       role_configs: {
         Row: {
