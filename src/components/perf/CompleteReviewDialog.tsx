@@ -22,7 +22,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect as useEffectAlias } from "react";
+import {
+  aggregate,
+  methodLabels,
+  ratingBucket,
+  type AggregationMethod,
+} from "@/lib/contributorAggregation";
+import { format, parseISO } from "date-fns";
 
 export type ReviewRow = {
   id: string;
@@ -42,6 +48,20 @@ export type ReviewRow = {
   current_annual_comp: number | null;
   self_assessment_sent_at: string | null;
   manager_review_sent_at: string | null;
+  aggregation_method?: string | null;
+};
+
+type ContribRow = {
+  id: string;
+  contributor_name: string;
+  status: string;
+  submitted_at: string | null;
+  submission_count: number;
+  weight: number;
+  current_version_id: string | null;
+  rating_overall: number | null;
+  rating_collaboration: number | null;
+  rating_impact: number | null;
 };
 
 type Props = {
@@ -55,15 +75,11 @@ const today = () => new Date().toISOString().slice(0, 10);
 export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
-  const [contribStats, setContribStats] = useState<{
-    submitted: number;
-    invited: number;
-    avgOverall: number | null;
-    avgCollab: number | null;
-    avgImpact: number | null;
-  } | null>(null);
+  const [contribs, setContribs] = useState<ContribRow[]>([]);
+  const [method, setMethod] = useState<AggregationMethod>("mean");
 
   const [rating, setRating] = useState<string>("meets");
+  const [autoSuggest, setAutoSuggest] = useState(true);
   const [compAmount, setCompAmount] = useState<string>("");
   const [effectiveDate, setEffectiveDate] = useState<string>(today());
   const [promotion, setPromotion] = useState(false);
@@ -73,6 +89,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   useEffect(() => {
     if (!review) return;
     setRating(review.overall_rating ?? "meets");
+    setMethod(((review.aggregation_method as AggregationMethod) ?? "mean"));
+    setAutoSuggest(!review.overall_rating);
     setCompAmount(review.comp_adjustment_amount?.toString() ?? "");
     setEffectiveDate(review.comp_effective_date ?? today());
     setPromotion(review.promotion ?? false);
@@ -80,34 +98,17 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     setNotes(review.notes ?? "");
   }, [review]);
 
-  useEffectAlias(() => {
+  useEffect(() => {
     if (!review) {
-      setContribStats(null);
+      setContribs([]);
       return;
     }
     (async () => {
       const { data } = await supabase
         .from("review_contributors")
-        .select("status, rating_overall, rating_collaboration, rating_impact")
+        .select("id, contributor_name, status, submitted_at, submission_count, weight, current_version_id, rating_overall, rating_collaboration, rating_impact")
         .eq("review_id", review.id);
-      const rows = data ?? [];
-      const submitted = rows.filter((r) => r.status === "submitted");
-      const avg = (key: "rating_overall" | "rating_collaboration" | "rating_impact") => {
-        const vals = submitted.map((r) => r[key]).filter((v): v is number => v != null);
-        return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-      };
-      const avgOverall = avg("rating_overall");
-      setContribStats({
-        submitted: submitted.length,
-        invited: rows.length,
-        avgOverall,
-        avgCollab: avg("rating_collaboration"),
-        avgImpact: avg("rating_impact"),
-      });
-      // Suggest a rating based on the contributor average if the manager hasn't set one yet
-      if (!review.overall_rating && avgOverall != null) {
-        setRating(avgOverall >= 4 ? "exceeds" : avgOverall < 3 ? "below" : "meets");
-      }
+      setContribs((data ?? []) as ContribRow[]);
     })();
   }, [review]);
 
@@ -117,8 +118,26 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const amountNum = compAmount === "" ? null : Number(compAmount);
   const pct = amountNum != null && baseComp > 0 ? (amountNum / baseComp) * 100 : null;
 
+  const submitted = contribs.filter((c) => c.status === "submitted");
+  const breakdown = {
+    overall: aggregate(submitted, "rating_overall", method),
+    collab: aggregate(submitted, "rating_collaboration", method),
+    impact: aggregate(submitted, "rating_impact", method),
+  };
+  const suggestedBucket = ratingBucket(breakdown.overall);
+
+  // Live-suggest rating from selected aggregation method while autoSuggest is on
+  useEffect(() => {
+    if (autoSuggest && suggestedBucket) setRating(suggestedBucket);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suggestedBucket, autoSuggest]);
+
   async function handleSave() {
     setSaving(true);
+    const selected_contributor_versions = contribs.reduce<Record<string, string>>((acc, c) => {
+      if (c.current_version_id) acc[c.id] = c.current_version_id;
+      return acc;
+    }, {});
     const { error } = await supabase
       .from("performance_reviews")
       .update({
@@ -131,6 +150,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         promotion,
         new_title: promotion ? newTitle || null : null,
         notes: notes || null,
+        aggregation_method: method,
+        selected_contributor_versions,
       })
       .eq("id", review.id);
     setSaving(false);
@@ -153,22 +174,54 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         </DialogHeader>
 
         <div className="grid gap-4">
-          {contribStats && contribStats.invited > 0 && (
-            <div className="rounded-md border bg-muted/40 p-3 text-sm">
-              <div className="flex items-center justify-between">
+          {contribs.length > 0 && (
+            <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="font-medium">Contributor feedback</div>
-                <div className="text-xs text-muted-foreground">
-                  {contribStats.submitted} of {contribStats.invited} submitted
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {submitted.length} of {contribs.length} submitted
+                  </span>
+                  <Select value={method} onValueChange={(v) => setMethod(v as AggregationMethod)}>
+                    <SelectTrigger className="h-8 w-[200px] text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(methodLabels) as AggregationMethod[]).map((m) => (
+                        <SelectItem key={m} value={m}>{methodLabels[m]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              {contribStats.submitted > 0 ? (
-                <div className="mt-2 grid grid-cols-3 gap-3 text-center">
-                  <Stat label="Overall" value={contribStats.avgOverall} />
-                  <Stat label="Collaboration" value={contribStats.avgCollab} />
-                  <Stat label="Impact" value={contribStats.avgImpact} />
-                </div>
+              {submitted.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <Stat label="Overall" value={breakdown.overall} />
+                    <Stat label="Collaboration" value={breakdown.collab} />
+                    <Stat label="Impact" value={breakdown.impact} />
+                  </div>
+                  <div className="border-t pt-2 space-y-1">
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Submissions</div>
+                    {contribs.map((c) => (
+                      <div key={c.id} className="flex items-center justify-between text-xs">
+                        <span className="truncate">
+                          {c.contributor_name}
+                          {c.submission_count > 1 && (
+                            <span className="ml-1 text-amber-700">· resubmitted v{c.submission_count}</span>
+                          )}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {c.status === "submitted" && c.submitted_at
+                            ? `${format(parseISO(c.submitted_at), "MMM d, h:mma")} · w${c.weight}`
+                            : "Pending"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   No submissions yet. The rating below stays your call.
                 </p>
               )}
@@ -177,7 +230,13 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
 
           <div className="grid gap-2">
             <Label>Overall rating</Label>
-            <Select value={rating} onValueChange={setRating}>
+            <Select
+              value={rating}
+              onValueChange={(v) => {
+                setRating(v);
+                setAutoSuggest(false);
+              }}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="exceeds">Exceeds expectations</SelectItem>
@@ -185,9 +244,10 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
                 <SelectItem value="below">Below expectations</SelectItem>
               </SelectContent>
             </Select>
-            {contribStats?.avgOverall != null && (
+            {breakdown.overall != null && (
               <p className="text-xs text-muted-foreground">
-                Suggested from contributor avg ({contribStats.avgOverall.toFixed(2)} / 5). Override anytime.
+                Suggested from {methodLabels[method].toLowerCase()} ({breakdown.overall.toFixed(2)} / 5).{" "}
+                {autoSuggest ? "Pick a rating to override." : "Manager override active."}
               </p>
             )}
           </div>
