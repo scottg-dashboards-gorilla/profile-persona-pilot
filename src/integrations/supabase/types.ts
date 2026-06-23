@@ -21,6 +21,7 @@ export type Database = {
           elapsed_seconds: number
           employee_name: string
           id: string
+          role: string | null
           scores: Json
           truthfulness: Json | null
         }
@@ -30,6 +31,7 @@ export type Database = {
           elapsed_seconds?: number
           employee_name: string
           id?: string
+          role?: string | null
           scores: Json
           truthfulness?: Json | null
         }
@@ -39,6 +41,7 @@ export type Database = {
           elapsed_seconds?: number
           employee_name?: string
           id?: string
+          role?: string | null
           scores?: Json
           truthfulness?: Json | null
         }
