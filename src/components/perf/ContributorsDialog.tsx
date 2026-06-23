@@ -24,6 +24,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { StatusPill } from "./StatusPill";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { History } from "lucide-react";
 
 export type ReviewContributor = {
   id: string;
@@ -41,6 +43,22 @@ export type ReviewContributor = {
   strengths: string | null;
   improvements: string | null;
   anonymous: boolean;
+  allow_resubmission: boolean;
+  weight: number;
+  current_version_id: string | null;
+  submission_count: number;
+};
+
+export type ContributorVersion = {
+  id: string;
+  contributor_id: string;
+  version: number;
+  submitted_at: string;
+  rating_overall: number | null;
+  rating_collaboration: number | null;
+  rating_impact: number | null;
+  strengths: string | null;
+  improvements: string | null;
 };
 
 type EmployeeOpt = { uuid: string; name: string; title: string | null; department: string | null };
