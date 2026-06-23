@@ -38,6 +38,8 @@ import {
   topMovers,
 } from "@/lib/assessmentDeltas";
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
+import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
+import { useState as useReactState } from "react";
 
 export type ReviewRow = {
   id: string;
@@ -89,6 +91,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [method, setMethod] = useState<AggregationMethod>("mean");
   const [currentAttempt, setCurrentAttempt] = useState<AttemptRow | null>(null);
   const [previousAttempt, setPreviousAttempt] = useState<AttemptRow | null>(null);
+  const [presetContext, setPresetContext] = useState<DeltaContext | null>(null);
 
   const [rating, setRating] = useState<string>("meets");
   const [autoSuggest, setAutoSuggest] = useState(true);
@@ -215,7 +218,20 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         </DialogHeader>
 
         <div className="grid gap-4">
-          <AssessmentDelta current={currentAttempt} previous={previousAttempt} />
+          <AssessmentDelta
+            current={currentAttempt}
+            previous={previousAttempt}
+            onPickContext={setPresetContext}
+          />
+          {currentAttempt && (
+            <ActionItemsPanel
+              employeeUuid={review.employee_uuid}
+              reviewId={review.id}
+              attemptId={currentAttempt.id}
+              presetContext={presetContext}
+              title="Reviewer action items"
+            />
+          )}
           {contribs.length > 0 && (
             <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -346,7 +362,11 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button
+            onClick={handleSave}
+            disabled={saving || !currentAttempt}
+            title={!currentAttempt ? "An assessment attempt is required for this review" : undefined}
+          >
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
             Mark complete
           </Button>
