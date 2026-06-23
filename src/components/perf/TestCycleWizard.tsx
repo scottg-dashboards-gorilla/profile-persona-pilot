@@ -63,6 +63,55 @@ function defaultCycleName() {
   return `Test cycle · ${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
 }
 
+function ProgressChecklist({ progress }: { progress: ProgressMap }) {
+  const order: ProgressKey[] = ["cycle", "employee", "review"];
+  const anyActive = order.some((k) => progress[k].state !== "pending");
+  if (!anyActive) return null;
+  return (
+    <div className="rounded-md border bg-card p-3 space-y-2">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+        Progress
+      </div>
+      <ul className="space-y-1.5">
+        {order.map((k) => {
+          const item = progress[k];
+          const Icon =
+            item.state === "done"
+              ? CheckCircle2
+              : item.state === "running"
+                ? Loader2
+                : item.state === "error"
+                  ? XCircle
+                  : Circle;
+          const color =
+            item.state === "done"
+              ? "text-emerald-600"
+              : item.state === "running"
+                ? "text-primary"
+                : item.state === "error"
+                  ? "text-red-600"
+                  : "text-muted-foreground";
+          return (
+            <li key={k} className="flex items-start gap-2 text-sm">
+              <Icon
+                className={`h-4 w-4 mt-0.5 shrink-0 ${color} ${item.state === "running" ? "animate-spin" : ""}`}
+              />
+              <div className="min-w-0">
+                <div className={item.state === "pending" ? "text-muted-foreground" : ""}>
+                  {item.label}
+                </div>
+                {item.detail && (
+                  <div className="text-[11px] text-muted-foreground truncate">{item.detail}</div>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
