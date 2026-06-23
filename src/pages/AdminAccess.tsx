@@ -145,14 +145,14 @@ export default function AdminAccess() {
       first_name: newEmp.first_name.trim(),
       last_name: newEmp.last_name.trim(),
       email: newEmp.email.trim(),
-      title: newEmp.title.trim() || null,
-      department: newEmp.department.trim() || null,
-      user_id: linkUserId.trim() || null,
+      title: newEmp.title.trim() || undefined,
+      department: newEmp.department.trim() || undefined,
+      user_id: linkUserId.trim() || undefined,
       terminated: false,
     };
     const { data, error } = await supabase
       .from("employees")
-      .insert(payload)
+      .insert([payload])
       .select("uuid")
       .single();
     if (error) return toast.error(error.message);
