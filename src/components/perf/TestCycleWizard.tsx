@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Copy, CheckCircle2, ArrowRight, FlaskConical } from "lucide-react";
+import { Loader2, Copy, CheckCircle2, ArrowRight, FlaskConical, Circle, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
@@ -33,6 +33,27 @@ type Employee = {
 
 type Step = 1 | 2 | 3 | 4;
 
+type ProgressKey = "cycle" | "employee" | "review";
+type ProgressState = "pending" | "running" | "done" | "error";
+type ProgressMap = Record<ProgressKey, { state: ProgressState; label: string; detail?: string }>;
+
+const PROGRESS_LABELS: Record<ProgressKey, string> = {
+  cycle: "Create review cycle",
+  employee: "Prepare employee",
+  review: "Schedule overdue review",
+};
+
+function initialProgress(employeeMode: "existing" | "new"): ProgressMap {
+  return {
+    cycle: { state: "pending", label: PROGRESS_LABELS.cycle },
+    employee: {
+      state: "pending",
+      label: employeeMode === "existing" ? "Select existing employee" : "Create new employee",
+    },
+    review: { state: "pending", label: PROGRESS_LABELS.review },
+  };
+}
+
 function isoDate(d: Date) {
   return d.toISOString().slice(0, 10);
 }
@@ -40,6 +61,55 @@ function isoDate(d: Date) {
 function defaultCycleName() {
   const d = new Date();
   return `Test cycle · ${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+}
+
+function ProgressChecklist({ progress }: { progress: ProgressMap }) {
+  const order: ProgressKey[] = ["cycle", "employee", "review"];
+  const anyActive = order.some((k) => progress[k].state !== "pending");
+  if (!anyActive) return null;
+  return (
+    <div className="rounded-md border bg-card p-3 space-y-2">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+        Progress
+      </div>
+      <ul className="space-y-1.5">
+        {order.map((k) => {
+          const item = progress[k];
+          const Icon =
+            item.state === "done"
+              ? CheckCircle2
+              : item.state === "running"
+                ? Loader2
+                : item.state === "error"
+                  ? XCircle
+                  : Circle;
+          const color =
+            item.state === "done"
+              ? "text-emerald-600"
+              : item.state === "running"
+                ? "text-primary"
+                : item.state === "error"
+                  ? "text-red-600"
+                  : "text-muted-foreground";
+          return (
+            <li key={k} className="flex items-start gap-2 text-sm">
+              <Icon
+                className={`h-4 w-4 mt-0.5 shrink-0 ${color} ${item.state === "running" ? "animate-spin" : ""}`}
+              />
+              <div className="min-w-0">
+                <div className={item.state === "pending" ? "text-muted-foreground" : ""}>
+                  {item.label}
+                </div>
+                {item.detail && (
+                  <div className="text-[11px] text-muted-foreground truncate">{item.detail}</div>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 }
 
 type Props = {
@@ -52,6 +122,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>(1);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<ProgressMap>(initialProgress("existing"));
 
   // Step 1: cycle
   const [cycleName, setCycleName] = useState(defaultCycleName());
@@ -108,6 +179,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
     setCreatedCycleId(null);
     setCreatedReviewId(null);
     setCreatedEmployeeUuid(null);
+    setProgress(initialProgress("existing"));
   }
 
   const assessmentLink = useMemo(() => {
@@ -120,8 +192,14 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
 
   async function runWizard() {
     setBusy(true);
+    const next = initialProgress(employeeMode);
+    setProgress(next);
+    const mark = (key: ProgressKey, patch: Partial<ProgressMap[ProgressKey]>) =>
+      setProgress((p) => ({ ...p, [key]: { ...p[key], ...patch } }));
+
     try {
       // 1. Cycle
+      mark("cycle", { state: "running" });
       const { data: cyc, error: cycErr } = await supabase
         .from("review_cycles")
         .insert({
@@ -136,8 +214,11 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         .single();
       if (cycErr) throw cycErr;
       const cycleId = cyc!.id as string;
+      mark("cycle", { state: "done", detail: cycleName.trim() || defaultCycleName() });
+      toast({ title: "Cycle created", description: cycleName.trim() || defaultCycleName() });
 
       // 2. Employee
+      mark("employee", { state: "running" });
       let empUuid: string;
       let empName: string;
       let empEmail: string | null = null;
@@ -152,6 +233,8 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         empEmail = found.email;
         empDept = found.department;
         empTitle = found.title;
+        mark("employee", { state: "done", detail: empName });
+        toast({ title: "Employee selected", description: empName });
       } else {
         const stamp = Math.random().toString(36).slice(2, 8);
         empUuid = `test-${stamp}`;
@@ -169,9 +252,12 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         empEmail = newEmail.trim() || null;
         empDept = newDept.trim() || null;
         empTitle = newTitle.trim() || null;
+        mark("employee", { state: "done", detail: `${empName} (${empUuid})` });
+        toast({ title: "Employee created", description: empName });
       }
 
       // 3. Performance review (overdue)
+      mark("review", { state: "running" });
       const { data: rev, error: revErr } = await supabase
         .from("performance_reviews")
         .insert({
@@ -189,14 +275,22 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         .select("id")
         .single();
       if (revErr) throw revErr;
+      mark("review", { state: "done", detail: `Scheduled ${scheduledDate}` });
+      toast({ title: "Overdue review scheduled", description: empName });
 
       setCreatedCycleId(cycleId);
       setCreatedReviewId(rev!.id as string);
       setCreatedEmployeeUuid(empUuid);
       setStep(4);
       onCompleted?.();
-      toast({ title: "Test cycle created", description: empName });
+      toast({ title: "Test cycle ready", description: "Assessment link generated." });
     } catch (e: any) {
+      setProgress((p) => {
+        const order: ProgressKey[] = ["cycle", "employee", "review"];
+        const runningKey = order.find((k) => p[k].state === "running");
+        if (!runningKey) return p;
+        return { ...p, [runningKey]: { ...p[runningKey], state: "error", detail: e?.message } };
+      });
       toast({
         title: "Couldn't create test cycle",
         description: e?.message ?? "Unknown error",
@@ -345,6 +439,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
               </div>
               <div><strong>Review:</strong> overdue manager review</div>
             </div>
+            <ProgressChecklist progress={progress} />
           </div>
         )}
 
