@@ -39,7 +39,6 @@ import {
 } from "@/lib/assessmentDeltas";
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
-import { useState as useReactState } from "react";
 
 export type ReviewRow = {
   id: string;
@@ -394,16 +393,18 @@ function deltaTone(d: number) {
 function AssessmentDelta({
   current,
   previous,
+  onPickContext,
 }: {
   current: AttemptRow | null;
   previous: AttemptRow | null;
+  onPickContext?: (ctx: DeltaContext) => void;
 }) {
   if (!current) {
     return (
       <div className="rounded-md border border-amber-300 bg-amber-50 text-amber-900 p-3 text-sm flex items-start gap-2">
         <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
         <div>
-          <div className="font-medium">Assessment not submitted yet</div>
+          <div className="font-medium">Assessment required — review can't be completed yet</div>
           <div className="text-xs">
             Use the "Assess" action on the review row to copy a link, then have the employee complete the
             assessment before marking this review complete.
@@ -430,22 +431,33 @@ function AssessmentDelta({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Tier</div>
-          <div className="font-medium">
+          <button
+            type="button"
+            className="font-medium text-left hover:underline disabled:no-underline"
+            disabled={!onPickContext}
+            onClick={() =>
+              onPickContext?.({ kind: "tier", key: current.tier ?? null, label: "Tier" })
+            }
+          >
             {previous ? `${readableTier(tier.from)} → ` : ""}
             {readableTier(tier.to)}
-          </div>
+          </button>
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">DISC shift</div>
           <div className="flex flex-wrap gap-1">
             {disc.map((d) => (
-              <span
+              <button
+                type="button"
                 key={d.letter}
-                className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[11px] ${deltaTone(d.delta)}`}
+                onClick={() =>
+                  onPickContext?.({ kind: "disc", key: d.letter, from: d.from, to: d.to })
+                }
+                className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[11px] hover:bg-muted ${deltaTone(d.delta)}`}
               >
                 {d.letter} {d.delta >= 0 ? "+" : ""}
                 {d.delta.toFixed(0)}
-              </span>
+              </button>
             ))}
           </div>
         </div>
@@ -460,10 +472,17 @@ function AssessmentDelta({
               <div className="text-xs text-muted-foreground">—</div>
             ) : (
               ups.map((d) => (
-                <div key={d.id} className="flex justify-between text-xs">
+                <button
+                  type="button"
+                  key={d.id}
+                  onClick={() =>
+                    onPickContext?.({ kind: "technical", key: d.id, from: d.from, to: d.to })
+                  }
+                  className="flex justify-between text-xs w-full hover:bg-muted/60 rounded px-1"
+                >
                   <span className="truncate">{d.id}</span>
                   <span className="text-emerald-700">+{d.delta!.toFixed(0)}</span>
-                </div>
+                </button>
               ))
             )}
           </div>
@@ -475,14 +494,26 @@ function AssessmentDelta({
               <div className="text-xs text-muted-foreground">—</div>
             ) : (
               downs.map((d) => (
-                <div key={d.id} className="flex justify-between text-xs">
+                <button
+                  type="button"
+                  key={d.id}
+                  onClick={() =>
+                    onPickContext?.({ kind: "technical", key: d.id, from: d.from, to: d.to })
+                  }
+                  className="flex justify-between text-xs w-full hover:bg-muted/60 rounded px-1"
+                >
                   <span className="truncate">{d.id}</span>
                   <span className="text-red-700">{d.delta!.toFixed(0)}</span>
-                </div>
+                </button>
               ))
             )}
           </div>
         </div>
+      )}
+      {onPickContext && (
+        <p className="text-[11px] text-muted-foreground border-t pt-2">
+          Click any chip to pre-fill an action item below.
+        </p>
       )}
     </div>
   );
