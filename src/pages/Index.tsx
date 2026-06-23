@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAssessment, getSavedProgress, clearSavedProgress } from "@/hooks/useAssessment";
 import { supabase } from "@/integrations/supabase/client";
 import IntroScreen from "@/components/assessment/IntroScreen";
@@ -7,11 +7,15 @@ import QuestionScreen from "@/components/assessment/QuestionScreen";
 import ThankYouScreen from "@/components/assessment/ThankYouScreen";
 import { toast } from "@/hooks/use-toast";
 import { useRoles } from "@/hooks/useRoles";
+import { classifyTier } from "@/lib/tierClassification";
 
 type Screen = "intro" | "questions" | "results";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const reviewId = useMemo(() => params.get("review"), [params]);
+  const employeeUuidParam = useMemo(() => params.get("employee"), [params]);
   const { roles } = useRoles();
   const {
     state,
@@ -69,6 +73,52 @@ const Index = () => {
     if (error) {
       console.error("Failed to save profile:", error);
       toast({ title: "Warning", description: "Profile completed but failed to save. Results are shown below.", variant: "destructive" });
+    }
+
+    // Also write a versioned attempt for trend tracking
+    const tier = classifyTier(scores);
+    const technical_scores = scores.reduce<Record<string, number>>((acc, s) => {
+      acc[s.dimensionId] = s.normalizedScore;
+      return acc;
+    }, {});
+    const employee_uuid = employeeUuidParam ?? employeeName;
+    let linkedCycleId: string | null = null;
+    if (reviewId) {
+      const { data } = await supabase
+        .from("performance_reviews")
+        .select("cycle_id")
+        .eq("id", reviewId)
+        .maybeSingle();
+      linkedCycleId = (data?.cycle_id as string | null) ?? null;
+    }
+    const { data: attempt, error: attemptErr } = await supabase
+      .from("assessment_attempts")
+      .insert({
+        employee_uuid,
+        review_id: reviewId,
+        cycle_id: linkedCycleId,
+        submitted_at: new Date().toISOString(),
+        disc_scores: {
+          D: discProfile.D,
+          I: discProfile.I,
+          S: discProfile.S,
+          C: discProfile.C,
+        } as unknown as any,
+        disc_primary: discProfile.primaryType,
+        tier: tier.tier,
+        technical_scores: technical_scores as unknown as any,
+        truthfulness_score: truthfulness?.score ?? null,
+        raw_answers: state.answers as unknown as any,
+      })
+      .select("id")
+      .single();
+    if (attemptErr) {
+      console.error("Failed to save attempt:", attemptErr);
+    } else if (attempt && reviewId) {
+      await supabase
+        .from("performance_reviews")
+        .update({ assessment_attempt_id: attempt.id })
+        .eq("id", reviewId);
     }
   }, [startTime, completeAssessment, employeeName, role, scores, discProfile, truthfulness]);
 

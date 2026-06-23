@@ -12,6 +12,7 @@ import PerfLayout from "./components/perf/PerfLayout";
 import Overview from "./pages/perf/Overview";
 import Reviews from "./pages/perf/Reviews";
 import People from "./pages/perf/People";
+import EmployeeDetail from "./pages/perf/EmployeeDetail";
 import Cycles from "./pages/perf/Cycles";
 import Goals from "./pages/perf/Goals";
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/" element={<Overview />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/people" element={<People />} />
+            <Route path="/people/:uuid" element={<EmployeeDetail />} />
             <Route path="/cycles" element={<Cycles />} />
             <Route path="/goals" element={<Goals />} />
             <Route path="/assessments" element={<Dashboard />} />
