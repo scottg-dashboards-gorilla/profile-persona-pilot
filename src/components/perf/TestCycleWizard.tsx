@@ -331,12 +331,15 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         .select("id")
         .single();
       if (revErr) throw revErr;
+      txRef.current.reviewId = rev!.id as string;
       mark("review", { state: "done", detail: `Scheduled ${scheduledDate}` });
       toast({ title: "Overdue review scheduled", description: empName });
 
       setCreatedCycleId(cycleId);
       setCreatedReviewId(rev!.id as string);
       setCreatedEmployeeUuid(empUuid);
+      // Run completed cleanly — nothing left to undo.
+      txRef.current = {};
       setStep(4);
       onCompleted?.();
       toast({ title: "Test cycle ready", description: "Assessment link generated." });
@@ -347,6 +350,21 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         if (!runningKey) return p;
         return { ...p, [runningKey]: { ...p[runningKey], state: "error", detail: e?.message } };
       });
+      let undone: string[] = [];
+      try {
+        undone = await rollback();
+      } catch {
+        /* rollback is best-effort */
+      }
+      const leftover = Object.keys(txRef.current).length > 0;
+      setRollbackNote(
+        leftover
+          ? "Some test records couldn't be removed automatically. Retrying will attempt cleanup again."
+          : undone.length > 0
+            ? `Rolled back: ${undone.join(", ")}. Nothing partial was left behind — safe to retry.`
+            : "No records were created, so nothing needed cleanup. Safe to retry.",
+      );
+      onCompleted?.();
       toast({
         title: "Couldn't create test cycle",
         description: e?.message ?? "Unknown error",
