@@ -239,6 +239,10 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
 
   async function runWizard() {
     setBusy(true);
+    setRollbackNote(null);
+    // Anything left over from a previous failed run gets cleaned before retrying.
+    if (Object.keys(txRef.current).length > 0) await rollback();
+    txRef.current = {};
     const next = initialProgress(employeeMode);
     setProgress(next);
     const mark = (key: ProgressKey, patch: Partial<ProgressMap[ProgressKey]>) =>
