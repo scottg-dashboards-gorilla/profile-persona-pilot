@@ -265,6 +265,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         .single();
       if (cycErr) throw cycErr;
       const cycleId = cyc!.id as string;
+      txRef.current.cycleId = cycleId;
       mark("cycle", { state: "done", detail: cycleName.trim() || defaultCycleName() });
       toast({ title: "Cycle created", description: cycleName.trim() || defaultCycleName() });
 
@@ -284,6 +285,8 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         empEmail = found.email;
         empDept = found.department;
         empTitle = found.title;
+        txRef.current.employeeUuid = empUuid;
+        txRef.current.employeeCreated = false;
         mark("employee", { state: "done", detail: empName });
         toast({ title: "Employee selected", description: empName });
       } else {
@@ -299,6 +302,8 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
           hire_date: isoDate(today),
         });
         if (empErr) throw empErr;
+        txRef.current.employeeUuid = empUuid;
+        txRef.current.employeeCreated = true;
         empName = `${newFirst.trim()} ${newLast.trim()}`;
         empEmail = newEmail.trim() || null;
         empDept = newDept.trim() || null;
