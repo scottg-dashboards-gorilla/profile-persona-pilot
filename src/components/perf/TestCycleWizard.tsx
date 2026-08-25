@@ -514,6 +514,11 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
               <div><strong>Review:</strong> overdue manager review</div>
             </div>
             <ProgressChecklist progress={progress} />
+            {rollbackNote && (
+              <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+                {rollbackNote}
+              </div>
+            )}
           </div>
         )}
 
@@ -572,7 +577,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
               ) : (
                 <Button onClick={runWizard} disabled={busy || !canRun}>
                   {busy && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-                  Create test cycle
+                  {rollbackNote ? "Retry" : "Create test cycle"}
                 </Button>
               )}
             </>
