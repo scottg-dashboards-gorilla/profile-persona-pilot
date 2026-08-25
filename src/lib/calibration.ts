@@ -126,3 +126,27 @@ export const ratingToNumber: Record<string, number> = {
   meets: 3,
   below: 2,
 };
+
+/** Ordered rating labels with their numeric anchors, low → high. */
+export const ratingScale: { key: string; label: string; value: number }[] = [
+  { key: "below", label: "Below", value: 2 },
+  { key: "meets", label: "Meets", value: 3 },
+  { key: "exceeds", label: "Exceeds", value: 4.5 },
+];
+
+/** Snap a numeric rating back onto the nearest label used by performance reviews. */
+export function numberToRating(n: number): string {
+  let best = ratingScale[0];
+  ratingScale.forEach((r) => {
+    if (Math.abs(r.value - n) < Math.abs(best.value - n)) best = r;
+  });
+  return best.key;
+}
+
+/** Apply a calibration shift to a label rating, returning the new label. */
+export function shiftRating(rating: string, adjustment: number): string {
+  const current = ratingToNumber[rating];
+  if (current === undefined) return rating;
+  const target = Math.max(1, Math.min(5, current + adjustment));
+  return numberToRating(target);
+}
