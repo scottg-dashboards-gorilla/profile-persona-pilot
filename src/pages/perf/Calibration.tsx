@@ -84,7 +84,7 @@ export default function Calibration() {
       setLoading(true);
       let rq = supabase
         .from("performance_reviews")
-        .select("id,employee_uuid,employee_name,reviewer_uuid,overall_rating,cycle_id");
+        .select("id,employee_uuid,employee_name,reviewer_uuid,overall_rating,cycle_id,notes");
       if (cycleId !== "all") rq = rq.eq("cycle_id", cycleId);
 
       const [{ data: reviews }, { data: employees }] = await Promise.all([
@@ -104,6 +104,7 @@ export default function Calibration() {
 
       // Manager ratings: reviewer is the explicit reviewer, else the employee's manager.
       const mgr: ReviewerSample[] = [];
+      const alignable: (AlignableReview & { reviewerKey: string })[] = [];
       revRows.forEach((r) => {
         const num = r.overall_rating ? ratingToNumber[r.overall_rating] : undefined;
         if (num === undefined) return;
@@ -114,8 +115,17 @@ export default function Calibration() {
           rating: num,
           subject: r.employee_name,
         });
+        alignable.push({
+          id: r.id,
+          employee_name: r.employee_name,
+          overall_rating: r.overall_rating,
+          notes: r.notes ?? null,
+          reviewerKey: key,
+        });
       });
       setManagerSamples(mgr);
+      setManagerReviews(alignable);
+
 
       // Contributor (360) ratings.
       let contrib: ReviewerSample[] = [];
