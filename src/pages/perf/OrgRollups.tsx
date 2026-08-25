@@ -102,8 +102,12 @@ export default function OrgRollups() {
   const [groupBy, setGroupBy] = useState<"department" | "manager">("department");
   const [cycles, setCycles] = useState<{ id: string; name: string; status: string }[]>([]);
   const [cycleId, setCycleId] = useState("all");
+  const [deptFilter, setDeptFilter] = useState("all");
+  const [managerFilter, setManagerFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+
   const [goals, setGoals] = useState<Goal[]>([]);
   const [krs, setKrs] = useState<KeyResult[]>([]);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
