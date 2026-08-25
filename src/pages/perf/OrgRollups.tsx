@@ -244,7 +244,7 @@ export default function OrgRollups() {
     };
 
     const buildMember = (e: Employee): MemberRow => {
-      const rev = reviews.find((r) => r.employee_uuid === e.uuid);
+      const rev = visibleReviews.find((r) => r.employee_uuid === e.uuid);
       const comp = e.current_annual_comp ?? 0;
       const gp = goalProgressFor(e.uuid);
       const a = assessmentScore(e.uuid);
@@ -265,7 +265,7 @@ export default function OrgRollups() {
     };
 
     const groups = new Map<string, Employee[]>();
-    employees.forEach((e) => {
+    visibleEmployees.forEach((e) => {
       const key =
         groupBy === "department" ? e.department ?? "Unassigned" : e.manager_uuid ?? "unassigned";
       const list = groups.get(key) ?? [];
@@ -305,7 +305,7 @@ export default function OrgRollups() {
     });
 
     return out.sort((a, b) => b.headcount - a.headcount);
-  }, [employees, reviews, goals, krs, attempts, groupBy]);
+  }, [employees, visibleEmployees, visibleReviews, goals, krs, attempts, groupBy]);
 
   const totals = useMemo(() => {
     const headcount = rolls.reduce((s, r) => s + r.headcount, 0);
