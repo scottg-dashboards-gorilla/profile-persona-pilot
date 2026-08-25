@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, FileSpreadsheet, Settings, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, FileSpreadsheet, Settings, ShieldCheck, DollarSign } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +19,7 @@ const primary = [
   { title: "People", url: "/people", icon: Users },
   { title: "Cycles", url: "/cycles", icon: CalendarRange },
   { title: "Goals", url: "/goals", icon: Target },
+  { title: "Compensation", url: "/compensation", icon: DollarSign },
 ];
 
 const secondary = [

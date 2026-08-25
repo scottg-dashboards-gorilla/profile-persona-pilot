@@ -15,6 +15,7 @@ import People from "./pages/perf/People";
 import EmployeeDetail from "./pages/perf/EmployeeDetail";
 import Cycles from "./pages/perf/Cycles";
 import Goals from "./pages/perf/Goals";
+import Compensation from "./pages/perf/Compensation";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
             <Route path="/cycles" element={<Cycles />} />
             <Route path="/goals" element={<Goals />} />
+            <Route path="/compensation" element={<Compensation />} />
             <Route path="/assessments" element={<Dashboard />} />
             <Route path="/admin/roles" element={<AdminRoles />} />
             <Route path="/admin/access" element={<AdminAccess />} />

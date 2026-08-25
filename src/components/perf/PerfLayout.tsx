@@ -10,6 +10,7 @@ const pageTitles: Record<string, string> = {
   "/people": "People",
   "/cycles": "Cycles",
   "/goals": "Goals",
+  "/compensation": "Compensation & Raises",
 };
 
 export default function PerfLayout() {
