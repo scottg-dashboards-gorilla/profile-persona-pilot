@@ -189,7 +189,45 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
     setCreatedReviewId(null);
     setCreatedEmployeeUuid(null);
     setProgress(initialProgress("existing"));
+    setRollbackNote(null);
+    txRef.current = {};
   }
+
+  /**
+   * Undo everything created during the current run, in reverse dependency order.
+   * Existing employees are never deleted — only records this wizard created.
+   */
+  async function rollback(): Promise<string[]> {
+    const tx = txRef.current;
+    const undone: string[] = [];
+
+    if (tx.reviewId) {
+      await supabase.from("assessment_attempts").delete().eq("review_id", tx.reviewId);
+      const { error } = await supabase.from("performance_reviews").delete().eq("id", tx.reviewId);
+      if (!error) {
+        undone.push("review");
+        delete tx.reviewId;
+      }
+    }
+    if (tx.employeeUuid && tx.employeeCreated) {
+      const { error } = await supabase.from("employees").delete().eq("uuid", tx.employeeUuid);
+      if (!error) {
+        undone.push("test employee");
+        delete tx.employeeUuid;
+        delete tx.employeeCreated;
+      }
+    }
+    if (tx.cycleId) {
+      await supabase.from("performance_reviews").delete().eq("cycle_id", tx.cycleId);
+      const { error } = await supabase.from("review_cycles").delete().eq("id", tx.cycleId);
+      if (!error) {
+        undone.push("cycle");
+        delete tx.cycleId;
+      }
+    }
+    return undone;
+  }
+
 
   const assessmentLink = useMemo(() => {
     if (!createdReviewId || !createdEmployeeUuid) return "";
