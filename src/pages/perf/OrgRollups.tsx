@@ -146,7 +146,51 @@ export default function OrgRollups() {
     })();
   }, [cycleId]);
 
+  const departments = useMemo(
+    () =>
+      [...new Set(employees.map((e) => e.department ?? "Unassigned"))].sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [employees],
+  );
+
+  const managers = useMemo(() => {
+    const ids = new Set(employees.map((e) => e.manager_uuid).filter(Boolean) as string[]);
+    return [...ids]
+      .map((id) => {
+        const e = employees.find((x) => x.uuid === id);
+        return { uuid: id, name: e ? `${e.first_name} ${e.last_name}` : "Unknown manager" };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [employees]);
+
+  const reviewTypes = useMemo(
+    () => [...new Set(reviews.map((r) => r.review_type).filter(Boolean) as string[])].sort(),
+    [reviews],
+  );
+
+  /** Employees kept by the department/manager filters (drill-down uses the same list). */
+  const visibleEmployees = useMemo(
+    () =>
+      employees.filter((e) => {
+        if (deptFilter !== "all" && (e.department ?? "Unassigned") !== deptFilter) return false;
+        if (managerFilter !== "all" && e.manager_uuid !== managerFilter) return false;
+        return true;
+      }),
+    [employees, deptFilter, managerFilter],
+  );
+
+  /** Reviews kept by the review-type filter, scoped to the visible employees. */
+  const visibleReviews = useMemo(() => {
+    const ids = new Set(visibleEmployees.map((e) => e.uuid));
+    return reviews.filter(
+      (r) =>
+        ids.has(r.employee_uuid) && (typeFilter === "all" || r.review_type === typeFilter),
+    );
+  }, [reviews, visibleEmployees, typeFilter]);
+
   const rolls = useMemo<Roll[]>(() => {
+
     const nameOf = (u: string) => {
       const e = employees.find((x) => x.uuid === u);
       return e ? `${e.first_name} ${e.last_name}` : "Unassigned";
