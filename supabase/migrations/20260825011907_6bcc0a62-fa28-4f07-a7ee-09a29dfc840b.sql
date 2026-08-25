@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.record_audit() FROM anon, authenticated, PUBLIC;

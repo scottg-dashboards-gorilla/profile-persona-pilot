@@ -11,6 +11,9 @@ const pageTitles: Record<string, string> = {
   "/cycles": "Cycles",
   "/goals": "Goals",
   "/compensation": "Compensation & Raises",
+  "/calibration": "Reviewer Calibration",
+  "/org": "Org Rollups",
+  "/admin/audit": "Audit Log",
 };
 
 export default function PerfLayout() {

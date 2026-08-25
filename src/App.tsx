@@ -16,6 +16,10 @@ import EmployeeDetail from "./pages/perf/EmployeeDetail";
 import Cycles from "./pages/perf/Cycles";
 import Goals from "./pages/perf/Goals";
 import Compensation from "./pages/perf/Compensation";
+import Calibration from "./pages/perf/Calibration";
+import OrgRollups from "./pages/perf/OrgRollups";
+import AuditLog from "./pages/perf/AuditLog";
+import RequireArea from "./components/perf/RequireArea";
 
 const queryClient = new QueryClient();
 
@@ -29,12 +33,15 @@ const App = () => (
           {/* Performance Reviews app shell */}
           <Route element={<PerfLayout />}>
             <Route path="/" element={<Overview />} />
-            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/reviews" element={<RequireArea area="reviews"><Reviews /></RequireArea>} />
             <Route path="/people" element={<People />} />
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
-            <Route path="/cycles" element={<Cycles />} />
+            <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
             <Route path="/goals" element={<Goals />} />
-            <Route path="/compensation" element={<Compensation />} />
+            <Route path="/compensation" element={<RequireArea area="compensation"><Compensation /></RequireArea>} />
+            <Route path="/calibration" element={<RequireArea area="calibration"><Calibration /></RequireArea>} />
+            <Route path="/org" element={<RequireArea area="org"><OrgRollups /></RequireArea>} />
+            <Route path="/admin/audit" element={<RequireArea area="audit"><AuditLog /></RequireArea>} />
             <Route path="/assessments" element={<Dashboard />} />
             <Route path="/admin/roles" element={<AdminRoles />} />
             <Route path="/admin/access" element={<AdminAccess />} />

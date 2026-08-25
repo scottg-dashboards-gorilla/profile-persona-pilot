@@ -40,6 +40,7 @@ import {
   readableTier,
   type AttemptRow,
 } from "@/lib/assessmentDeltas";
+import ScenarioSimulator from "@/components/perf/ScenarioSimulator";
 
 type Cycle = { id: string; name: string; status: string };
 
@@ -479,6 +480,28 @@ export default function Compensation() {
           </Table>
         </CardContent>
       </Card>
+
+      <ScenarioSimulator
+        rows={rows.map((r) => ({
+          id: r.review.id,
+          name: r.review.employee_name,
+          comp: r.comp,
+          rating: r.review.overall_rating,
+          recPct: r.recPct,
+        }))}
+        onApply={(plan) => {
+          const next: Record<string, Plan> = {};
+          Object.entries(plan).forEach(([id, p]) => {
+            next[id] = { percent: p.percent, amount: p.amount, touched: true };
+          });
+          setPlans(next);
+          toast({
+            title: "Scenario applied to the planner",
+            description: "Adjust any individual number, then save the plan.",
+          });
+        }}
+      />
+
 
       <p className="text-xs text-muted-foreground">
         Recommendations come from a merit matrix: performance rating × assessment growth, plus a step
