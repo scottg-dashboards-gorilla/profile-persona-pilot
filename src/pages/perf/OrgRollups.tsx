@@ -42,10 +42,12 @@ type Review = {
   employee_uuid: string;
   overall_rating: string | null;
   status: string;
+  review_type: string | null;
   comp_adjustment_amount: number | null;
   comp_adjustment_percent: number | null;
   cycle_id: string | null;
 };
+
 
 type Goal = { id: string; employee_uuid: string; status: string };
 type KeyResult = {
@@ -100,8 +102,12 @@ export default function OrgRollups() {
   const [groupBy, setGroupBy] = useState<"department" | "manager">("department");
   const [cycles, setCycles] = useState<{ id: string; name: string; status: string }[]>([]);
   const [cycleId, setCycleId] = useState("all");
+  const [deptFilter, setDeptFilter] = useState("all");
+  const [managerFilter, setManagerFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+
   const [goals, setGoals] = useState<Goal[]>([]);
   const [krs, setKrs] = useState<KeyResult[]>([]);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
@@ -140,7 +146,51 @@ export default function OrgRollups() {
     })();
   }, [cycleId]);
 
+  const departments = useMemo(
+    () =>
+      [...new Set(employees.map((e) => e.department ?? "Unassigned"))].sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [employees],
+  );
+
+  const managers = useMemo(() => {
+    const ids = new Set(employees.map((e) => e.manager_uuid).filter(Boolean) as string[]);
+    return [...ids]
+      .map((id) => {
+        const e = employees.find((x) => x.uuid === id);
+        return { uuid: id, name: e ? `${e.first_name} ${e.last_name}` : "Unknown manager" };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [employees]);
+
+  const reviewTypes = useMemo(
+    () => [...new Set(reviews.map((r) => r.review_type).filter(Boolean) as string[])].sort(),
+    [reviews],
+  );
+
+  /** Employees kept by the department/manager filters (drill-down uses the same list). */
+  const visibleEmployees = useMemo(
+    () =>
+      employees.filter((e) => {
+        if (deptFilter !== "all" && (e.department ?? "Unassigned") !== deptFilter) return false;
+        if (managerFilter !== "all" && e.manager_uuid !== managerFilter) return false;
+        return true;
+      }),
+    [employees, deptFilter, managerFilter],
+  );
+
+  /** Reviews kept by the review-type filter, scoped to the visible employees. */
+  const visibleReviews = useMemo(() => {
+    const ids = new Set(visibleEmployees.map((e) => e.uuid));
+    return reviews.filter(
+      (r) =>
+        ids.has(r.employee_uuid) && (typeFilter === "all" || r.review_type === typeFilter),
+    );
+  }, [reviews, visibleEmployees, typeFilter]);
+
   const rolls = useMemo<Roll[]>(() => {
+
     const nameOf = (u: string) => {
       const e = employees.find((x) => x.uuid === u);
       return e ? `${e.first_name} ${e.last_name}` : "Unassigned";
@@ -194,7 +244,7 @@ export default function OrgRollups() {
     };
 
     const buildMember = (e: Employee): MemberRow => {
-      const rev = reviews.find((r) => r.employee_uuid === e.uuid);
+      const rev = visibleReviews.find((r) => r.employee_uuid === e.uuid);
       const comp = e.current_annual_comp ?? 0;
       const gp = goalProgressFor(e.uuid);
       const a = assessmentScore(e.uuid);
@@ -215,7 +265,7 @@ export default function OrgRollups() {
     };
 
     const groups = new Map<string, Employee[]>();
-    employees.forEach((e) => {
+    visibleEmployees.forEach((e) => {
       const key =
         groupBy === "department" ? e.department ?? "Unassigned" : e.manager_uuid ?? "unassigned";
       const list = groups.get(key) ?? [];
@@ -255,7 +305,7 @@ export default function OrgRollups() {
     });
 
     return out.sort((a, b) => b.headcount - a.headcount);
-  }, [employees, reviews, goals, krs, attempts, groupBy]);
+  }, [employees, visibleEmployees, visibleReviews, goals, krs, attempts, groupBy]);
 
   const totals = useMemo(() => {
     const headcount = rolls.reduce((s, r) => s + r.headcount, 0);
@@ -302,7 +352,70 @@ export default function OrgRollups() {
             </SelectContent>
           </Select>
         </div>
+        <div className="w-48">
+          <Label className="text-xs">Department</Label>
+          <Select value={deptFilter} onValueChange={setDeptFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All departments</SelectItem>
+              {departments.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {d}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-52">
+          <Label className="text-xs">Manager / team</Label>
+          <Select value={managerFilter} onValueChange={setManagerFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All teams</SelectItem>
+              {managers.map((m) => (
+                <SelectItem key={m.uuid} value={m.uuid}>
+                  {m.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-44">
+          <Label className="text-xs">Review type</Label>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              {reviewTypes.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {(deptFilter !== "all" || managerFilter !== "all" || typeFilter !== "all" || cycleId !== "all") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setDeptFilter("all");
+              setManagerFilter("all");
+              setTypeFilter("all");
+              setCycleId("all");
+            }}
+          >
+            Clear filters
+          </Button>
+        )}
       </div>
+
 
       <div className="grid gap-3 sm:grid-cols-4">
         {[

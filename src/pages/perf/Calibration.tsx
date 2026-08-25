@@ -21,7 +21,9 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { calibrate, ratingToNumber, MIN_SAMPLE, type ReviewerSample } from "@/lib/calibration";
+import ApplyAlignmentDialog, { type AlignableReview } from "@/components/perf/ApplyAlignmentDialog";
 import { Scale, TriangleAlert, Check, Info } from "lucide-react";
+
 import {
   BarChart,
   Bar,
@@ -54,7 +56,18 @@ export default function Calibration() {
   const [contributorSamples, setContributorSamples] = useState<ReviewerSample[]>([]);
   const [managerSamples, setManagerSamples] = useState<ReviewerSample[]>([]);
   const [assessmentSamples, setAssessmentSamples] = useState<ReviewerSample[]>([]);
+  const [managerReviews, setManagerReviews] = useState<
+    (AlignableReview & { reviewerKey: string })[]
+  >([]);
+  const [alignTarget, setAlignTarget] = useState<{
+    key: string;
+    name: string;
+    adjustment: number;
+    companyMean: number;
+  } | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     (async () => {
@@ -71,7 +84,7 @@ export default function Calibration() {
       setLoading(true);
       let rq = supabase
         .from("performance_reviews")
-        .select("id,employee_uuid,employee_name,reviewer_uuid,overall_rating,cycle_id");
+        .select("id,employee_uuid,employee_name,reviewer_uuid,overall_rating,cycle_id,notes");
       if (cycleId !== "all") rq = rq.eq("cycle_id", cycleId);
 
       const [{ data: reviews }, { data: employees }] = await Promise.all([
@@ -91,6 +104,7 @@ export default function Calibration() {
 
       // Manager ratings: reviewer is the explicit reviewer, else the employee's manager.
       const mgr: ReviewerSample[] = [];
+      const alignable: (AlignableReview & { reviewerKey: string })[] = [];
       revRows.forEach((r) => {
         const num = r.overall_rating ? ratingToNumber[r.overall_rating] : undefined;
         if (num === undefined) return;
@@ -101,8 +115,17 @@ export default function Calibration() {
           rating: num,
           subject: r.employee_name,
         });
+        alignable.push({
+          id: r.id,
+          employee_name: r.employee_name,
+          overall_rating: r.overall_rating,
+          notes: r.notes ?? null,
+          reviewerKey: key,
+        });
       });
       setManagerSamples(mgr);
+      setManagerReviews(alignable);
+
 
       // Contributor (360) ratings.
       let contrib: ReviewerSample[] = [];
@@ -151,7 +174,7 @@ export default function Calibration() {
       setAssessmentSamples(assess);
       setLoading(false);
     })();
-  }, [cycleId]);
+  }, [cycleId, reloadKey]);
 
   const views = useMemo(
     () => ({
@@ -348,9 +371,27 @@ export default function Calibration() {
                         </span>{" "}
                         to align with the company average of {view.companyMean.toFixed(1)}.
                       </span>
-                      <Button size="sm" variant="outline" className="ml-auto" asChild>
-                        <a href={`/reviews`}>Open their reviews</a>
-                      </Button>
+                      <div className="ml-auto flex items-center gap-2">
+                        {key === "managers" && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              setAlignTarget({
+                                key: r.reviewerKey,
+                                name: r.reviewerName,
+                                adjustment: r.suggestedAdjustment,
+                                companyMean: view.companyMean,
+                              })
+                            }
+                          >
+                            Apply suggested alignment
+                          </Button>
+                        )}
+                        <Button size="sm" variant="outline" asChild>
+                          <a href={`/reviews`}>Open their reviews</a>
+                        </Button>
+                      </div>
+
                     </div>
                   ))}
                 </CardContent>
@@ -359,6 +400,19 @@ export default function Calibration() {
           );
         })}
       </Tabs>
+
+      {alignTarget && (
+        <ApplyAlignmentDialog
+          open
+          onOpenChange={(v) => !v && setAlignTarget(null)}
+          reviewerName={alignTarget.name}
+          adjustment={alignTarget.adjustment}
+          companyMean={alignTarget.companyMean}
+          reviews={managerReviews.filter((r) => r.reviewerKey === alignTarget.key)}
+          onApplied={() => setReloadKey((k) => k + 1)}
+        />
+      )}
     </div>
+
   );
 }
