@@ -371,9 +371,27 @@ export default function Calibration() {
                         </span>{" "}
                         to align with the company average of {view.companyMean.toFixed(1)}.
                       </span>
-                      <Button size="sm" variant="outline" className="ml-auto" asChild>
-                        <a href={`/reviews`}>Open their reviews</a>
-                      </Button>
+                      <div className="ml-auto flex items-center gap-2">
+                        {key === "managers" && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              setAlignTarget({
+                                key: r.reviewerKey,
+                                name: r.reviewerName,
+                                adjustment: r.suggestedAdjustment,
+                                companyMean: view.companyMean,
+                              })
+                            }
+                          >
+                            Apply suggested alignment
+                          </Button>
+                        )}
+                        <Button size="sm" variant="outline" asChild>
+                          <a href={`/reviews`}>Open their reviews</a>
+                        </Button>
+                      </div>
+
                     </div>
                   ))}
                 </CardContent>
