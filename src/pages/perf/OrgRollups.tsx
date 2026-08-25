@@ -352,7 +352,70 @@ export default function OrgRollups() {
             </SelectContent>
           </Select>
         </div>
+        <div className="w-48">
+          <Label className="text-xs">Department</Label>
+          <Select value={deptFilter} onValueChange={setDeptFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All departments</SelectItem>
+              {departments.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {d}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-52">
+          <Label className="text-xs">Manager / team</Label>
+          <Select value={managerFilter} onValueChange={setManagerFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All teams</SelectItem>
+              {managers.map((m) => (
+                <SelectItem key={m.uuid} value={m.uuid}>
+                  {m.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-44">
+          <Label className="text-xs">Review type</Label>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              {reviewTypes.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {(deptFilter !== "all" || managerFilter !== "all" || typeFilter !== "all" || cycleId !== "all") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setDeptFilter("all");
+              setManagerFilter("all");
+              setTypeFilter("all");
+              setCycleId("all");
+            }}
+          >
+            Clear filters
+          </Button>
+        )}
       </div>
+
 
       <div className="grid gap-3 sm:grid-cols-4">
         {[
