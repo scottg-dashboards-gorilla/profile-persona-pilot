@@ -21,7 +21,9 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { calibrate, ratingToNumber, MIN_SAMPLE, type ReviewerSample } from "@/lib/calibration";
+import ApplyAlignmentDialog, { type AlignableReview } from "@/components/perf/ApplyAlignmentDialog";
 import { Scale, TriangleAlert, Check, Info } from "lucide-react";
+
 import {
   BarChart,
   Bar,
