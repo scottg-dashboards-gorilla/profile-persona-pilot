@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -151,6 +151,15 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
   const [createdCycleId, setCreatedCycleId] = useState<string | null>(null);
   const [createdReviewId, setCreatedReviewId] = useState<string | null>(null);
   const [createdEmployeeUuid, setCreatedEmployeeUuid] = useState<string | null>(null);
+
+  // Transactional bookkeeping — everything created during a single run.
+  const txRef = useRef<{
+    cycleId?: string;
+    reviewId?: string;
+    employeeUuid?: string;
+    employeeCreated?: boolean;
+  }>({});
+  const [rollbackNote, setRollbackNote] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
