@@ -174,7 +174,7 @@ export default function Calibration() {
       setAssessmentSamples(assess);
       setLoading(false);
     })();
-  }, [cycleId]);
+  }, [cycleId, reloadKey]);
 
   const views = useMemo(
     () => ({
