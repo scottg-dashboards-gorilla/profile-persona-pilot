@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -369,9 +369,8 @@ export default function OrgRollups() {
                 </TableRow>
               )}
               {rolls.map((r) => (
-                <>
+                <Fragment key={r.key}>
                   <TableRow
-                    key={r.key}
                     className="cursor-pointer"
                     onClick={() => setOpen((p) => ({ ...p, [r.key]: !p[r.key] }))}
                   >
@@ -482,7 +481,7 @@ export default function OrgRollups() {
                         </TableCell>
                       </TableRow>
                     ))}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>
