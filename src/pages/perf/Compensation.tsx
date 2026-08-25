@@ -40,6 +40,7 @@ import {
   readableTier,
   type AttemptRow,
 } from "@/lib/assessmentDeltas";
+import ScenarioSimulator from "@/components/perf/ScenarioSimulator";
 
 type Cycle = { id: string; name: string; status: string };
 
