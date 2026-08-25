@@ -400,6 +400,19 @@ export default function Calibration() {
           );
         })}
       </Tabs>
+
+      {alignTarget && (
+        <ApplyAlignmentDialog
+          open
+          onOpenChange={(v) => !v && setAlignTarget(null)}
+          reviewerName={alignTarget.name}
+          adjustment={alignTarget.adjustment}
+          companyMean={alignTarget.companyMean}
+          reviews={managerReviews.filter((r) => r.reviewerKey === alignTarget.key)}
+          onApplied={() => setReloadKey((k) => k + 1)}
+        />
+      )}
     </div>
+
   );
 }
