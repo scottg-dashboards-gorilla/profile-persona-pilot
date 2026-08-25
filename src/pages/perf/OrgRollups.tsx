@@ -42,10 +42,12 @@ type Review = {
   employee_uuid: string;
   overall_rating: string | null;
   status: string;
+  review_type: string | null;
   comp_adjustment_amount: number | null;
   comp_adjustment_percent: number | null;
   cycle_id: string | null;
 };
+
 
 type Goal = { id: string; employee_uuid: string; status: string };
 type KeyResult = {
