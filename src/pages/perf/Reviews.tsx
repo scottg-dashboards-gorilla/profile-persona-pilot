@@ -96,9 +96,12 @@ export default function Reviews() {
     }
   }, [rows, searchParams, setSearchParams]);
 
+  const cycleFilter = searchParams.get("cycle");
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((r) => {
+      if (cycleFilter && (r as any).cycle_id !== cycleFilter) return false;
       if (q && !`${r.employee_name} ${r.department ?? ""}`.toLowerCase().includes(q)) return false;
       if (tab === "upcoming") return r.status === "scheduled";
       if (tab === "in_progress") return r.status === "in_progress";
