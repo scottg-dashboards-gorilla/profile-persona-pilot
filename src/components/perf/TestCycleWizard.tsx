@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -152,6 +152,15 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
   const [createdReviewId, setCreatedReviewId] = useState<string | null>(null);
   const [createdEmployeeUuid, setCreatedEmployeeUuid] = useState<string | null>(null);
 
+  // Transactional bookkeeping — everything created during a single run.
+  const txRef = useRef<{
+    cycleId?: string;
+    reviewId?: string;
+    employeeUuid?: string;
+    employeeCreated?: boolean;
+  }>({});
+  const [rollbackNote, setRollbackNote] = useState<string | null>(null);
+
   useEffect(() => {
     if (!open) return;
     (async () => {
@@ -180,7 +189,45 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
     setCreatedReviewId(null);
     setCreatedEmployeeUuid(null);
     setProgress(initialProgress("existing"));
+    setRollbackNote(null);
+    txRef.current = {};
   }
+
+  /**
+   * Undo everything created during the current run, in reverse dependency order.
+   * Existing employees are never deleted — only records this wizard created.
+   */
+  async function rollback(): Promise<string[]> {
+    const tx = txRef.current;
+    const undone: string[] = [];
+
+    if (tx.reviewId) {
+      await supabase.from("assessment_attempts").delete().eq("review_id", tx.reviewId);
+      const { error } = await supabase.from("performance_reviews").delete().eq("id", tx.reviewId);
+      if (!error) {
+        undone.push("review");
+        delete tx.reviewId;
+      }
+    }
+    if (tx.employeeUuid && tx.employeeCreated) {
+      const { error } = await supabase.from("employees").delete().eq("uuid", tx.employeeUuid);
+      if (!error) {
+        undone.push("test employee");
+        delete tx.employeeUuid;
+        delete tx.employeeCreated;
+      }
+    }
+    if (tx.cycleId) {
+      await supabase.from("performance_reviews").delete().eq("cycle_id", tx.cycleId);
+      const { error } = await supabase.from("review_cycles").delete().eq("id", tx.cycleId);
+      if (!error) {
+        undone.push("cycle");
+        delete tx.cycleId;
+      }
+    }
+    return undone;
+  }
+
 
   const assessmentLink = useMemo(() => {
     if (!createdReviewId || !createdEmployeeUuid) return "";
@@ -192,6 +239,10 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
 
   async function runWizard() {
     setBusy(true);
+    setRollbackNote(null);
+    // Anything left over from a previous failed run gets cleaned before retrying.
+    if (Object.keys(txRef.current).length > 0) await rollback();
+    txRef.current = {};
     const next = initialProgress(employeeMode);
     setProgress(next);
     const mark = (key: ProgressKey, patch: Partial<ProgressMap[ProgressKey]>) =>
@@ -214,6 +265,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         .single();
       if (cycErr) throw cycErr;
       const cycleId = cyc!.id as string;
+      txRef.current.cycleId = cycleId;
       mark("cycle", { state: "done", detail: cycleName.trim() || defaultCycleName() });
       toast({ title: "Cycle created", description: cycleName.trim() || defaultCycleName() });
 
@@ -233,6 +285,8 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         empEmail = found.email;
         empDept = found.department;
         empTitle = found.title;
+        txRef.current.employeeUuid = empUuid;
+        txRef.current.employeeCreated = false;
         mark("employee", { state: "done", detail: empName });
         toast({ title: "Employee selected", description: empName });
       } else {
@@ -248,6 +302,8 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
           hire_date: isoDate(today),
         });
         if (empErr) throw empErr;
+        txRef.current.employeeUuid = empUuid;
+        txRef.current.employeeCreated = true;
         empName = `${newFirst.trim()} ${newLast.trim()}`;
         empEmail = newEmail.trim() || null;
         empDept = newDept.trim() || null;
@@ -275,12 +331,15 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         .select("id")
         .single();
       if (revErr) throw revErr;
+      txRef.current.reviewId = rev!.id as string;
       mark("review", { state: "done", detail: `Scheduled ${scheduledDate}` });
       toast({ title: "Overdue review scheduled", description: empName });
 
       setCreatedCycleId(cycleId);
       setCreatedReviewId(rev!.id as string);
       setCreatedEmployeeUuid(empUuid);
+      // Run completed cleanly — nothing left to undo.
+      txRef.current = {};
       setStep(4);
       onCompleted?.();
       toast({ title: "Test cycle ready", description: "Assessment link generated." });
@@ -291,6 +350,21 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
         if (!runningKey) return p;
         return { ...p, [runningKey]: { ...p[runningKey], state: "error", detail: e?.message } };
       });
+      let undone: string[] = [];
+      try {
+        undone = await rollback();
+      } catch {
+        /* rollback is best-effort */
+      }
+      const leftover = Object.keys(txRef.current).length > 0;
+      setRollbackNote(
+        leftover
+          ? "Some test records couldn't be removed automatically. Retrying will attempt cleanup again."
+          : undone.length > 0
+            ? `Rolled back: ${undone.join(", ")}. Nothing partial was left behind — safe to retry.`
+            : "No records were created, so nothing needed cleanup. Safe to retry.",
+      );
+      onCompleted?.();
       toast({
         title: "Couldn't create test cycle",
         description: e?.message ?? "Unknown error",
@@ -440,6 +514,11 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
               <div><strong>Review:</strong> overdue manager review</div>
             </div>
             <ProgressChecklist progress={progress} />
+            {rollbackNote && (
+              <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+                {rollbackNote}
+              </div>
+            )}
           </div>
         )}
 
@@ -498,7 +577,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
               ) : (
                 <Button onClick={runWizard} disabled={busy || !canRun}>
                   {busy && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-                  Create test cycle
+                  {rollbackNote ? "Retry" : "Create test cycle"}
                 </Button>
               )}
             </>
