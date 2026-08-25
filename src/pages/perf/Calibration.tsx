@@ -54,7 +54,18 @@ export default function Calibration() {
   const [contributorSamples, setContributorSamples] = useState<ReviewerSample[]>([]);
   const [managerSamples, setManagerSamples] = useState<ReviewerSample[]>([]);
   const [assessmentSamples, setAssessmentSamples] = useState<ReviewerSample[]>([]);
+  const [managerReviews, setManagerReviews] = useState<
+    (AlignableReview & { reviewerKey: string })[]
+  >([]);
+  const [alignTarget, setAlignTarget] = useState<{
+    key: string;
+    name: string;
+    adjustment: number;
+    companyMean: number;
+  } | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     (async () => {
