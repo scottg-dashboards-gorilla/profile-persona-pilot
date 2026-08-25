@@ -107,7 +107,7 @@ export default function Reviews() {
       if (tab === "in_progress") return r.status === "in_progress";
       return r.status === "completed";
     });
-  }, [rows, query, tab]);
+  }, [rows, query, tab, cycleFilter]);
 
   const counts = useMemo(
     () => ({
