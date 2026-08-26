@@ -496,6 +496,7 @@ export type Database = {
           employee_uuid: string
           hire_date: string | null
           id: string
+          kickoff_at: string | null
           manager_review_response: string | null
           manager_review_sent_at: string | null
           new_title: string | null
@@ -537,6 +538,7 @@ export type Database = {
           employee_uuid: string
           hire_date?: string | null
           id?: string
+          kickoff_at?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
           new_title?: string | null
@@ -578,6 +580,7 @@ export type Database = {
           employee_uuid?: string
           hire_date?: string | null
           id?: string
+          kickoff_at?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
           new_title?: string | null
@@ -850,6 +853,69 @@ export type Database = {
         }
         Relationships: []
       }
+      review_reminders: {
+        Row: {
+          attempts: number
+          contributor_id: string | null
+          created_at: string
+          due_date: string
+          id: string
+          kind: string
+          last_error: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          review_id: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          contributor_id?: string | null
+          created_at?: string
+          due_date: string
+          id?: string
+          kind: string
+          last_error?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          review_id: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          contributor_id?: string | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          kind?: string
+          last_error?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          review_id?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_reminders_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "review_contributors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_reminders_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_self_assessments: {
         Row: {
           challenges: string | null
@@ -990,6 +1056,10 @@ export type Database = {
       }
       is_review_manager: { Args: { _review_id: string }; Returns: boolean }
       is_self_employee: { Args: { _employee_uuid: string }; Returns: boolean }
+      queue_review_reminders: {
+        Args: { _grace_days?: number; _max?: number }
+        Returns: number
+      }
       resolve_review_token: { Args: { _token: string }; Returns: Json }
       submit_contributor_feedback: {
         Args: {

@@ -12,16 +12,19 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { format, parseISO } from "date-fns";
-import { Loader2, Play, CheckCircle2, Search, Users, Link as LinkIcon, ListChecks } from "lucide-react";
+import { Loader2, Play, CheckCircle2, Search, Users, Link as LinkIcon, ListChecks, BellRing } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { formatCompDelta } from "@/data/mockEmployees";
 import { CompleteReviewDialog, type ReviewRow } from "@/components/perf/CompleteReviewDialog";
 import { ContributorsDialog } from "@/components/perf/ContributorsDialog";
 import { ReviewFlowDialog } from "@/components/perf/ReviewFlowDialog";
+import { RemindersDialog } from "@/components/perf/RemindersDialog";
+import { ReviewTimeline, buildReviewStages } from "@/components/perf/ReviewTimeline";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "react-router-dom";
+
 
 
 type TabKey = "upcoming" | "in_progress" | "completed";
@@ -42,9 +45,14 @@ export default function Reviews() {
   const [editing, setEditing] = useState<ReviewRow | null>(null);
   const [contributorsFor, setContributorsFor] = useState<ReviewRow | null>(null);
   const [flowFor, setFlowFor] = useState<ReviewRow | null>(null);
+  const [remindersOpen, setRemindersOpen] = useState(false);
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [attemptByReview, setAttemptByReview] = useState<Record<string, string | null>>({});
+  const [selfByReview, setSelfByReview] = useState<Record<string, string | null>>({});
+  const [contribByReview, setContribByReview] = useState<
+    Record<string, { total: number; submitted: number; lastAt: string | null }>
+  >({});
 
   async function fetchRows() {
     setLoading(true);
@@ -58,19 +66,60 @@ export default function Reviews() {
       setRows((data ?? []) as ReviewRow[]);
       const ids = (data ?? []).map((r: any) => r.id);
       if (ids.length > 0) {
-        const { data: atts } = await supabase
-          .from("assessment_attempts")
-          .select("id, review_id, submitted_at")
-          .in("review_id", ids);
+        const [{ data: atts }, { data: sas }, { data: cs }] = await Promise.all([
+          supabase.from("assessment_attempts").select("id, review_id, submitted_at").in("review_id", ids),
+          supabase.from("review_self_assessments").select("review_id, submitted_at").in("review_id", ids),
+          supabase.from("review_contributors").select("review_id, status, submitted_at").in("review_id", ids),
+        ]);
         const map: Record<string, string | null> = {};
         (atts ?? []).forEach((a: any) => {
           if (!map[a.review_id]) map[a.review_id] = a.submitted_at ? "submitted" : "in_progress";
         });
         setAttemptByReview(map);
+
+        const selfMap: Record<string, string | null> = {};
+        (sas ?? []).forEach((s: any) => {
+          selfMap[s.review_id] = s.submitted_at ?? null;
+        });
+        setSelfByReview(selfMap);
+
+        const cMap: Record<string, { total: number; submitted: number; lastAt: string | null }> = {};
+        (cs ?? []).forEach((c: any) => {
+          const entry = cMap[c.review_id] ?? { total: 0, submitted: 0, lastAt: null };
+          entry.total += 1;
+          if (c.status === "submitted") {
+            entry.submitted += 1;
+            if (c.submitted_at && (!entry.lastAt || c.submitted_at > entry.lastAt)) {
+              entry.lastAt = c.submitted_at;
+            }
+          }
+          cMap[c.review_id] = entry;
+        });
+        setContribByReview(cMap);
       }
     }
     setLoading(false);
   }
+
+  function stagesFor(r: ReviewRow) {
+    const c = contribByReview[r.id];
+    return buildReviewStages({
+      kickoff_at: (r as any).kickoff_at ?? null,
+      status: r.status,
+      scheduled_date: r.scheduled_date,
+      completed_date: r.completed_date,
+      comp_adjustment_amount: r.comp_adjustment_amount,
+      comp_approval_status: (r as any).comp_approval_status ?? null,
+      comp_approved_at: (r as any).comp_approved_at ?? null,
+      released_at: (r as any).released_at ?? null,
+      employee_ack_at: (r as any).employee_ack_at ?? null,
+      selfSubmittedAt: selfByReview[r.id] ?? null,
+      contributorsTotal: c?.total ?? 0,
+      contributorsSubmitted: c?.submitted ?? 0,
+      contributorsLastAt: c?.lastAt ?? null,
+    });
+  }
+
   function copyAssessmentLink(row: ReviewRow) {
     const url = `${window.location.origin}/assessment?review=${row.id}&employee=${row.employee_uuid}`;
     navigator.clipboard.writeText(url).then(
@@ -78,6 +127,7 @@ export default function Reviews() {
       () => toast({ title: "Couldn't copy", description: url, variant: "destructive" }),
     );
   }
+
 
   useEffect(() => {
     fetchRows();
@@ -135,7 +185,10 @@ export default function Reviews() {
 
 
   async function kickoff(row: ReviewRow) {
-    const ok = await patchRow(row.id, { status: "in_progress" });
+    const ok = await patchRow(row.id, {
+      status: "in_progress",
+      kickoff_at: new Date().toISOString(),
+    } as Partial<ReviewRow>);
     if (ok) {
       toast({ title: "Review kicked off", description: row.employee_name });
       fetchRows();
@@ -154,10 +207,14 @@ export default function Reviews() {
             className="pl-8 w-80 h-9"
           />
         </div>
-        <Button variant="outline" size="sm" className="ml-auto" onClick={fetchRows} disabled={loading}>
+        <Button variant="outline" size="sm" className="ml-auto" onClick={() => setRemindersOpen(true)}>
+          <BellRing className="h-4 w-4 mr-1" /> Reminders
+        </Button>
+        <Button variant="outline" size="sm" onClick={fetchRows} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
         </Button>
       </div>
+
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)}>
         <TabsList>
@@ -176,6 +233,7 @@ export default function Reviews() {
                     <TableHead>Department</TableHead>
                     <TableHead>{tab === "completed" ? "Completed" : "Scheduled"}</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Workflow</TableHead>
                     {tab === "completed" ? (
                       <>
                         <TableHead>Rating</TableHead>
@@ -184,12 +242,13 @@ export default function Reviews() {
                     ) : (
                       <TableHead className="text-right pr-4">Actions</TableHead>
                     )}
+
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                         <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
                         Loading reviews…
                       </TableCell>
@@ -197,7 +256,7 @@ export default function Reviews() {
                   )}
                   {!loading && filtered.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                         No reviews in this view.
                       </TableCell>
                     </TableRow>
@@ -222,6 +281,17 @@ export default function Reviews() {
                               )}
                             />
                           </TableCell>
+                          <TableCell>
+                            <button
+                              type="button"
+                              className="cursor-pointer"
+                              onClick={() => setFlowFor(r)}
+                              title="Open the workflow panel"
+                            >
+                              <ReviewTimeline stages={stagesFor(r)} />
+                            </button>
+                          </TableCell>
+
                           {tab === "completed" ? (
                             <>
                               <TableCell>
@@ -342,6 +412,9 @@ export default function Reviews() {
           setFlowFor(null);
         }}
       />
+
+      <RemindersDialog open={remindersOpen} onOpenChange={setRemindersOpen} />
+
 
     </div>
   );
