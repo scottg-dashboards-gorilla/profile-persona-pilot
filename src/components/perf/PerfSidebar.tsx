@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -25,11 +25,14 @@ const primary = [
 ];
 
 const secondary = [
+  { title: "My review", url: "/me", icon: UserSquare2 },
+  { title: "Playbook", url: "/playbook", icon: BookOpen },
   { title: "Assessments", url: "/assessments", icon: FileSpreadsheet },
   { title: "Role Configs", url: "/admin/roles", icon: Settings },
   { title: "Access", url: "/admin/access", icon: ShieldCheck },
   { title: "Audit log", url: "/admin/audit", icon: History },
 ];
+
 
 export function PerfSidebar() {
   const { state } = useSidebar();
