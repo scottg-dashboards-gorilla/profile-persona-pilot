@@ -344,12 +344,17 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
       onCompleted?.();
       toast({ title: "Test cycle ready", description: "Assessment link generated." });
     } catch (e: any) {
+      const friendly =
+        e?.code === "42501" || /row-level security/i.test(e?.message ?? "")
+          ? "You need to be signed in with an Admin or HR role to create reviews. Sign in first, then retry."
+          : (e?.message ?? "Unknown error");
       setProgress((p) => {
         const order: ProgressKey[] = ["cycle", "employee", "review"];
         const runningKey = order.find((k) => p[k].state === "running");
         if (!runningKey) return p;
-        return { ...p, [runningKey]: { ...p[runningKey], state: "error", detail: e?.message } };
+        return { ...p, [runningKey]: { ...p[runningKey], state: "error", detail: friendly } };
       });
+
       let undone: string[] = [];
       try {
         undone = await rollback();
