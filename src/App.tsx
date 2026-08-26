@@ -40,12 +40,15 @@ const App = () => (
             <Route path="/reviews" element={<RequireArea area="reviews"><Reviews /></RequireArea>} />
             <Route path="/people" element={<People />} />
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
+            <Route path="/me" element={<MyReview />} />
+            <Route path="/playbook" element={<Playbook />} />
             <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
             <Route path="/goals" element={<Goals />} />
             <Route path="/compensation" element={<RequireArea area="compensation"><Compensation /></RequireArea>} />
             <Route path="/calibration" element={<RequireArea area="calibration"><Calibration /></RequireArea>} />
             <Route path="/org" element={<RequireArea area="org"><OrgRollups /></RequireArea>} />
             <Route path="/admin/audit" element={<RequireArea area="audit"><AuditLog /></RequireArea>} />
+
             <Route path="/assessments" element={<Dashboard />} />
             <Route path="/admin/roles" element={<AdminRoles />} />
             <Route path="/admin/access" element={<AdminAccess />} />
