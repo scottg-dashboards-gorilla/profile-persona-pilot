@@ -290,6 +290,54 @@ export type Database = {
           },
         ]
       }
+      goal_check_ins: {
+        Row: {
+          created_at: string
+          employee_uuid: string
+          goal_id: string
+          id: string
+          note: string | null
+          progress_percent: number | null
+          review_id: string | null
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          employee_uuid: string
+          goal_id: string
+          id?: string
+          note?: string | null
+          progress_percent?: number | null
+          review_id?: string | null
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          employee_uuid?: string
+          goal_id?: string
+          id?: string
+          note?: string | null
+          progress_percent?: number | null
+          review_id?: string | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_check_ins_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_check_ins_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goal_key_results: {
         Row: {
           created_at: string
@@ -431,12 +479,18 @@ export type Database = {
           assessment_attempt_id: string | null
           comp_adjustment_amount: number | null
           comp_adjustment_percent: number | null
+          comp_approval_note: string | null
+          comp_approval_status: string
+          comp_approved_at: string | null
+          comp_approved_by: string | null
           comp_effective_date: string | null
           completed_date: string | null
           created_at: string
           current_annual_comp: number | null
           cycle_id: string | null
           department: string | null
+          employee_ack_at: string | null
+          employee_ack_comment: string | null
           employee_email: string | null
           employee_name: string
           employee_uuid: string
@@ -448,6 +502,8 @@ export type Database = {
           notes: string | null
           overall_rating: string | null
           promotion: boolean
+          released_at: string | null
+          released_by: string | null
           review_cycle: string
           review_type: string
           reviewer_uuid: string | null
@@ -464,12 +520,18 @@ export type Database = {
           assessment_attempt_id?: string | null
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
+          comp_approval_note?: string | null
+          comp_approval_status?: string
+          comp_approved_at?: string | null
+          comp_approved_by?: string | null
           comp_effective_date?: string | null
           completed_date?: string | null
           created_at?: string
           current_annual_comp?: number | null
           cycle_id?: string | null
           department?: string | null
+          employee_ack_at?: string | null
+          employee_ack_comment?: string | null
           employee_email?: string | null
           employee_name: string
           employee_uuid: string
@@ -481,6 +543,8 @@ export type Database = {
           notes?: string | null
           overall_rating?: string | null
           promotion?: boolean
+          released_at?: string | null
+          released_by?: string | null
           review_cycle?: string
           review_type?: string
           reviewer_uuid?: string | null
@@ -497,12 +561,18 @@ export type Database = {
           assessment_attempt_id?: string | null
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
+          comp_approval_note?: string | null
+          comp_approval_status?: string
+          comp_approved_at?: string | null
+          comp_approved_by?: string | null
           comp_effective_date?: string | null
           completed_date?: string | null
           created_at?: string
           current_annual_comp?: number | null
           cycle_id?: string | null
           department?: string | null
+          employee_ack_at?: string | null
+          employee_ack_comment?: string | null
           employee_email?: string | null
           employee_name?: string
           employee_uuid?: string
@@ -514,6 +584,8 @@ export type Database = {
           notes?: string | null
           overall_rating?: string | null
           promotion?: boolean
+          released_at?: string | null
+          released_by?: string | null
           review_cycle?: string
           review_type?: string
           reviewer_uuid?: string | null
@@ -538,6 +610,63 @@ export type Database = {
             columns: ["cycle_id"]
             isOneToOne: false
             referencedRelation: "review_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_access_tokens: {
+        Row: {
+          contributor_id: string | null
+          created_at: string
+          created_by: string | null
+          employee_uuid: string
+          expires_at: string
+          id: string
+          kind: string
+          last_used_at: string | null
+          review_id: string
+          revoked: boolean
+          token: string
+        }
+        Insert: {
+          contributor_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_uuid: string
+          expires_at?: string
+          id?: string
+          kind: string
+          last_used_at?: string | null
+          review_id: string
+          revoked?: boolean
+          token: string
+        }
+        Update: {
+          contributor_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_uuid?: string
+          expires_at?: string
+          id?: string
+          kind?: string
+          last_used_at?: string | null
+          review_id?: string
+          revoked?: boolean
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_access_tokens_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "review_contributors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_access_tokens_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
         ]
@@ -721,6 +850,53 @@ export type Database = {
         }
         Relationships: []
       }
+      review_self_assessments: {
+        Row: {
+          challenges: string | null
+          created_at: string
+          employee_uuid: string
+          growth: string | null
+          id: string
+          review_id: string
+          submitted_at: string | null
+          support_needed: string | null
+          updated_at: string
+          wins: string | null
+        }
+        Insert: {
+          challenges?: string | null
+          created_at?: string
+          employee_uuid: string
+          growth?: string | null
+          id?: string
+          review_id: string
+          submitted_at?: string | null
+          support_needed?: string | null
+          updated_at?: string
+          wins?: string | null
+        }
+        Update: {
+          challenges?: string | null
+          created_at?: string
+          employee_uuid?: string
+          growth?: string | null
+          id?: string
+          review_id?: string
+          submitted_at?: string | null
+          support_needed?: string | null
+          updated_at?: string
+          wins?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_self_assessments_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: true
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_configs: {
         Row: {
           created_at: string
@@ -783,6 +959,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acknowledge_review: {
+        Args: { _comment?: string; _review_id: string }
+        Returns: Json
+      }
+      create_review_token: {
+        Args: {
+          _contributor_id?: string
+          _days?: number
+          _kind: string
+          _review_id: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -801,6 +990,31 @@ export type Database = {
       }
       is_review_manager: { Args: { _review_id: string }; Returns: boolean }
       is_self_employee: { Args: { _employee_uuid: string }; Returns: boolean }
+      resolve_review_token: { Args: { _token: string }; Returns: Json }
+      submit_contributor_feedback: {
+        Args: {
+          _collaboration: number
+          _impact: number
+          _improvements: string
+          _overall: number
+          _strengths: string
+          _token: string
+        }
+        Returns: Json
+      }
+      submit_self_assessment: {
+        Args: {
+          _challenges: string
+          _checkin_notes?: Json
+          _growth: string
+          _kr_updates?: Json
+          _support: string
+          _token: string
+          _wins: string
+        }
+        Returns: Json
+      }
+      sync_cycle_reviews: { Args: { _cycle_id: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "hr" | "manager"
