@@ -27,6 +27,7 @@ import { format, parseISO } from "date-fns";
 import { assessmentUrl, copyToClipboard, createReviewToken, formUrl } from "@/lib/reviewLinks";
 import { usePermissions } from "@/hooks/usePermissions";
 import { cn } from "@/lib/utils";
+import { ReviewTimeline, buildReviewStages } from "@/components/perf/ReviewTimeline";
 
 type Props = {
   reviewId: string | null;
@@ -52,6 +53,8 @@ type ReviewState = {
   employee_ack_at: string | null;
   employee_ack_comment: string | null;
   assessment_attempt_id: string | null;
+  kickoff_at: string | null;
+  completed_date: string | null;
 };
 
 type Owner = "Employee" | "Manager" | "HR";
@@ -82,7 +85,7 @@ export function ReviewFlowDialog({
       supabase
         .from("performance_reviews")
         .select(
-          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id",
+          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date",
         )
         .eq("id", reviewId)
         .maybeSingle(),
@@ -172,7 +175,7 @@ export function ReviewFlowDialog({
           done: review.status !== "scheduled",
           action:
             review.status === "scheduled" ? (
-              <Button size="sm" disabled={busy === "kickoff"} onClick={() => patch({ status: "in_progress" }, "kickoff", "Review kicked off")}>
+              <Button size="sm" disabled={busy === "kickoff"} onClick={() => patch({ status: "in_progress", kickoff_at: new Date().toISOString() }, "kickoff", "Review kicked off")}>
                 <Play className="h-3.5 w-3.5 mr-1" /> Kick off
               </Button>
             ) : null,
@@ -353,6 +356,31 @@ export function ReviewFlowDialog({
         {loading && !review && (
           <div className="py-10 text-center text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading workflow…
+          </div>
+        )}
+
+        {review && (
+          <div className="rounded-md border p-3 overflow-x-auto">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+              Timeline — hover a step for its timestamp
+            </div>
+            <ReviewTimeline
+              variant="full"
+              stages={buildReviewStages({
+                kickoff_at: review.kickoff_at,
+                status: review.status,
+                scheduled_date: review.scheduled_date,
+                completed_date: review.completed_date,
+                comp_adjustment_amount: review.comp_adjustment_amount,
+                comp_approval_status: review.comp_approval_status,
+                comp_approved_at: review.comp_approved_at,
+                released_at: review.released_at,
+                employee_ack_at: review.employee_ack_at,
+                selfSubmittedAt: selfDone,
+                contributorsTotal: contribs.total,
+                contributorsSubmitted: contribs.submitted,
+              })}
+            />
           </div>
         )}
 
