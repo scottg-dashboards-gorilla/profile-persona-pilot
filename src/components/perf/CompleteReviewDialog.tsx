@@ -217,7 +217,9 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         </DialogHeader>
 
         <div className="grid gap-4">
+          <SelfAssessmentPanel reviewId={review.id} />
           <AssessmentDelta
+
             current={currentAttempt}
             previous={previousAttempt}
             onPickContext={setPresetContext}
