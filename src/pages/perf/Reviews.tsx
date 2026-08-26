@@ -248,7 +248,7 @@ export default function Reviews() {
                 <TableBody>
                   {loading && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                         <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
                         Loading reviews…
                       </TableCell>
@@ -256,7 +256,7 @@ export default function Reviews() {
                   )}
                   {!loading && filtered.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                         No reviews in this view.
                       </TableCell>
                     </TableRow>
