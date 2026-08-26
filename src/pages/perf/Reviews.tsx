@@ -281,6 +281,17 @@ export default function Reviews() {
                               )}
                             />
                           </TableCell>
+                          <TableCell>
+                            <button
+                              type="button"
+                              className="cursor-pointer"
+                              onClick={() => setFlowFor(r)}
+                              title="Open the workflow panel"
+                            >
+                              <ReviewTimeline stages={stagesFor(r)} />
+                            </button>
+                          </TableCell>
+
                           {tab === "completed" ? (
                             <>
                               <TableCell>
