@@ -27,7 +27,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
-import { CalendarRange, Loader2, Plus, Trash2, ArrowRight, Users } from "lucide-react";
+import { CalendarRange, Loader2, Plus, Trash2, ArrowRight, Users, RefreshCw } from "lucide-react";
 
 type Cycle = {
   id: string;
