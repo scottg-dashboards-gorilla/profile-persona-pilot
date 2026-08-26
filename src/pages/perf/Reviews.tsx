@@ -328,6 +328,21 @@ export default function Reviews() {
         employeeName={contributorsFor?.employee_name}
         onOpenChange={(open) => !open && setContributorsFor(null)}
       />
+
+      <ReviewFlowDialog
+        reviewId={flowFor?.id ?? null}
+        onOpenChange={(open) => !open && setFlowFor(null)}
+        onChanged={fetchRows}
+        onOpenContributors={() => {
+          setContributorsFor(flowFor);
+          setFlowFor(null);
+        }}
+        onOpenComplete={() => {
+          setEditing(flowFor);
+          setFlowFor(null);
+        }}
+      />
+
     </div>
   );
 }
