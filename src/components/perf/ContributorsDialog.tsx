@@ -86,11 +86,8 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
     if (!reviewId) return;
     setLinkBusy(c.id);
     try {
-      const token = await createReviewToken({
-        reviewId,
-        kind: "contributor",
-        contributorId: c.id,
-      });
+      const token = await createReviewToken(reviewId, "contributor", c.id);
+
       await copyToClipboard(formUrl(token));
       toast({
         title: "Private link copied",
