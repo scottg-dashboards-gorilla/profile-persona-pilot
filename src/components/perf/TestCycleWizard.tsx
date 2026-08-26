@@ -372,7 +372,7 @@ export function TestCycleWizard({ open, onOpenChange, onCompleted }: Props) {
       onCompleted?.();
       toast({
         title: "Couldn't create test cycle",
-        description: e?.message ?? "Unknown error",
+        description: friendly,
         variant: "destructive",
       });
     } finally {
