@@ -351,6 +351,23 @@ export default function Cycles() {
                       Open reviews <ArrowRight className="h-3.5 w-3.5 ml-1" />
                     </Link>
                   </Button>
+                  {c.status !== "completed" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={syncing === c.id}
+                      onClick={() => syncCycle(c)}
+                      title="Schedule reviews for anyone in scope who doesn't have one yet"
+                    >
+                      {syncing === c.id ? (
+                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                      )}
+                      Sync people
+                    </Button>
+                  )}
+
                   {c.status === "draft" && (
                     <Button size="sm" variant="ghost" onClick={() => setCycleStatus(c, "active")}>
                       Activate
