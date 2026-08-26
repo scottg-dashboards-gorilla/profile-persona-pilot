@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, ExternalLink, CheckCircle2, Target, Lock } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle2, Target, Lock, AlertCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
@@ -75,6 +76,7 @@ export default function MyReview() {
   const [growth, setGrowth] = useState("");
   const [support, setSupport] = useState("");
   const [ackComment, setAckComment] = useState("");
+  const [ackConfirmed, setAckConfirmed] = useState<string | null>(null);
 
   const active = reviews.find((r) => r.status !== "completed") ?? null;
   const released = reviews.filter((r) => r.released_at);
@@ -202,6 +204,7 @@ export default function MyReview() {
     }
     toast({ title: "Acknowledged", description: "Thanks — that's on file." });
     setAckComment("");
+    setAckConfirmed(null);
     load();
   }
 
