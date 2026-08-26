@@ -240,10 +240,25 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
                       tone={c.status === "submitted" ? "completed" : c.status === "declined" ? "cancelled" : "in_progress"}
                       label={c.status === "submitted" ? "Submitted" : c.status === "declined" ? "Declined" : "Invited"}
                     />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={linkBusy === c.id}
+                      onClick={() => copyContributorLink(c)}
+                      title="Copy a private feedback link to send this person"
+                    >
+                      {linkBusy === c.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      ) : (
+                        <LinkIcon className="h-4 w-4 mr-1" />
+                      )}
+                      Link
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => setFeedbackFor(c)}>
                       <MessageSquarePlus className="h-4 w-4 mr-1" />
-                      {c.status === "submitted" ? (c.allow_resubmission ? "Edit" : "View") : "Open form"}
+                      {c.status === "submitted" ? (c.allow_resubmission ? "Edit" : "View") : "Enter for them"}
                     </Button>
+
                     <Button
                       size="sm"
                       variant="ghost"
