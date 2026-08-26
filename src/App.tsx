@@ -19,7 +19,11 @@ import Compensation from "./pages/perf/Compensation";
 import Calibration from "./pages/perf/Calibration";
 import OrgRollups from "./pages/perf/OrgRollups";
 import AuditLog from "./pages/perf/AuditLog";
+import MyReview from "./pages/perf/MyReview";
+import Playbook from "./pages/perf/Playbook";
+import ReviewForm from "./pages/ReviewForm";
 import RequireArea from "./components/perf/RequireArea";
+
 
 const queryClient = new QueryClient();
 
