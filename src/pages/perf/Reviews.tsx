@@ -41,6 +41,8 @@ export default function Reviews() {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<ReviewRow | null>(null);
   const [contributorsFor, setContributorsFor] = useState<ReviewRow | null>(null);
+  const [flowFor, setFlowFor] = useState<ReviewRow | null>(null);
+
   const [busyId, setBusyId] = useState<string | null>(null);
   const [attemptByReview, setAttemptByReview] = useState<Record<string, string | null>>({});
 
