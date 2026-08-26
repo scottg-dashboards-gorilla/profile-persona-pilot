@@ -47,11 +47,17 @@ const Login = () => {
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
               <Lock className="w-6 h-6 text-primary" />
             </div>
-            <h1 className="text-xl font-bold font-display text-foreground">Manager Login</h1>
-            <p className="text-sm text-muted-foreground">Sign in to access the assessment dashboard</p>
+            <h1 className="text-xl font-bold font-display text-foreground">
+              {mode === "signup" ? "Create account" : "Manager Login"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {mode === "signup"
+                ? "The first account created becomes the workspace admin"
+                : "Sign in to access the performance dashboard"}
+            </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Email</label>
               <Input
@@ -69,13 +75,30 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                minLength={6}
                 required
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading
+                ? mode === "signup"
+                  ? "Creating account..."
+                  : "Signing in..."
+                : mode === "signup"
+                  ? "Create account"
+                  : "Sign In"}
             </Button>
+            <button
+              type="button"
+              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              className="w-full text-xs text-muted-foreground hover:text-foreground"
+            >
+              {mode === "signup"
+                ? "Already have an account? Sign in"
+                : "No account yet? Create one"}
+            </button>
           </form>
+
         </div>
       </div>
     </div>
