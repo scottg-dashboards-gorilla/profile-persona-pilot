@@ -80,6 +80,29 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
   const [pick, setPick] = useState<string>("");
   const [feedbackFor, setFeedbackFor] = useState<ReviewContributor | null>(null);
   const [historyFor, setHistoryFor] = useState<ReviewContributor | null>(null);
+  const [linkBusy, setLinkBusy] = useState<string | null>(null);
+
+  async function copyContributorLink(c: ReviewContributor) {
+    if (!reviewId) return;
+    setLinkBusy(c.id);
+    try {
+      const token = await createReviewToken({
+        reviewId,
+        kind: "contributor",
+        contributorId: c.id,
+      });
+      await copyToClipboard(formUrl(token));
+      toast({
+        title: "Private link copied",
+        description: `Send it to ${c.contributor_name}. It opens their feedback form — no account needed.`,
+      });
+    } catch (e: any) {
+      toast({ title: "Couldn't create link", description: e.message, variant: "destructive" });
+    } finally {
+      setLinkBusy(null);
+    }
+  }
+
 
   async function load() {
     if (!reviewId) return;
