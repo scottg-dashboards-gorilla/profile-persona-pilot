@@ -204,6 +204,34 @@ export default function Cycles() {
     }
   }
 
+  async function syncCycle(c: Cycle) {
+    setSyncing(c.id);
+    try {
+      const { data, error } = await supabase.rpc("sync_cycle_reviews", { _cycle_id: c.id });
+      if (error) throw error;
+      const added = (data as number) ?? 0;
+      toast({
+        title: added > 0 ? `${added} review${added === 1 ? "" : "s"} added` : "Everyone's covered",
+        description:
+          added > 0
+            ? "People who joined this cycle's scope after launch now have a scheduled review."
+            : "No one in scope is missing a review for this cycle.",
+      });
+      load();
+    } catch (e: any) {
+      toast({
+        title: "Sync failed",
+        description:
+          e?.code === "42501"
+            ? "You need an HR or admin role to sync a cycle."
+            : e?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSyncing(null);
+    }
+  }
+
   async function setCycleStatus(c: Cycle, next: string) {
     const { error } = await supabase.from("review_cycles").update({ status: next }).eq("id", c.id);
     if (error) {
