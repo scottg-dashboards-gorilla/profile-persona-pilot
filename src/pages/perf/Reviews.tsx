@@ -45,9 +45,14 @@ export default function Reviews() {
   const [editing, setEditing] = useState<ReviewRow | null>(null);
   const [contributorsFor, setContributorsFor] = useState<ReviewRow | null>(null);
   const [flowFor, setFlowFor] = useState<ReviewRow | null>(null);
+  const [remindersOpen, setRemindersOpen] = useState(false);
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [attemptByReview, setAttemptByReview] = useState<Record<string, string | null>>({});
+  const [selfByReview, setSelfByReview] = useState<Record<string, string | null>>({});
+  const [contribByReview, setContribByReview] = useState<
+    Record<string, { total: number; submitted: number; lastAt: string | null }>
+  >({});
 
   async function fetchRows() {
     setLoading(true);
@@ -61,19 +66,60 @@ export default function Reviews() {
       setRows((data ?? []) as ReviewRow[]);
       const ids = (data ?? []).map((r: any) => r.id);
       if (ids.length > 0) {
-        const { data: atts } = await supabase
-          .from("assessment_attempts")
-          .select("id, review_id, submitted_at")
-          .in("review_id", ids);
+        const [{ data: atts }, { data: sas }, { data: cs }] = await Promise.all([
+          supabase.from("assessment_attempts").select("id, review_id, submitted_at").in("review_id", ids),
+          supabase.from("review_self_assessments").select("review_id, submitted_at").in("review_id", ids),
+          supabase.from("review_contributors").select("review_id, status, submitted_at").in("review_id", ids),
+        ]);
         const map: Record<string, string | null> = {};
         (atts ?? []).forEach((a: any) => {
           if (!map[a.review_id]) map[a.review_id] = a.submitted_at ? "submitted" : "in_progress";
         });
         setAttemptByReview(map);
+
+        const selfMap: Record<string, string | null> = {};
+        (sas ?? []).forEach((s: any) => {
+          selfMap[s.review_id] = s.submitted_at ?? null;
+        });
+        setSelfByReview(selfMap);
+
+        const cMap: Record<string, { total: number; submitted: number; lastAt: string | null }> = {};
+        (cs ?? []).forEach((c: any) => {
+          const entry = cMap[c.review_id] ?? { total: 0, submitted: 0, lastAt: null };
+          entry.total += 1;
+          if (c.status === "submitted") {
+            entry.submitted += 1;
+            if (c.submitted_at && (!entry.lastAt || c.submitted_at > entry.lastAt)) {
+              entry.lastAt = c.submitted_at;
+            }
+          }
+          cMap[c.review_id] = entry;
+        });
+        setContribByReview(cMap);
       }
     }
     setLoading(false);
   }
+
+  function stagesFor(r: ReviewRow) {
+    const c = contribByReview[r.id];
+    return buildReviewStages({
+      kickoff_at: (r as any).kickoff_at ?? null,
+      status: r.status,
+      scheduled_date: r.scheduled_date,
+      completed_date: r.completed_date,
+      comp_adjustment_amount: r.comp_adjustment_amount,
+      comp_approval_status: (r as any).comp_approval_status ?? null,
+      comp_approved_at: (r as any).comp_approved_at ?? null,
+      released_at: (r as any).released_at ?? null,
+      employee_ack_at: (r as any).employee_ack_at ?? null,
+      selfSubmittedAt: selfByReview[r.id] ?? null,
+      contributorsTotal: c?.total ?? 0,
+      contributorsSubmitted: c?.submitted ?? 0,
+      contributorsLastAt: c?.lastAt ?? null,
+    });
+  }
+
   function copyAssessmentLink(row: ReviewRow) {
     const url = `${window.location.origin}/assessment?review=${row.id}&employee=${row.employee_uuid}`;
     navigator.clipboard.writeText(url).then(
@@ -81,6 +127,7 @@ export default function Reviews() {
       () => toast({ title: "Couldn't copy", description: url, variant: "destructive" }),
     );
   }
+
 
   useEffect(() => {
     fetchRows();
