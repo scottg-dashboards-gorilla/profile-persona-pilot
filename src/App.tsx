@@ -8,6 +8,8 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import AdminRoles from "./pages/AdminRoles";
 import AdminAccess from "./pages/AdminAccess";
+import Login from "./pages/Login";
+
 import PerfLayout from "./components/perf/PerfLayout";
 import Overview from "./pages/perf/Overview";
 import Reviews from "./pages/perf/Reviews";
