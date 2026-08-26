@@ -413,6 +413,9 @@ export default function Reviews() {
         }}
       />
 
+      <RemindersDialog open={remindersOpen} onOpenChange={setRemindersOpen} />
+
+
     </div>
   );
 }
