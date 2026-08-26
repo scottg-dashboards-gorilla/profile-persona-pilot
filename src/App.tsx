@@ -57,6 +57,13 @@ const App = () => (
           {/* Candidate-facing assessment (no shell) */}
           <Route path="/assessment" element={<Index />} />
 
+          {/* Sign in / sign up (no shell) */}
+          <Route path="/login" element={<Login />} />
+
+          {/* Private self-assessment & 360 feedback forms — no account needed */}
+          <Route path="/review-form/:token" element={<ReviewForm />} />
+
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
