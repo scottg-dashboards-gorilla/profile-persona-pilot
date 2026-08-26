@@ -133,27 +133,6 @@ export default function Reviews() {
     return true;
   }
 
-  async function sendSelf(row: ReviewRow) {
-    const ok = await patchRow(row.id, {
-      self_assessment_sent_at: new Date().toISOString(),
-      status: "in_progress",
-    });
-    if (ok) {
-      toast({ title: "Self-assessment sent", description: `Email queued for ${row.employee_name}.` });
-      fetchRows();
-    }
-  }
-
-  async function sendManager(row: ReviewRow) {
-    const ok = await patchRow(row.id, {
-      manager_review_sent_at: new Date().toISOString(),
-      status: "in_progress",
-    });
-    if (ok) {
-      toast({ title: "Manager prompt sent", description: `Email queued for ${row.employee_name}'s manager.` });
-      fetchRows();
-    }
-  }
 
   async function kickoff(row: ReviewRow) {
     const ok = await patchRow(row.id, { status: "in_progress" });
