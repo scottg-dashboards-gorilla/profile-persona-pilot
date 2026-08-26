@@ -76,6 +76,8 @@ export default function Cycles() {
   const [tab, setTab] = useState<"all" | "active" | "draft" | "completed">("all");
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState<string | null>(null);
+
 
   // create form
   const today = new Date();
