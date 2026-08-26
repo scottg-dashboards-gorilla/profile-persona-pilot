@@ -437,29 +437,51 @@ export default function MyReview() {
               <div className="flex items-start gap-2 text-emerald-700">
                 <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
                 <div>
-                  Acknowledged {format(parseISO(r.employee_ack_at), "MMM d, yyyy")}
+                  You confirmed receipt on {format(parseISO(r.employee_ack_at), "MMM d, yyyy 'at' h:mma")}
                   {r.employee_ack_comment && (
                     <div className="text-muted-foreground">"{r.employee_ack_comment}"</div>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="space-y-2">
-                <Label className="text-xs">Acknowledge this review</Label>
+              <div className="space-y-3 rounded-md border border-amber-200 bg-amber-50/60 p-3">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                  <div className="text-sm">
+                    <div className="font-medium">Action needed: confirm you've received this</div>
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      Confirming records that this outcome was shared with you and that you've read it.
+                      It doesn't mean you agree — use the box below if you want anything on record.
+                    </p>
+                  </div>
+                </div>
                 <Textarea
                   rows={2}
-                  placeholder="Anything you want on record (optional)…"
+                  placeholder="Your comments (optional) — visible to your manager and HR…"
                   value={ackComment}
                   onChange={(e) => setAckComment(e.target.value)}
                 />
+                <label className="flex items-start gap-2 text-xs cursor-pointer">
+                  <Checkbox
+                    checked={ackConfirmed === r.id}
+                    onCheckedChange={(v) => setAckConfirmed(v ? r.id : null)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    I confirm I've reviewed my rating
+                    {(r.comp_adjustment_amount ?? 0) !== 0 ? ", pay change" : ""} and my manager's
+                    summary for {r.review_cycle}.
+                  </span>
+                </label>
                 <div className="flex justify-end">
-                  <Button size="sm" disabled={saving} onClick={() => acknowledge(r.id)}>
+                  <Button size="sm" disabled={saving || ackConfirmed !== r.id} onClick={() => acknowledge(r.id)}>
                     {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-                    I've read this
+                    Confirm receipt
                   </Button>
                 </div>
               </div>
             )}
+
           </CardContent>
         </Card>
       ))}
