@@ -185,7 +185,10 @@ export default function Reviews() {
 
 
   async function kickoff(row: ReviewRow) {
-    const ok = await patchRow(row.id, { status: "in_progress" });
+    const ok = await patchRow(row.id, {
+      status: "in_progress",
+      kickoff_at: new Date().toISOString(),
+    } as Partial<ReviewRow>);
     if (ok) {
       toast({ title: "Review kicked off", description: row.employee_name });
       fetchRows();
@@ -204,10 +207,14 @@ export default function Reviews() {
             className="pl-8 w-80 h-9"
           />
         </div>
-        <Button variant="outline" size="sm" className="ml-auto" onClick={fetchRows} disabled={loading}>
+        <Button variant="outline" size="sm" className="ml-auto" onClick={() => setRemindersOpen(true)}>
+          <BellRing className="h-4 w-4 mr-1" /> Reminders
+        </Button>
+        <Button variant="outline" size="sm" onClick={fetchRows} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
         </Button>
       </div>
+
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)}>
         <TabsList>
