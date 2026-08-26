@@ -303,25 +303,12 @@ export default function Reviews() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  disabled={busy}
-                                  onClick={() => sendSelf(r)}
-                                  title="Send self-assessment"
+                                  onClick={() => setFlowFor(r)}
+                                  title="Step-by-step workflow: who does what next"
                                 >
-                                  <Mail className="h-3.5 w-3.5 mr-1" />
-                                  Self
-                                  {r.self_assessment_sent_at && <span className="ml-1 text-emerald-600">✓</span>}
+                                  <ListChecks className="h-3.5 w-3.5 mr-1" /> Workflow
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  disabled={busy}
-                                  onClick={() => sendManager(r)}
-                                  title="Send manager prompt"
-                                >
-                                  <Mail className="h-3.5 w-3.5 mr-1" />
-                                  Mgr
-                                  {r.manager_review_sent_at && <span className="ml-1 text-emerald-600">✓</span>}
-                                </Button>
+
                                 <Button
                                   size="sm"
                                   variant="default"
