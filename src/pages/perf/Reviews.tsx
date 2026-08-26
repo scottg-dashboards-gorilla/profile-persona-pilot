@@ -233,6 +233,7 @@ export default function Reviews() {
                     <TableHead>Department</TableHead>
                     <TableHead>{tab === "completed" ? "Completed" : "Scheduled"}</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Workflow</TableHead>
                     {tab === "completed" ? (
                       <>
                         <TableHead>Rating</TableHead>
@@ -241,6 +242,7 @@ export default function Reviews() {
                     ) : (
                       <TableHead className="text-right pr-4">Actions</TableHead>
                     )}
+
                   </TableRow>
                 </TableHeader>
                 <TableBody>
