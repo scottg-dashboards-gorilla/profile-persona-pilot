@@ -9,16 +9,35 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast({ title: "Login failed", description: error.message, variant: "destructive" });
+    if (mode === "signup") {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/` },
+      });
+      if (error) {
+        toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+      } else {
+        toast({
+          title: "Account created",
+          description: "Check your email to confirm, then sign in.",
+        });
+        setMode("signin");
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast({ title: "Login failed", description: error.message, variant: "destructive" });
+      }
     }
     setLoading(false);
   };
+
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
