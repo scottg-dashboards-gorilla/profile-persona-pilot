@@ -27,7 +27,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
-import { CalendarRange, Loader2, Plus, Trash2, ArrowRight, Users } from "lucide-react";
+import { CalendarRange, Loader2, Plus, Trash2, ArrowRight, Users, RefreshCw } from "lucide-react";
 
 type Cycle = {
   id: string;
@@ -76,6 +76,8 @@ export default function Cycles() {
   const [tab, setTab] = useState<"all" | "active" | "draft" | "completed">("all");
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState<string | null>(null);
+
 
   // create form
   const today = new Date();
@@ -204,6 +206,34 @@ export default function Cycles() {
     }
   }
 
+  async function syncCycle(c: Cycle) {
+    setSyncing(c.id);
+    try {
+      const { data, error } = await supabase.rpc("sync_cycle_reviews", { _cycle_id: c.id });
+      if (error) throw error;
+      const added = (data as number) ?? 0;
+      toast({
+        title: added > 0 ? `${added} review${added === 1 ? "" : "s"} added` : "Everyone's covered",
+        description:
+          added > 0
+            ? "People who joined this cycle's scope after launch now have a scheduled review."
+            : "No one in scope is missing a review for this cycle.",
+      });
+      load();
+    } catch (e: any) {
+      toast({
+        title: "Sync failed",
+        description:
+          e?.code === "42501"
+            ? "You need an HR or admin role to sync a cycle."
+            : e?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSyncing(null);
+    }
+  }
+
   async function setCycleStatus(c: Cycle, next: string) {
     const { error } = await supabase.from("review_cycles").update({ status: next }).eq("id", c.id);
     if (error) {
@@ -321,6 +351,23 @@ export default function Cycles() {
                       Open reviews <ArrowRight className="h-3.5 w-3.5 ml-1" />
                     </Link>
                   </Button>
+                  {c.status !== "completed" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={syncing === c.id}
+                      onClick={() => syncCycle(c)}
+                      title="Schedule reviews for anyone in scope who doesn't have one yet"
+                    >
+                      {syncing === c.id ? (
+                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                      )}
+                      Sync people
+                    </Button>
+                  )}
+
                   {c.status === "draft" && (
                     <Button size="sm" variant="ghost" onClick={() => setCycleStatus(c, "active")}>
                       Activate

@@ -12,15 +12,17 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { format, parseISO } from "date-fns";
-import { Loader2, Mail, Play, CheckCircle2, Search, Users, Link as LinkIcon } from "lucide-react";
+import { Loader2, Play, CheckCircle2, Search, Users, Link as LinkIcon, ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { formatCompDelta } from "@/data/mockEmployees";
 import { CompleteReviewDialog, type ReviewRow } from "@/components/perf/CompleteReviewDialog";
 import { ContributorsDialog } from "@/components/perf/ContributorsDialog";
+import { ReviewFlowDialog } from "@/components/perf/ReviewFlowDialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "react-router-dom";
+
 
 type TabKey = "upcoming" | "in_progress" | "completed";
 
@@ -39,6 +41,8 @@ export default function Reviews() {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<ReviewRow | null>(null);
   const [contributorsFor, setContributorsFor] = useState<ReviewRow | null>(null);
+  const [flowFor, setFlowFor] = useState<ReviewRow | null>(null);
+
   const [busyId, setBusyId] = useState<string | null>(null);
   const [attemptByReview, setAttemptByReview] = useState<Record<string, string | null>>({});
 
@@ -129,27 +133,6 @@ export default function Reviews() {
     return true;
   }
 
-  async function sendSelf(row: ReviewRow) {
-    const ok = await patchRow(row.id, {
-      self_assessment_sent_at: new Date().toISOString(),
-      status: "in_progress",
-    });
-    if (ok) {
-      toast({ title: "Self-assessment sent", description: `Email queued for ${row.employee_name}.` });
-      fetchRows();
-    }
-  }
-
-  async function sendManager(row: ReviewRow) {
-    const ok = await patchRow(row.id, {
-      manager_review_sent_at: new Date().toISOString(),
-      status: "in_progress",
-    });
-    if (ok) {
-      toast({ title: "Manager prompt sent", description: `Email queued for ${row.employee_name}'s manager.` });
-      fetchRows();
-    }
-  }
 
   async function kickoff(row: ReviewRow) {
     const ok = await patchRow(row.id, { status: "in_progress" });
@@ -303,25 +286,12 @@ export default function Reviews() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  disabled={busy}
-                                  onClick={() => sendSelf(r)}
-                                  title="Send self-assessment"
+                                  onClick={() => setFlowFor(r)}
+                                  title="Step-by-step workflow: who does what next"
                                 >
-                                  <Mail className="h-3.5 w-3.5 mr-1" />
-                                  Self
-                                  {r.self_assessment_sent_at && <span className="ml-1 text-emerald-600">✓</span>}
+                                  <ListChecks className="h-3.5 w-3.5 mr-1" /> Workflow
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  disabled={busy}
-                                  onClick={() => sendManager(r)}
-                                  title="Send manager prompt"
-                                >
-                                  <Mail className="h-3.5 w-3.5 mr-1" />
-                                  Mgr
-                                  {r.manager_review_sent_at && <span className="ml-1 text-emerald-600">✓</span>}
-                                </Button>
+
                                 <Button
                                   size="sm"
                                   variant="default"
@@ -358,6 +328,21 @@ export default function Reviews() {
         employeeName={contributorsFor?.employee_name}
         onOpenChange={(open) => !open && setContributorsFor(null)}
       />
+
+      <ReviewFlowDialog
+        reviewId={flowFor?.id ?? null}
+        onOpenChange={(open) => !open && setFlowFor(null)}
+        onChanged={fetchRows}
+        onOpenContributors={() => {
+          setContributorsFor(flowFor);
+          setFlowFor(null);
+        }}
+        onOpenComplete={() => {
+          setEditing(flowFor);
+          setFlowFor(null);
+        }}
+      />
+
     </div>
   );
 }

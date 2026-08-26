@@ -8,6 +8,8 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import AdminRoles from "./pages/AdminRoles";
 import AdminAccess from "./pages/AdminAccess";
+import Login from "./pages/Login";
+
 import PerfLayout from "./components/perf/PerfLayout";
 import Overview from "./pages/perf/Overview";
 import Reviews from "./pages/perf/Reviews";
@@ -40,12 +42,15 @@ const App = () => (
             <Route path="/reviews" element={<RequireArea area="reviews"><Reviews /></RequireArea>} />
             <Route path="/people" element={<People />} />
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
+            <Route path="/me" element={<MyReview />} />
+            <Route path="/playbook" element={<Playbook />} />
             <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
             <Route path="/goals" element={<Goals />} />
             <Route path="/compensation" element={<RequireArea area="compensation"><Compensation /></RequireArea>} />
             <Route path="/calibration" element={<RequireArea area="calibration"><Calibration /></RequireArea>} />
             <Route path="/org" element={<RequireArea area="org"><OrgRollups /></RequireArea>} />
             <Route path="/admin/audit" element={<RequireArea area="audit"><AuditLog /></RequireArea>} />
+
             <Route path="/assessments" element={<Dashboard />} />
             <Route path="/admin/roles" element={<AdminRoles />} />
             <Route path="/admin/access" element={<AdminAccess />} />
@@ -53,6 +58,13 @@ const App = () => (
 
           {/* Candidate-facing assessment (no shell) */}
           <Route path="/assessment" element={<Index />} />
+
+          {/* Sign in / sign up (no shell) */}
+          <Route path="/login" element={<Login />} />
+
+          {/* Private self-assessment & 360 feedback forms — no account needed */}
+          <Route path="/review-form/:token" element={<ReviewForm />} />
+
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

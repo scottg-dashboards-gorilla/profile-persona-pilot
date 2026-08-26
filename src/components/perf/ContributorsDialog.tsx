@@ -18,7 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Trash2, UserPlus, MessageSquarePlus } from "lucide-react";
+import { Loader2, Trash2, UserPlus, MessageSquarePlus, Link as LinkIcon } from "lucide-react";
+import { copyToClipboard, createReviewToken, formUrl } from "@/lib/reviewLinks";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
@@ -78,6 +80,26 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
   const [pick, setPick] = useState<string>("");
   const [feedbackFor, setFeedbackFor] = useState<ReviewContributor | null>(null);
   const [historyFor, setHistoryFor] = useState<ReviewContributor | null>(null);
+  const [linkBusy, setLinkBusy] = useState<string | null>(null);
+
+  async function copyContributorLink(c: ReviewContributor) {
+    if (!reviewId) return;
+    setLinkBusy(c.id);
+    try {
+      const token = await createReviewToken(reviewId, "contributor", c.id);
+
+      await copyToClipboard(formUrl(token));
+      toast({
+        title: "Private link copied",
+        description: `Send it to ${c.contributor_name}. It opens their feedback form — no account needed.`,
+      });
+    } catch (e: any) {
+      toast({ title: "Couldn't create link", description: e.message, variant: "destructive" });
+    } finally {
+      setLinkBusy(null);
+    }
+  }
+
 
   async function load() {
     if (!reviewId) return;
@@ -240,10 +262,25 @@ export function ContributorsDialog({ reviewId, employeeUuid, employeeName, onOpe
                       tone={c.status === "submitted" ? "completed" : c.status === "declined" ? "cancelled" : "in_progress"}
                       label={c.status === "submitted" ? "Submitted" : c.status === "declined" ? "Declined" : "Invited"}
                     />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={linkBusy === c.id}
+                      onClick={() => copyContributorLink(c)}
+                      title="Copy a private feedback link to send this person"
+                    >
+                      {linkBusy === c.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      ) : (
+                        <LinkIcon className="h-4 w-4 mr-1" />
+                      )}
+                      Link
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => setFeedbackFor(c)}>
                       <MessageSquarePlus className="h-4 w-4 mr-1" />
-                      {c.status === "submitted" ? (c.allow_resubmission ? "Edit" : "View") : "Open form"}
+                      {c.status === "submitted" ? (c.allow_resubmission ? "Edit" : "View") : "Enter for them"}
                     </Button>
+
                     <Button
                       size="sm"
                       variant="ghost"
