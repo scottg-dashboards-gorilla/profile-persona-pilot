@@ -80,6 +80,7 @@ const ratingTone: Record<string, string> = {
 
 export default function Compensation() {
   const { toast } = useToast();
+  const { bundle: companyBundle } = useFundedPool();
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [cycleId, setCycleId] = useState<string>("");
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -87,6 +88,7 @@ export default function Compensation() {
   const [attempts, setAttempts] = useState<Record<string, AttemptRow[]>>({});
   const [plans, setPlans] = useState<Record<string, Plan>>({});
   const [budgetPercent, setBudgetPercent] = useState(3.5);
+  const [useCompanyPool, setUseCompanyPool] = useState(true);
   const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().slice(0, 10));
   const [onlyCompleted, setOnlyCompleted] = useState(true);
   const [loading, setLoading] = useState(true);
