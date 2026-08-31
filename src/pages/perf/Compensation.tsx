@@ -41,6 +41,7 @@ import {
   type AttemptRow,
 } from "@/lib/assessmentDeltas";
 import ScenarioSimulator from "@/components/perf/ScenarioSimulator";
+import { useFundedPool } from "@/hooks/useCompanyPerformance";
 
 type Cycle = { id: string; name: string; status: string };
 
