@@ -307,6 +307,12 @@ export default function Compensation() {
           <Switch checked={onlyCompleted} onCheckedChange={setOnlyCompleted} />
           Rated reviews only
         </label>
+        {companyBundle && companyPool > 0 && (
+          <label className="flex items-center gap-2 text-sm h-9">
+            <Switch checked={useCompanyPool} onCheckedChange={setUseCompanyPool} />
+            Fund from company performance
+          </label>
+        )}
         <div className="flex gap-2 ml-auto">
           <Button variant="outline" size="sm" onClick={applyRecommendations}>
             <Wand2 className="h-4 w-4 mr-1" /> Apply matrix
