@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.guard_locked_company_year() FROM PUBLIC, anon, authenticated;

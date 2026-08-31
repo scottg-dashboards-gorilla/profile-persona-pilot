@@ -192,6 +192,104 @@ export type Database = {
         }
         Relationships: []
       }
+      company_kpis: {
+        Row: {
+          actual_value: number | null
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          target_value: number
+          unit: string | null
+          updated_at: string
+          weight: number
+          year_id: string
+        }
+        Insert: {
+          actual_value?: number | null
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          target_value?: number
+          unit?: string | null
+          updated_at?: string
+          weight?: number
+          year_id: string
+        }
+        Update: {
+          actual_value?: number | null
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          target_value?: number
+          unit?: string | null
+          updated_at?: string
+          weight?: number
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_kpis_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "company_performance_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_performance_years: {
+        Row: {
+          achievement_percent: number | null
+          created_at: string
+          fiscal_year: number
+          forecast_for_year: number | null
+          forecast_notes: string | null
+          funded_pool_amount: number | null
+          id: string
+          label: string | null
+          locked_at: string | null
+          locked_by: string | null
+          people_cost: number
+          pool_percent_override: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          achievement_percent?: number | null
+          created_at?: string
+          fiscal_year: number
+          forecast_for_year?: number | null
+          forecast_notes?: string | null
+          funded_pool_amount?: number | null
+          id?: string
+          label?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          people_cost?: number
+          pool_percent_override?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          achievement_percent?: number | null
+          created_at?: string
+          fiscal_year?: number
+          forecast_for_year?: number | null
+          forecast_notes?: string | null
+          funded_pool_amount?: number | null
+          id?: string
+          label?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          people_cost?: number
+          pool_percent_override?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       employee_profiles: {
         Row: {
           created_at: string
@@ -287,6 +385,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "employees"
             referencedColumns: ["uuid"]
+          },
+        ]
+      }
+      funding_curve_points: {
+        Row: {
+          achievement_percent: number
+          created_at: string
+          id: string
+          pool_percent: number
+          updated_at: string
+          year_id: string
+        }
+        Insert: {
+          achievement_percent: number
+          created_at?: string
+          id?: string
+          pool_percent: number
+          updated_at?: string
+          year_id: string
+        }
+        Update: {
+          achievement_percent?: number
+          created_at?: string
+          id?: string
+          pool_percent?: number
+          updated_at?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funding_curve_points_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "company_performance_years"
+            referencedColumns: ["id"]
           },
         ]
       }

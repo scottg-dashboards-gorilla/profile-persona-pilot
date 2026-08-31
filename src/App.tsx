@@ -20,6 +20,7 @@ import Goals from "./pages/perf/Goals";
 import Compensation from "./pages/perf/Compensation";
 import Calibration from "./pages/perf/Calibration";
 import OrgRollups from "./pages/perf/OrgRollups";
+import CompanyPerformance from "./pages/perf/CompanyPerformance";
 import AuditLog from "./pages/perf/AuditLog";
 import MyReview from "./pages/perf/MyReview";
 import Playbook from "./pages/perf/Playbook";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/playbook" element={<Playbook />} />
             <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
             <Route path="/goals" element={<Goals />} />
+            <Route path="/company" element={<RequireArea area="company"><CompanyPerformance /></RequireArea>} />
             <Route path="/compensation" element={<RequireArea area="compensation"><Compensation /></RequireArea>} />
             <Route path="/calibration" element={<RequireArea area="calibration"><Calibration /></RequireArea>} />
             <Route path="/org" element={<RequireArea area="org"><OrgRollups /></RequireArea>} />

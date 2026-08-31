@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type AppRole = "admin" | "hr" | "manager";
 
 /** Feature areas that can be gated by role. */
-export type PermissionArea = "reviews" | "cycles" | "compensation" | "calibration" | "org" | "audit";
+export type PermissionArea = "reviews" | "cycles" | "compensation" | "calibration" | "org" | "audit" | "company";
 
 const AREA_ROLES: Record<PermissionArea, AppRole[]> = {
   reviews: ["admin", "hr", "manager"],
@@ -13,6 +13,7 @@ const AREA_ROLES: Record<PermissionArea, AppRole[]> = {
   calibration: ["admin", "hr"],
   org: ["admin", "hr", "manager"],
   audit: ["admin", "hr"],
+  company: ["admin", "hr"],
 };
 
 export const areaLabels: Record<PermissionArea, string> = {
@@ -22,6 +23,7 @@ export const areaLabels: Record<PermissionArea, string> = {
   calibration: "Calibration",
   org: "Org rollups",
   audit: "Audit log",
+  company: "Company performance",
 };
 
 export function rolesForArea(area: PermissionArea) {

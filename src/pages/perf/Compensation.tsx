@@ -41,6 +41,7 @@ import {
   type AttemptRow,
 } from "@/lib/assessmentDeltas";
 import ScenarioSimulator from "@/components/perf/ScenarioSimulator";
+import { useFundedPool } from "@/hooks/useCompanyPerformance";
 
 type Cycle = { id: string; name: string; status: string };
 
@@ -79,6 +80,7 @@ const ratingTone: Record<string, string> = {
 
 export default function Compensation() {
   const { toast } = useToast();
+  const { bundle: companyBundle } = useFundedPool();
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [cycleId, setCycleId] = useState<string>("");
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -86,6 +88,7 @@ export default function Compensation() {
   const [attempts, setAttempts] = useState<Record<string, AttemptRow[]>>({});
   const [plans, setPlans] = useState<Record<string, Plan>>({});
   const [budgetPercent, setBudgetPercent] = useState(3.5);
+  const [useCompanyPool, setUseCompanyPool] = useState(true);
   const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().slice(0, 10));
   const [onlyCompleted, setOnlyCompleted] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -173,7 +176,18 @@ export default function Compensation() {
 
   const payroll = useMemo(() => rows.reduce((s, r) => s + r.comp, 0), [rows]);
   const planned = useMemo(() => rows.reduce((s, r) => s + (r.plan.amount || 0), 0), [rows]);
-  const budget = budgetSummary(payroll, budgetPercent, planned);
+  const companyPool = companyBundle?.funding.poolAmount ?? 0;
+  const poolFunded = useCompanyPool && !!companyBundle && companyPool > 0;
+  const budget = poolFunded
+    ? {
+        payroll,
+        budgetAmount: companyPool,
+        plannedAmount: planned,
+        remaining: companyPool - planned,
+        plannedPercentOfPayroll: payroll ? Math.round((planned / payroll) * 1000) / 10 : 0,
+        overBudget: planned > companyPool,
+      }
+    : budgetSummary(payroll, budgetPercent, planned);
 
   function setPlan(id: string, patch: Partial<Plan>) {
     setPlans((prev) => {
@@ -275,7 +289,8 @@ export default function Compensation() {
             className="h-9"
             type="number"
             step="0.1"
-            value={budgetPercent}
+            disabled={poolFunded}
+            value={poolFunded ? (companyBundle?.funding.poolPercent ?? 0) : budgetPercent}
             onChange={(e) => setBudgetPercent(Number(e.target.value))}
           />
         </div>
@@ -292,6 +307,12 @@ export default function Compensation() {
           <Switch checked={onlyCompleted} onCheckedChange={setOnlyCompleted} />
           Rated reviews only
         </label>
+        {companyBundle && companyPool > 0 && (
+          <label className="flex items-center gap-2 text-sm h-9">
+            <Switch checked={useCompanyPool} onCheckedChange={setUseCompanyPool} />
+            Fund from company performance
+          </label>
+        )}
         <div className="flex gap-2 ml-auto">
           <Button variant="outline" size="sm" onClick={applyRecommendations}>
             <Wand2 className="h-4 w-4 mr-1" /> Apply matrix
@@ -310,10 +331,42 @@ export default function Compensation() {
         </div>
       </div>
 
+      {companyBundle && (
+        <Card>
+          <CardContent className="p-4 flex flex-wrap items-center gap-3 text-sm">
+            <span className="font-medium">
+              {companyBundle.year.label ?? `FY${companyBundle.year.fiscal_year}`} business achievement{" "}
+              {companyBundle.funding.achievement === null
+                ? "—"
+                : `${companyBundle.funding.achievement}%`}
+            </span>
+            <Badge variant={companyBundle.year.status === "locked" ? "default" : "secondary"}>
+              {companyBundle.year.status === "locked" ? "Pool locked" : "Pool still draft"}
+            </Badge>
+            <span className="text-muted-foreground">
+              funds {companyBundle.funding.poolPercent}% of{" "}
+              {formatMoney(companyBundle.funding.peopleCost)} people cost ={" "}
+              {formatMoney(companyPool)}
+              {companyBundle.year.forecast_for_year
+                ? ` for ${companyBundle.year.forecast_for_year} pay review`
+                : ""}
+            </span>
+            <Button asChild size="sm" variant="outline" className="ml-auto">
+              <Link to="/company">Company performance</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-4">
         {[
           { label: "In-scope payroll", value: formatMoney(budget.payroll) },
-          { label: `Merit budget (${budgetPercent}%)`, value: formatMoney(budget.budgetAmount) },
+          {
+            label: poolFunded
+              ? `Funded pool (${companyBundle?.funding.poolPercent}% of people cost)`
+              : `Merit budget (${budgetPercent}%)`,
+            value: formatMoney(budget.budgetAmount),
+          },
           { label: "Planned increases", value: formatMoney(budget.plannedAmount) },
           {
             label: budget.overBudget ? "Over budget by" : "Remaining",
