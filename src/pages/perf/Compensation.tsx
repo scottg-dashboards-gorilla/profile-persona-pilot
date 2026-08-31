@@ -331,10 +331,42 @@ export default function Compensation() {
         </div>
       </div>
 
+      {companyBundle && (
+        <Card>
+          <CardContent className="p-4 flex flex-wrap items-center gap-3 text-sm">
+            <span className="font-medium">
+              {companyBundle.year.label ?? `FY${companyBundle.year.fiscal_year}`} business achievement{" "}
+              {companyBundle.funding.achievement === null
+                ? "—"
+                : `${companyBundle.funding.achievement}%`}
+            </span>
+            <Badge variant={companyBundle.year.status === "locked" ? "default" : "secondary"}>
+              {companyBundle.year.status === "locked" ? "Pool locked" : "Pool still draft"}
+            </Badge>
+            <span className="text-muted-foreground">
+              funds {companyBundle.funding.poolPercent}% of{" "}
+              {formatMoney(companyBundle.funding.peopleCost)} people cost ={" "}
+              {formatMoney(companyPool)}
+              {companyBundle.year.forecast_for_year
+                ? ` for ${companyBundle.year.forecast_for_year} pay review`
+                : ""}
+            </span>
+            <Button asChild size="sm" variant="outline" className="ml-auto">
+              <Link to="/company">Company performance</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-4">
         {[
           { label: "In-scope payroll", value: formatMoney(budget.payroll) },
-          { label: `Merit budget (${budgetPercent}%)`, value: formatMoney(budget.budgetAmount) },
+          {
+            label: poolFunded
+              ? `Funded pool (${companyBundle?.funding.poolPercent}% of people cost)`
+              : `Merit budget (${budgetPercent}%)`,
+            value: formatMoney(budget.budgetAmount),
+          },
           { label: "Planned increases", value: formatMoney(budget.plannedAmount) },
           {
             label: budget.overBudget ? "Over budget by" : "Remaining",
