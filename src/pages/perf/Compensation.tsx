@@ -289,7 +289,8 @@ export default function Compensation() {
             className="h-9"
             type="number"
             step="0.1"
-            value={budgetPercent}
+            disabled={poolFunded}
+            value={poolFunded ? (companyBundle?.funding.poolPercent ?? 0) : budgetPercent}
             onChange={(e) => setBudgetPercent(Number(e.target.value))}
           />
         </div>
