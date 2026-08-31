@@ -176,7 +176,18 @@ export default function Compensation() {
 
   const payroll = useMemo(() => rows.reduce((s, r) => s + r.comp, 0), [rows]);
   const planned = useMemo(() => rows.reduce((s, r) => s + (r.plan.amount || 0), 0), [rows]);
-  const budget = budgetSummary(payroll, budgetPercent, planned);
+  const companyPool = companyBundle?.funding.poolAmount ?? 0;
+  const poolFunded = useCompanyPool && !!companyBundle && companyPool > 0;
+  const budget = poolFunded
+    ? {
+        payroll,
+        budgetAmount: companyPool,
+        plannedAmount: planned,
+        remaining: companyPool - planned,
+        plannedPercentOfPayroll: payroll ? Math.round((planned / payroll) * 1000) / 10 : 0,
+        overBudget: planned > companyPool,
+      }
+    : budgetSummary(payroll, budgetPercent, planned);
 
   function setPlan(id: string, patch: Partial<Plan>) {
     setPlans((prev) => {
