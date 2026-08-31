@@ -47,6 +47,7 @@ const App = () => (
             <Route path="/playbook" element={<Playbook />} />
             <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
             <Route path="/goals" element={<Goals />} />
+            <Route path="/company" element={<RequireArea area="company"><CompanyPerformance /></RequireArea>} />
             <Route path="/compensation" element={<RequireArea area="compensation"><Compensation /></RequireArea>} />
             <Route path="/calibration" element={<RequireArea area="calibration"><Calibration /></RequireArea>} />
             <Route path="/org" element={<RequireArea area="org"><OrgRollups /></RequireArea>} />
