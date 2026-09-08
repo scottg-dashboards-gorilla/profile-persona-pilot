@@ -571,6 +571,39 @@ export type Database = {
           },
         ]
       }
+      manager_budgets: {
+        Row: {
+          bonus_budget_amount: number
+          created_at: string
+          fiscal_year: number
+          id: string
+          manager_uuid: string
+          merit_budget_amount: number
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          bonus_budget_amount?: number
+          created_at?: string
+          fiscal_year: number
+          id?: string
+          manager_uuid: string
+          merit_budget_amount?: number
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bonus_budget_amount?: number
+          created_at?: string
+          fiscal_year?: number
+          id?: string
+          manager_uuid?: string
+          merit_budget_amount?: number
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       manager_notes: {
         Row: {
           content: string
@@ -606,10 +639,149 @@ export type Database = {
           },
         ]
       }
+      pdr_forms: {
+        Row: {
+          aspiration_conversation_at: string | null
+          comments_finalized_at: string | null
+          comments_revision_note: string | null
+          created_at: string
+          employee_name: string
+          employee_self_input: string | null
+          employee_uuid: string
+          fiscal_year: number
+          id: string
+          manager_comments: string | null
+          midyear_checkin_at: string | null
+          midyear_manager_feedback: string | null
+          objectives_approved_at: string | null
+          objectives_revision_note: string | null
+          objectives_submitted_at: string | null
+          review_id: string | null
+          score_recorded_at: string | null
+          self_input_submitted_at: string | null
+          stage: string
+          updated_at: string
+          year_end_score: number | null
+        }
+        Insert: {
+          aspiration_conversation_at?: string | null
+          comments_finalized_at?: string | null
+          comments_revision_note?: string | null
+          created_at?: string
+          employee_name: string
+          employee_self_input?: string | null
+          employee_uuid: string
+          fiscal_year: number
+          id?: string
+          manager_comments?: string | null
+          midyear_checkin_at?: string | null
+          midyear_manager_feedback?: string | null
+          objectives_approved_at?: string | null
+          objectives_revision_note?: string | null
+          objectives_submitted_at?: string | null
+          review_id?: string | null
+          score_recorded_at?: string | null
+          self_input_submitted_at?: string | null
+          stage?: string
+          updated_at?: string
+          year_end_score?: number | null
+        }
+        Update: {
+          aspiration_conversation_at?: string | null
+          comments_finalized_at?: string | null
+          comments_revision_note?: string | null
+          created_at?: string
+          employee_name?: string
+          employee_self_input?: string | null
+          employee_uuid?: string
+          fiscal_year?: number
+          id?: string
+          manager_comments?: string | null
+          midyear_checkin_at?: string | null
+          midyear_manager_feedback?: string | null
+          objectives_approved_at?: string | null
+          objectives_revision_note?: string | null
+          objectives_submitted_at?: string | null
+          review_id?: string | null
+          score_recorded_at?: string | null
+          self_input_submitted_at?: string | null
+          stage?: string
+          updated_at?: string
+          year_end_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdr_forms_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pdr_objectives: {
+        Row: {
+          cascaded_from_manager: boolean
+          category: string
+          created_at: string
+          description: string | null
+          form_id: string
+          id: string
+          manager_validated: boolean
+          progress_percent: number
+          sort_order: number
+          status: string
+          title: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          cascaded_from_manager?: boolean
+          category: string
+          created_at?: string
+          description?: string | null
+          form_id: string
+          id?: string
+          manager_validated?: boolean
+          progress_percent?: number
+          sort_order?: number
+          status?: string
+          title: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          cascaded_from_manager?: boolean
+          category?: string
+          created_at?: string
+          description?: string | null
+          form_id?: string
+          id?: string
+          manager_validated?: boolean
+          progress_percent?: number
+          sort_order?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdr_objectives_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "pdr_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       performance_reviews: {
         Row: {
           aggregation_method: string
+          apr_stage: string
           assessment_attempt_id: string | null
+          bonus_amount: number | null
+          bonus_eligible: boolean
           comp_adjustment_amount: number | null
           comp_adjustment_percent: number | null
           comp_approval_note: string | null
@@ -618,6 +790,9 @@ export type Database = {
           comp_approved_by: string | null
           comp_effective_date: string | null
           completed_date: string | null
+          coo_finance_approved_at: string | null
+          coo_finance_approved_by: string | null
+          coo_finance_note: string | null
           created_at: string
           current_annual_comp: number | null
           cycle_id: string | null
@@ -627,15 +802,29 @@ export type Database = {
           employee_email: string | null
           employee_name: string
           employee_uuid: string
+          escalated_to_uuid: string | null
+          escalation_decided_at: string | null
+          escalation_note: string | null
+          escalation_status: string
+          exec_payout_amount: number | null
+          fiscal_year: number | null
           hire_date: string | null
+          hr_finalized_at: string | null
+          hr_finalized_by: string | null
+          ic_score: number | null
           id: string
+          is_executive: boolean
           kickoff_at: string | null
           manager_review_response: string | null
           manager_review_sent_at: string | null
+          merit_amount: number | null
+          merit_percent: number | null
           new_title: string | null
           notes: string | null
           overall_rating: string | null
+          payroll_submitted_at: string | null
           promotion: boolean
+          rating_score: number | null
           released_at: string | null
           released_by: string | null
           review_cycle: string
@@ -651,7 +840,10 @@ export type Database = {
         }
         Insert: {
           aggregation_method?: string
+          apr_stage?: string
           assessment_attempt_id?: string | null
+          bonus_amount?: number | null
+          bonus_eligible?: boolean
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
           comp_approval_note?: string | null
@@ -660,6 +852,9 @@ export type Database = {
           comp_approved_by?: string | null
           comp_effective_date?: string | null
           completed_date?: string | null
+          coo_finance_approved_at?: string | null
+          coo_finance_approved_by?: string | null
+          coo_finance_note?: string | null
           created_at?: string
           current_annual_comp?: number | null
           cycle_id?: string | null
@@ -669,15 +864,29 @@ export type Database = {
           employee_email?: string | null
           employee_name: string
           employee_uuid: string
+          escalated_to_uuid?: string | null
+          escalation_decided_at?: string | null
+          escalation_note?: string | null
+          escalation_status?: string
+          exec_payout_amount?: number | null
+          fiscal_year?: number | null
           hire_date?: string | null
+          hr_finalized_at?: string | null
+          hr_finalized_by?: string | null
+          ic_score?: number | null
           id?: string
+          is_executive?: boolean
           kickoff_at?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
+          merit_amount?: number | null
+          merit_percent?: number | null
           new_title?: string | null
           notes?: string | null
           overall_rating?: string | null
+          payroll_submitted_at?: string | null
           promotion?: boolean
+          rating_score?: number | null
           released_at?: string | null
           released_by?: string | null
           review_cycle?: string
@@ -693,7 +902,10 @@ export type Database = {
         }
         Update: {
           aggregation_method?: string
+          apr_stage?: string
           assessment_attempt_id?: string | null
+          bonus_amount?: number | null
+          bonus_eligible?: boolean
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
           comp_approval_note?: string | null
@@ -702,6 +914,9 @@ export type Database = {
           comp_approved_by?: string | null
           comp_effective_date?: string | null
           completed_date?: string | null
+          coo_finance_approved_at?: string | null
+          coo_finance_approved_by?: string | null
+          coo_finance_note?: string | null
           created_at?: string
           current_annual_comp?: number | null
           cycle_id?: string | null
@@ -711,15 +926,29 @@ export type Database = {
           employee_email?: string | null
           employee_name?: string
           employee_uuid?: string
+          escalated_to_uuid?: string | null
+          escalation_decided_at?: string | null
+          escalation_note?: string | null
+          escalation_status?: string
+          exec_payout_amount?: number | null
+          fiscal_year?: number | null
           hire_date?: string | null
+          hr_finalized_at?: string | null
+          hr_finalized_by?: string | null
+          ic_score?: number | null
           id?: string
+          is_executive?: boolean
           kickoff_at?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
+          merit_amount?: number | null
+          merit_percent?: number | null
           new_title?: string | null
           notes?: string | null
           overall_rating?: string | null
+          payroll_submitted_at?: string | null
           promotion?: boolean
+          rating_score?: number | null
           released_at?: string | null
           released_by?: string | null
           review_cycle?: string

@@ -40,6 +40,7 @@ import {
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
 import { SelfAssessmentPanel } from "@/components/perf/SelfAssessmentPanel";
+import { RATING_SCALE, ratingBand, scoreFromLegacy } from "@/lib/pmp";
 
 
 export type ReviewRow = {
@@ -51,6 +52,7 @@ export type ReviewRow = {
   completed_date: string | null;
   status: string;
   overall_rating: string | null;
+  rating_score?: number | null;
   comp_adjustment_amount: number | null;
   comp_adjustment_percent: number | null;
   comp_effective_date: string | null;
@@ -95,6 +97,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [presetContext, setPresetContext] = useState<DeltaContext | null>(null);
 
   const [rating, setRating] = useState<string>("meets");
+  const [scoreOverride, setScoreOverride] = useState<number | null>(null);
   const [autoSuggest, setAutoSuggest] = useState(true);
   const [compAmount, setCompAmount] = useState<string>("");
   const [effectiveDate, setEffectiveDate] = useState<string>(today());
@@ -102,9 +105,12 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [newTitle, setNewTitle] = useState("");
   const [notes, setNotes] = useState("");
 
+  const scoreValue = scoreOverride ?? scoreFromLegacy(rating) ?? 3;
+
   useEffect(() => {
     if (!review) return;
     setRating(review.overall_rating ?? "meets");
+    setScoreOverride(review.rating_score ?? null);
     setMethod(((review.aggregation_method as AggregationMethod) ?? "mean"));
     setAutoSuggest(!review.overall_rating);
     setCompAmount(review.comp_adjustment_amount?.toString() ?? "");
@@ -187,7 +193,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
       .update({
         status: "completed",
         completed_date: today(),
-        overall_rating: rating,
+        overall_rating: ratingBand(scoreValue) ?? rating,
+        rating_score: scoreValue,
         comp_adjustment_amount: amountNum,
         comp_adjustment_percent: pct != null ? Number(pct.toFixed(2)) : null,
         comp_effective_date: amountNum != null ? effectiveDate : null,
@@ -290,19 +297,20 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
           )}
 
           <div className="grid gap-2">
-            <Label>Overall rating</Label>
+            <Label>Performance rating (1–5)</Label>
             <Select
-              value={rating}
+              value={String(scoreValue)}
               onValueChange={(v) => {
-                setRating(v);
+                setRating(ratingBand(Number(v)) ?? "meets");
+                setScoreOverride(Number(v));
                 setAutoSuggest(false);
               }}
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="exceeds">Exceeds expectations</SelectItem>
-                <SelectItem value="meets">Meets expectations</SelectItem>
-                <SelectItem value="below">Below expectations</SelectItem>
+                {RATING_SCALE.map((r) => (
+                  <SelectItem key={r.score} value={String(r.score)}>{r.short}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {breakdown.overall != null && (

@@ -12,6 +12,7 @@ import {
   Repeat,
   ArrowRight,
 } from "lucide-react";
+import { APR_STAGES, IC_TARGET, PDR_STAGES } from "@/lib/pmp";
 
 type Owner = "HR" | "Employee" | "Manager";
 
@@ -161,6 +162,49 @@ export default function Playbook() {
         ))}
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">The annual PMP cycle</CardTitle>
+            <CardDescription>Development reviews · <Link className="underline" to="/pdr">open PDRs</Link></CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            {PDR_STAGES.map((s, i) => (
+              <div key={s.id} className="flex items-start gap-2">
+                <span className="mt-0.5 text-xs text-muted-foreground w-4">{i + 1}.</span>
+                <div>
+                  <div className="font-medium">{s.label}</div>
+                  <div className="text-xs text-muted-foreground">{s.owner} · {s.sla}</div>
+                </div>
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground border-t pt-2">
+              Control C1 — the manager validates every drafted objective maps to Faster / Stronger / Better /
+              TPW. Control C2 — the score is cross-checked before the year is closed.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">The Annual Pay Review</CardTitle>
+            <CardDescription>Pay, merit and bonus · <Link className="underline" to="/apr">open the APR</Link></CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            {APR_STAGES.map((s, i) => (
+              <div key={s.id} className="flex items-start gap-2">
+                <span className="mt-0.5 text-xs text-muted-foreground w-4">{i + 1}.</span>
+                <div>
+                  <div className="font-medium">{s.label}</div>
+                  <div className="text-xs text-muted-foreground">{s.owner} · {s.window}</div>
+                  <div className="text-xs text-muted-foreground">{s.what}</div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Guardrails already enforced</CardTitle>
@@ -168,6 +212,15 @@ export default function Playbook() {
         </CardHeader>
         <CardContent className="text-sm space-y-2">
           <Rule>A review cannot be marked complete without an assessment attempt from that period.</Rule>
+          <Rule>Performance is rated on the 1–5 scale everywhere; merit follows from that rating.</Rule>
+          <Rule>
+            A manager with 5 or more eligible reports cannot save pay entries above their team budget —
+            the entry must be escalated to the next-level manager and approved first.
+          </Rule>
+          <Rule>Merit and bonus draw from separate budgets; unspent money cannot move between them.</Rule>
+          <Rule>I/C scores are tracked against the global target of {IC_TARGET}.</Rule>
+          <Rule>Objectives can only be marked aligned once every one is validated against a category (C1).</Rule>
+          <Rule>A PDR year can only be closed after manager comments are finalized and a score is set.</Rule>
           <Rule>Only HR or an admin can approve a pay change; managers propose, HR signs off.</Rule>
           <Rule>An outcome can't be shared with the employee while a pay change is still unapproved.</Rule>
           <Rule>Employees only ever see their own review, and only after it's shared.</Rule>

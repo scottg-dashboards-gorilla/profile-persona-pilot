@@ -24,6 +24,8 @@ import CompanyPerformance from "./pages/perf/CompanyPerformance";
 import AuditLog from "./pages/perf/AuditLog";
 import MyReview from "./pages/perf/MyReview";
 import Playbook from "./pages/perf/Playbook";
+import PDR from "./pages/perf/PDR";
+import APR from "./pages/perf/APR";
 import ReviewForm from "./pages/ReviewForm";
 import RequireArea from "./components/perf/RequireArea";
 
@@ -41,6 +43,8 @@ const App = () => (
           <Route element={<PerfLayout />}>
             <Route path="/" element={<Overview />} />
             <Route path="/reviews" element={<RequireArea area="reviews"><Reviews /></RequireArea>} />
+            <Route path="/pdr" element={<RequireArea area="pdr"><PDR /></RequireArea>} />
+            <Route path="/apr" element={<RequireArea area="apr"><APR /></RequireArea>} />
             <Route path="/people" element={<People />} />
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
             <Route path="/me" element={<MyReview />} />
