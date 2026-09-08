@@ -216,20 +216,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                    {canManage && (
-                      <div className="grid gap-1 border-t pt-2">
-                        <Label className="text-[10px] uppercase text-muted-foreground">
-                          Manager year-end comments · {PDR_CATEGORIES.find((c) => c.id === o.category)?.label ?? o.category} (optional)
-                        </Label>
-                        <Textarea
-                          rows={2}
-                          className="text-xs"
-                          placeholder="Enter manager year-end comments here"
-                          defaultValue={o.manager_comment ?? ""}
-                          onBlur={(e) => updateObjective(o.id, { manager_comment: e.target.value || null })}
-                        />
-                      </div>
-                    )}
                   </div>
                 ))}
                 {objectives.length === 0 && (
