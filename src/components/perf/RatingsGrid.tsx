@@ -445,11 +445,42 @@ export function RatingsGrid({ year }: { year: number }) {
                           {formatMoney(c.dmAmount)}
                         </div>
                       </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Checkbox
+                            checked={c.draft.eqEligible}
+                            onCheckedChange={(v) => set(c.row.id, { eqEligible: !!v, eq: v ? c.draft.eq : "" })}
+                          />
+                          <span className="text-[11px] text-muted-foreground">
+                            {c.draft.eqEligible ? "YES" : "NO"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {c.eqRange ? `${c.eqRange.min} – ${c.eqRange.max}` : "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          type="number"
+                          step="0.5"
+                          className={cn("h-8 w-20 text-right text-xs", c.eqOk === false && "border-destructive")}
+                          value={c.draft.eq}
+                          disabled={!c.draft.eqEligible || c.score == null}
+                          onChange={(e) => set(c.row.id, { eq: e.target.value })}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        {formatMoney(c.eqValue)}
+                        <div className="text-[11px] text-muted-foreground">
+                          {c.eqShares != null ? `${c.eqShares.toLocaleString()} shares` : "set share price"}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
+
 
             <div className="grid gap-3 lg:grid-cols-2">
               <div className="rounded-md border p-3">
