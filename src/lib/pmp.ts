@@ -170,8 +170,8 @@ export type PdrStage = "objectives" | "midyear" | "year_end" | "closed";
 export const PDR_STAGES: { id: PdrStage; label: string; owner: "Employee" | "Manager" | "HR"; sla: string }[] = [
   { id: "objectives", label: "Objectives drafted & aligned", owner: "Employee", sla: "SLA: Jan & Feb" },
   { id: "midyear", label: "Mid-year check-in", owner: "Manager", sla: "Target: by Jun & Jul" },
-  { id: "year_end", label: "Year-end self input & manager comments", owner: "Employee", sla: "SLA: Dec – Jan (Yr+1)" },
-  { id: "closed", label: "Year-end PDR score recorded", owner: "HR", sla: "Year closed" },
+  { id: "year_end", label: "Year-end self input & manager comments", owner: "Employee", sla: "Self input Dec 01–15 · comments Dec 02 – Jan 06" },
+  { id: "closed", label: "Year-end PDR score recorded", owner: "HR", sla: "Year closed · conversations Feb 01–15" },
 ];
 
 export type PdrForm = {
