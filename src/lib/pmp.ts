@@ -11,7 +11,7 @@ import type { Rating } from "@/lib/compensation";
 export type RatingScore = 1 | 2 | 3 | 4 | 5;
 
 /**
- * The Global 5-point rating scale. Anchors are the official wording — every
+ * The Datapath 5-point rating scale. Anchors are the official Datapath wording — every
  * employee receives one rating for overall performance, and that rating drives
  * the pay decision.
  */
@@ -60,7 +60,7 @@ export const PMP_PILLARS: { id: string; label: string; what: string }[] = [
   {
     id: "rating",
     label: "Performance Rating",
-    what: "Assessment of employee performance on the Global 5-point rating scale, which determines pay decisions.",
+    what: "Assessment of employee performance on the Datapath 5-point rating scale, which determines pay decisions.",
   },
   {
     id: "merit",
@@ -80,7 +80,7 @@ export const PMP_ROLES: { id: string; label: string; points: string[] }[] = [
     id: "managers",
     label: "People Managers",
     points: [
-      "Act as owners: write feedback and assign a performance rating on the Global 5-point scale.",
+      "Act as owners: write feedback and assign a performance rating on the Datapath 5-point scale.",
       "Recognise people using manager discretion for merit, I/C score, differentiated merit and differentiated LTI where applicable.",
       "Stay within budget by differentiating the % increases across their team members.",
       "Have continuous dialogue with their team — feedback throughout the year, not just at year end.",
@@ -298,7 +298,7 @@ export function nextAprStage(stage: AprStage): AprStage | null {
   return order[i + 1];
 }
 
-/** Global target the individual/company scores must average to. */
+/** Datapath-wide target the individual/company scores must average to. */
 export const IC_TARGET = 105;
 
 export function icAverage(scores: (number | null | undefined)[]): number | null {
@@ -401,7 +401,7 @@ export const RATING_EXAMPLE = {
       score: 4 as RatingScore,
       points: [
         "Streamlined the approval and review process by 3 days.",
-        "Provided alternative approaches for next year based on industry research and stakeholder input.",
+        "Provided alternative approaches for next year based on Datapath market research and stakeholder input.",
         "Took the lead on the framework design of the capability development program.",
         "Coached the project team on Practicing the Datapath Values that shortened feedback collections and the revision and reviews process, launched ahead to the targeted deadline.",
       ],
@@ -502,7 +502,7 @@ export const FOCAL_POINT_ELIGIBILITY: { id: string; label: string; points: strin
     id: "loa",
     label: "Leave of Absence",
     points: [
-      "All associates under leave of absence, according to global salary planning policy and local legislation, are eligible to receive a performance rating and participate in the merit increase program.",
+      "All associates under leave of absence, according to Datapath salary planning policy and local legislation, are eligible to receive a performance rating and participate in the merit increase program.",
     ],
   },
   {
