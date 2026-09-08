@@ -429,7 +429,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
 
             {/* Stage 4 — score */}
             <section className="rounded-md border p-3 space-y-2">
-              <div className="text-sm font-medium">4 · Year-end PDR score</div>
+              <div className="text-sm font-medium">5 · Year-end PDR score</div>
               <p className="text-xs text-muted-foreground">
                 Suggested from weighted objective progress: <strong>{suggested ?? "—"}</strong> / 5. HR
                 cross-checks before the year is closed.
