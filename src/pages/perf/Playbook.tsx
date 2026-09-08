@@ -224,6 +224,180 @@ export default function Playbook() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Example of how to decide on ratings</CardTitle>
+          <CardDescription>
+            One set of objectives, and what the evidence looks like at each point on the scale.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-wide text-primary">Objectives</div>
+            {RATING_EXAMPLE.objectives.map((o) => {
+              const cat = PDR_CATEGORIES.find((c) => c.id === o.category);
+              return (
+                <div key={o.category}>
+                  <div className="text-sm font-medium">{cat?.label ?? o.category}</div>
+                  <ul className="mt-0.5 space-y-0.5">
+                    {o.points.map((p) => (
+                      <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+          <div className="grid gap-3 lg:grid-cols-5">
+            {RATING_EXAMPLE.evidence.map((e) => (
+              <div key={e.score} className="rounded-md border overflow-hidden">
+                <div className={`px-2 py-1.5 text-center ${ratingMeta(e.score)?.tone ?? ""}`}>
+                  <div className="text-sm font-semibold">{e.score}</div>
+                  <div className="text-[11px] leading-tight font-medium">{ratingMeta(e.score)?.label}</div>
+                </div>
+                <ul className="p-2 space-y-1">
+                  {e.points.map((p) => (
+                    <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Unconscious bias</CardTitle>
+          <CardDescription>
+            Being aware of unconscious biases is a good reminder to keep to objective, data or
+            evidence-based performance evaluations.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="divide-y">
+          {UNCONSCIOUS_BIASES.map((b) => (
+            <div key={b.label} className="grid gap-1 py-2 sm:grid-cols-[10rem_1fr] sm:gap-4">
+              <div className="text-sm font-semibold">{b.label}</div>
+              <p className="text-xs text-muted-foreground">{b.what}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Merit increase</CardTitle>
+            <CardDescription>{MERIT_PRINCIPLES.what}</CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-primary">Who is eligible?</div>
+              <p className="text-xs text-muted-foreground">{MERIT_PRINCIPLES.eligibility}</p>
+            </div>
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-primary">How is it delivered?</div>
+              <p className="text-xs text-muted-foreground">{MERIT_PRINCIPLES.delivery}</p>
+            </div>
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-2 space-y-1.5">
+              <div className="text-xs font-semibold text-amber-900">Watch outs</div>
+              {MERIT_PRINCIPLES.watchOuts.map((w) => (
+                <div key={w} className="text-xs text-amber-900/90 flex gap-1.5">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                  {w}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Individual Contribution (I/C) score</CardTitle>
+            <CardDescription>{IC_PRINCIPLES.what}</CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-primary">Who is eligible?</div>
+              <p className="text-xs text-muted-foreground">{IC_PRINCIPLES.eligibility}</p>
+            </div>
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-2 space-y-1.5">
+              <div className="text-xs font-semibold text-amber-900">Watch outs</div>
+              {IC_PRINCIPLES.watchOuts.map((w) => (
+                <div key={w} className="text-xs text-amber-900/90 flex gap-1.5">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                  {w}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">How the bonus is built</CardTitle>
+          <CardDescription>Team Score sets the pot; the I/C score multiplies each payout.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-2 sm:grid-cols-4">
+            {TEAM_SCORE_METRICS.map((m) => (
+              <div key={m.id} className="rounded-md border p-2">
+                <div className="text-lg font-semibold text-primary">{m.weight}%</div>
+                <div className="text-xs text-muted-foreground">{m.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-2 sm:grid-cols-3 text-xs">
+            <div className="rounded-md border p-2">
+              <div className="font-semibold">Team Score</div>
+              <div className="text-muted-foreground">
+                {BONUS_PRINCIPLES.teamScoreMin}–{BONUS_PRINCIPLES.teamScoreMax}% of bonus target
+              </div>
+            </div>
+            <div className="rounded-md border p-2">
+              <div className="font-semibold">Qualitative review</div>
+              <div className="text-muted-foreground">+/- {BONUS_PRINCIPLES.qualitativeSwing} points on a 100% team score</div>
+            </div>
+            <div className="rounded-md border p-2">
+              <div className="font-semibold">I/C score multiplier</div>
+              <div className="text-muted-foreground">
+                {BONUS_PRINCIPLES.icMin}–{BONUS_PRINCIPLES.icMax}% of bonus target · target average {IC_TARGET}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">{BONUS_PRINCIPLES.teamScore} {BONUS_PRINCIPLES.icScore}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Focal point eligibility</CardTitle>
+          <CardDescription>Who is in and out of the year-end ratings and merit process.</CardDescription>
+        </CardHeader>
+        <CardContent className="divide-y">
+          {FOCAL_POINT_ELIGIBILITY.map((g) => (
+            <div key={g.id} className="grid gap-1 py-3 sm:grid-cols-[10rem_1fr] sm:gap-4">
+              <div className="text-sm font-semibold">{g.label}</div>
+              <ul className="space-y-1">
+                {g.points.map((p) => (
+                  <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 sm:grid-cols-2">
         {PMP_ROLES.map((r) => (
           <Card key={r.id}>
