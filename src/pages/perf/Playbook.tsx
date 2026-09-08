@@ -14,13 +14,22 @@ import {
 } from "lucide-react";
 import {
   APR_STAGES,
+  BONUS_PRINCIPLES,
+  FOCAL_POINT_ELIGIBILITY,
+  IC_PRINCIPLES,
   IC_TARGET,
+  MERIT_PRINCIPLES,
+  PDR_CATEGORIES,
   PDR_STAGES,
   PMP_PILLARS,
   PMP_ROLES,
+  RATING_EXAMPLE,
   RATING_LENSES,
   RATING_SCALE,
+  TEAM_SCORE_METRICS,
+  UNCONSCIOUS_BIASES,
   YEAR_END_STEPS,
+  ratingMeta,
 } from "@/lib/pmp";
 
 type Owner = "HR" | "Employee" | "Manager";
