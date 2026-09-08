@@ -727,6 +727,7 @@ export type Database = {
           description: string | null
           form_id: string
           id: string
+          manager_comment: string | null
           manager_validated: boolean
           progress_percent: number
           sort_order: number
@@ -742,6 +743,7 @@ export type Database = {
           description?: string | null
           form_id: string
           id?: string
+          manager_comment?: string | null
           manager_validated?: boolean
           progress_percent?: number
           sort_order?: number
@@ -757,6 +759,7 @@ export type Database = {
           description?: string | null
           form_id?: string
           id?: string
+          manager_comment?: string | null
           manager_validated?: boolean
           progress_percent?: number
           sort_order?: number
@@ -797,6 +800,9 @@ export type Database = {
           current_annual_comp: number | null
           cycle_id: string | null
           department: string | null
+          dm_amount: number | null
+          dm_eligible: boolean
+          dm_percent: number | null
           employee_ack_at: string | null
           employee_ack_comment: string | null
           employee_email: string | null
@@ -817,8 +823,10 @@ export type Database = {
           kickoff_at: string | null
           manager_review_response: string | null
           manager_review_sent_at: string | null
+          manager_summary_comment: string | null
           merit_amount: number | null
           merit_percent: number | null
+          merit_prorated_amount: number | null
           new_title: string | null
           notes: string | null
           overall_rating: string | null
@@ -859,6 +867,9 @@ export type Database = {
           current_annual_comp?: number | null
           cycle_id?: string | null
           department?: string | null
+          dm_amount?: number | null
+          dm_eligible?: boolean
+          dm_percent?: number | null
           employee_ack_at?: string | null
           employee_ack_comment?: string | null
           employee_email?: string | null
@@ -879,8 +890,10 @@ export type Database = {
           kickoff_at?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
+          manager_summary_comment?: string | null
           merit_amount?: number | null
           merit_percent?: number | null
+          merit_prorated_amount?: number | null
           new_title?: string | null
           notes?: string | null
           overall_rating?: string | null
@@ -921,6 +934,9 @@ export type Database = {
           current_annual_comp?: number | null
           cycle_id?: string | null
           department?: string | null
+          dm_amount?: number | null
+          dm_eligible?: boolean
+          dm_percent?: number | null
           employee_ack_at?: string | null
           employee_ack_comment?: string | null
           employee_email?: string | null
@@ -941,8 +957,10 @@ export type Database = {
           kickoff_at?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
+          manager_summary_comment?: string | null
           merit_amount?: number | null
           merit_percent?: number | null
+          merit_prorated_amount?: number | null
           new_title?: string | null
           notes?: string | null
           overall_rating?: string | null
