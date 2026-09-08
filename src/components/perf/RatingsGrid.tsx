@@ -218,7 +218,7 @@ export function RatingsGrid({ year }: { year: number }) {
     (c) => c.meritOk === false || c.icOk === false || c.dmOk === false || c.eqOk === false,
   ).length;
 
-  const blocked = meritOver || icOver || rangeBreaches > 0;
+  const blocked = meritOver || icOver || equityOver || rangeBreaches > 0;
 
   const dirty = computed.some((c) => {
     const o = toDraft(c.row);
@@ -227,7 +227,10 @@ export function RatingsGrid({ year }: { year: number }) {
       o.merit !== c.draft.merit ||
       o.ic !== c.draft.ic ||
       o.dm !== c.draft.dm ||
-      o.dmEligible !== c.draft.dmEligible
+      o.dmEligible !== c.draft.dmEligible ||
+      o.eq !== c.draft.eq ||
+      o.eqEligible !== c.draft.eqEligible ||
+      (c.row.equity_price_per_share ?? null) !== price
     );
   });
 
@@ -237,9 +240,11 @@ export function RatingsGrid({ year }: { year: number }) {
         title: "Entries can't be saved",
         description: meritOver
           ? "Merit spend is higher than the merit budget."
-          : icOver
-            ? `The team I/C average is above the target of ${IC_TARGET}.`
-            : "Some entries fall outside the allowed range.",
+          : equityOver
+            ? "Share award value is higher than the share budget."
+            : icOver
+              ? `The team I/C average is above the target of ${IC_TARGET}.`
+              : "Some entries fall outside the allowed range.",
         variant: "destructive",
       });
       return;
@@ -258,6 +263,11 @@ export function RatingsGrid({ year }: { year: number }) {
           dm_eligible: c.draft.dmEligible,
           dm_percent: c.dmPct,
           dm_amount: c.dmAmount,
+          equity_eligible: c.draft.eqEligible,
+          equity_percent: c.eqPct,
+          equity_value: c.eqValue,
+          equity_shares: c.eqShares,
+          equity_price_per_share: price,
         })
         .eq("id", c.row.id);
       if (error) {
@@ -278,19 +288,32 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score, merit and Differentiated Merit. Values outside a
-              range, or spend above budget, cannot be saved.
+              Enter the rating, then the I/C score, merit, Differentiated Merit and the share award.
+              Values outside a range, or spend above budget, cannot be saved.
             </CardDescription>
           </div>
           <div className="grid gap-1 text-right text-xs">
             <BudgetReadout label="Remaining MERIT USD Budget" remaining={meritBudget - spend.merit} total={meritBudget} over={meritOver} />
             <BudgetReadout label="Remaining DM USD Budget" remaining={dmBudget - spend.dm} total={dmBudget} over={dmOver} />
+            <BudgetReadout label="Remaining SHARE Budget" remaining={equityBudget - spend.equity} total={equityBudget} over={equityOver} />
             <div className={cn("font-medium", icOver ? "text-destructive" : "text-muted-foreground")}>
               Average I/C Score spend {spend.icAvg ?? "—"} <span className="text-muted-foreground">/ {IC_TARGET}</span>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <span className="text-muted-foreground">Share price (USD)</span>
+              <Input
+                type="number"
+                step="0.01"
+                className="h-7 w-24 text-right text-xs"
+                placeholder="0.00"
+                value={sharePrice}
+                onChange={(e) => setSharePrice(e.target.value)}
+              />
             </div>
           </div>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
         {loading ? (
           <div className="py-10 text-center text-sm text-muted-foreground">
