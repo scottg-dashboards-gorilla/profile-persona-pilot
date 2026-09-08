@@ -189,7 +189,7 @@ export default function Playbook() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Global performance rating scale</CardTitle>
+          <CardTitle className="text-base">Datapath performance rating scale</CardTitle>
           <CardDescription>Everyone receives one rating for overall performance.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -509,7 +509,7 @@ export default function Playbook() {
             the entry must be escalated to the next-level manager and approved first.
           </Rule>
           <Rule>Merit and bonus draw from separate budgets; unspent money cannot move between them.</Rule>
-          <Rule>I/C scores are tracked against the global target of {IC_TARGET}.</Rule>
+          <Rule>I/C scores are tracked against the Datapath target of {IC_TARGET}.</Rule>
           <Rule>Objectives can only be marked aligned once every one is validated against a category (C1).</Rule>
           <Rule>A PDR year can only be closed after manager comments are finalized and a score is set.</Rule>
           <Rule>Only HR or an admin can approve a pay change; managers propose, HR signs off.</Rule>
