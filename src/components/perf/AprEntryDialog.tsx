@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatMoney } from "@/lib/compensation";
 import {
   IC_TARGET,
+  RATING_LENSES,
   RATING_SCALE,
   budgetGate,
   ratingBand,
