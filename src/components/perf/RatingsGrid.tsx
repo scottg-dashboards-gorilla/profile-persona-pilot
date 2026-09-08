@@ -37,6 +37,8 @@ import {
   IC_TARGET,
   MERIT_PRINCIPLES,
   RATING_SCALE,
+  equityAward,
+  equityRange,
   focalPointMeritEligibility,
   icAverage,
   icRange,
@@ -64,6 +66,11 @@ type GridRow = {
   dm_eligible: boolean;
   dm_percent: number | null;
   dm_amount: number | null;
+  equity_eligible: boolean;
+  equity_percent: number | null;
+  equity_value: number | null;
+  equity_shares: number | null;
+  equity_price_per_share: number | null;
   apr_stage: string;
 };
 
@@ -73,10 +80,12 @@ type Draft = {
   ic: string;
   dm: string;
   dmEligible: boolean;
+  eq: string;
+  eqEligible: boolean;
 };
 
 const SELECT =
-  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, bonus_eligible, ic_score, dm_eligible, dm_percent, dm_amount, apr_stage";
+  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, bonus_eligible, ic_score, dm_eligible, dm_percent, dm_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, apr_stage";
 
 function toDraft(r: GridRow): Draft {
   return {
@@ -85,8 +94,11 @@ function toDraft(r: GridRow): Draft {
     ic: r.ic_score != null ? String(r.ic_score) : "",
     dm: r.dm_percent != null ? String(r.dm_percent) : "",
     dmEligible: r.dm_eligible,
+    eq: r.equity_percent != null ? String(r.equity_percent) : "",
+    eqEligible: r.equity_eligible,
   };
 }
+
 
 /**
  * The manager's ratings grid — one row per team member, with the performance
