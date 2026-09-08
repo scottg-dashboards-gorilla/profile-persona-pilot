@@ -52,6 +52,7 @@ export type ReviewRow = {
   completed_date: string | null;
   status: string;
   overall_rating: string | null;
+  rating_score?: number | null;
   comp_adjustment_amount: number | null;
   comp_adjustment_percent: number | null;
   comp_effective_date: string | null;
