@@ -134,10 +134,11 @@ export default function Playbook() {
   return (
     <div className="space-y-5 max-w-4xl">
       <div>
-        <h1 className="text-xl font-semibold">Review playbook</h1>
+        <h1 className="text-xl font-semibold">Datapath review playbook</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          The order things happen in, and who owns each step. Every step below maps to a real screen —
-          the Workflow panel on any review row tracks exactly where that person is.
+          Datapath's own performance and pay rules — the order things happen in, and who owns each step.
+          Every step below maps to a real screen, and the Workflow panel on any review row tracks exactly
+          where that person is.
         </p>
       </div>
 
