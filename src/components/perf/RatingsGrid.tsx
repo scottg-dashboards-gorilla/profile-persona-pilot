@@ -490,6 +490,7 @@ export function RatingsGrid({ year }: { year: number }) {
                 <div className="mt-2 space-y-3">
                   <Bar label="Merit" budget={meritBudget} spend={spend.merit} />
                   <Bar label="Differentiated merit" budget={dmBudget} spend={spend.dm} />
+                  <Bar label="Share awards" budget={equityBudget} spend={spend.equity} />
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
                   <div className="font-semibold text-muted-foreground">I/C budget ({rows.filter((r) => r.bonus_eligible).length} emps)</div>
@@ -497,7 +498,13 @@ export function RatingsGrid({ year }: { year: number }) {
                   <div className={cn("text-right font-medium", icOver && "text-destructive")}>
                     Actual {spend.icAvg?.toFixed(2) ?? "0.00"}
                   </div>
+                  <div className="font-semibold text-muted-foreground">
+                    Shares granted ({computed.filter((c) => c.draft.eqEligible).length} eligible)
+                  </div>
+                  <div className="text-right">{price ? `$${price} / share` : "no price set"}</div>
+                  <div className="text-right font-medium">{spend.shares.toLocaleString()} shares</div>
                 </div>
+
               </div>
 
               <div className="rounded-md border border-amber-200 bg-amber-50 p-3 space-y-1.5">
