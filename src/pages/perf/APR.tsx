@@ -342,7 +342,7 @@ type Mgr = { uuid: string; name: string; reports: number };
 function ManagerBudgets({ year }: { year: number }) {
   const { toast } = useToast();
   const [mgrs, setMgrs] = useState<Mgr[]>([]);
-  const [budgets, setBudgets] = useState<Record<string, { merit: string; bonus: string }>>({});
+  const [budgets, setBudgets] = useState<Record<string, { merit: string; bonus: string; equity: string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -362,11 +362,12 @@ function ManagerBudgets({ year }: { year: number }) {
       })
       .sort((a, b2) => b2.reports - a.reports);
     setMgrs(managers);
-    const map: Record<string, { merit: string; bonus: string }> = {};
-    ((b ?? []) as { manager_uuid: string; merit_budget_amount: number; bonus_budget_amount: number }[]).forEach((row) => {
+    const map: Record<string, { merit: string; bonus: string; equity: string }> = {};
+    ((b ?? []) as { manager_uuid: string; merit_budget_amount: number; bonus_budget_amount: number; equity_budget_amount: number | null }[]).forEach((row) => {
       map[row.manager_uuid] = {
         merit: String(row.merit_budget_amount ?? 0),
         bonus: String(row.bonus_budget_amount ?? 0),
+        equity: String(row.equity_budget_amount ?? 0),
       };
     });
     setBudgets(map);
@@ -377,7 +378,7 @@ function ManagerBudgets({ year }: { year: number }) {
   }, [load]);
 
   async function save(m: Mgr) {
-    const v = budgets[m.uuid] ?? { merit: "0", bonus: "0" };
+    const v = budgets[m.uuid] ?? { merit: "0", bonus: "0", equity: "0" };
     setSaving(m.uuid);
     const { error } = await supabase.from("manager_budgets").upsert(
       {
@@ -385,6 +386,7 @@ function ManagerBudgets({ year }: { year: number }) {
         fiscal_year: year,
         merit_budget_amount: Number(v.merit) || 0,
         bonus_budget_amount: Number(v.bonus) || 0,
+        equity_budget_amount: Number(v.equity) || 0,
       },
       { onConflict: "manager_uuid,fiscal_year" },
     );
@@ -409,7 +411,7 @@ function ManagerBudgets({ year }: { year: number }) {
       <CardContent className="space-y-3">
         {mgrs.length === 0 && <p className="text-sm text-muted-foreground">No managers with reports yet.</p>}
         {mgrs.map((m) => {
-          const v = budgets[m.uuid] ?? { merit: "", bonus: "" };
+          const v = budgets[m.uuid] ?? { merit: "", bonus: "", equity: "" };
           return (
             <div key={m.uuid} className="flex items-end gap-3 flex-wrap border-b pb-3 last:border-0">
               <div className="min-w-[160px]">
@@ -437,6 +439,16 @@ function ManagerBudgets({ year }: { year: number }) {
                   onChange={(e) => setBudgets((p) => ({ ...p, [m.uuid]: { ...v, bonus: e.target.value } }))}
                 />
               </div>
+              <div className="grid gap-1">
+                <Label className="text-[10px] uppercase text-muted-foreground">Share budget</Label>
+                <Input
+                  className="h-9 w-32"
+                  type="number"
+                  value={v.equity}
+                  onChange={(e) => setBudgets((p) => ({ ...p, [m.uuid]: { ...v, equity: e.target.value } }))}
+                />
+              </div>
+
               <Button size="sm" variant="outline" disabled={saving === m.uuid} onClick={() => save(m)}>
                 {saving === m.uuid ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
               </Button>

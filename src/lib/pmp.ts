@@ -315,8 +315,10 @@ export type ManagerBudget = {
   fiscal_year: number;
   merit_budget_amount: number;
   bonus_budget_amount: number;
+  equity_budget_amount?: number;
   note: string | null;
 };
+
 
 /**
  * Merit and bonus draw from separate pots — leftover in one cannot fund the other.
@@ -586,3 +588,37 @@ export function withinRange(value: number | null | undefined, range: { min: numb
   if (value == null) return null;
   return value >= range.min && value <= range.max;
 }
+
+/* ------------------------- Share awards (equity / LTI) ------------------------ */
+
+/**
+ * Datapath share awards (long-term incentive). The award is sized as a percent of
+ * base salary within a range set by the performance rating, then converted to a
+ * number of shares using the grant price for the year.
+ */
+export const EQUITY_RANGES: Record<RatingScore, { min: number; max: number }> = {
+  5: { min: 10, max: 25 },
+  4: { min: 6, max: 15 },
+  3: { min: 3, max: 10 },
+  2: { min: 0, max: 3 },
+  1: { min: 0, max: 0 },
+};
+
+export function equityRange(score: number | null | undefined) {
+  return score != null && score >= 1 && score <= 5 ? EQUITY_RANGES[score as RatingScore] : null;
+}
+
+/** Award value from salary and percent, plus the share count at the grant price. */
+export function equityAward(opts: {
+  salary: number | null | undefined;
+  percent: number | null | undefined;
+  pricePerShare: number | null | undefined;
+}) {
+  const salary = opts.salary ?? 0;
+  if (opts.percent == null || salary <= 0) return { value: null as number | null, shares: null as number | null };
+  const value = Math.round((salary * opts.percent) / 100);
+  const price = opts.pricePerShare ?? 0;
+  const shares = price > 0 ? Math.round(value / price) : null;
+  return { value, shares };
+}
+
