@@ -224,6 +224,26 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
                 ? `Year-end PDR score on file: ${pdrScore} / 5.`
                 : "No year-end PDR score recorded for this year yet."}
             </p>
+            <details className="rounded-md border bg-muted/40 p-2">
+              <summary className="cursor-pointer text-xs font-medium">
+                Think through the three lenses before you rate
+              </summary>
+              <div className="mt-2 space-y-2">
+                {RATING_LENSES.map((l) => (
+                  <div key={l.id}>
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-primary">{l.label}</div>
+                    <ul className="mt-0.5 space-y-0.5">
+                      {l.questions.map((q) => (
+                        <li key={q} className="text-xs text-muted-foreground flex gap-1.5">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                          {q}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </details>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
