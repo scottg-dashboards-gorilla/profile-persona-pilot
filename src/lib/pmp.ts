@@ -208,6 +208,8 @@ export type PdrObjective = {
   cascaded_from_manager: boolean;
   manager_validated: boolean;
   sort_order: number;
+  /** Manager's year-end comment for this objective category (optional). */
+  manager_comment: string | null;
 };
 
 /** Control C1 — every drafted objective must map to a category and be validated by the manager. */
@@ -545,4 +547,42 @@ export function promotionCalibrationLevel(promotionDate: string | null | undefin
   if (!promotionDate) return null;
   const d = new Date(promotionDate);
   return d <= new Date(Date.UTC(fiscalYear, 11, 1)) ? "new" : "prior";
+}
+
+/* --------------------------- Ranges used by the grid -------------------------- */
+
+/** Merit increase range per rating — the higher the rating, the higher the range. */
+export const MERIT_RANGES: Record<RatingScore, { min: number; max: number }> = {
+  5: { min: 3.5, max: 6 },
+  4: { min: 2.5, max: 4 },
+  3: { min: 1.4, max: 2.5 },
+  2: { min: 0, max: 1 },
+  1: { min: 0, max: 0 },
+};
+
+/** I/C score range per rating. The team average must land on the target of 105. */
+export const IC_RANGES: Record<RatingScore, { min: number; max: number }> = {
+  5: { min: 125, max: 150 },
+  4: { min: 110, max: 130 },
+  3: { min: 95, max: 115 },
+  2: { min: 50, max: 95 },
+  1: { min: 0, max: 50 },
+};
+
+/** Differentiated Merit (DM) — an extra award on top of merit, for eligible associates only. */
+export const DM_RANGE = { min: 0, max: 3.5 };
+
+export function meritRange(score: number | null | undefined) {
+  return score != null && score >= 1 && score <= 5 ? MERIT_RANGES[score as RatingScore] : null;
+}
+
+export function icRange(score: number | null | undefined) {
+  return score != null && score >= 1 && score <= 5 ? IC_RANGES[score as RatingScore] : null;
+}
+
+/** Grid "Check" column: is the entered value inside the allowed range? */
+export function withinRange(value: number | null | undefined, range: { min: number; max: number } | null) {
+  if (range == null) return null;
+  if (value == null) return null;
+  return value >= range.min && value <= range.max;
 }

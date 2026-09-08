@@ -39,6 +39,7 @@ import {
   type AprStage,
 } from "@/lib/pmp";
 import { AprEntryDialog, type AprReview } from "@/components/perf/AprEntryDialog";
+import { RatingsGrid } from "@/components/perf/RatingsGrid";
 import { usePermissions } from "@/hooks/usePermissions";
 import { cn } from "@/lib/utils";
 
@@ -183,6 +184,8 @@ export default function APR() {
           ))}
         </CardContent>
       </Card>
+
+      <RatingsGrid year={year} />
 
       <Card>
         <CardHeader>
