@@ -329,18 +329,29 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                 </div>
               </div>
               <div className="grid gap-2 border-t pt-3">
-                <Label className="text-xs">Manager comments in the PDR form</Label>
-                <Textarea rows={4} value={managerComments} onChange={(e) => setManagerComments(e.target.value)} />
+                <Label className="text-xs">
+                  Feedback summary for overall performance <span className="text-destructive">(required)</span>
+                </Label>
+                <Textarea
+                  rows={4}
+                  placeholder="Enter manager feedback summary comments here"
+                  value={managerComments}
+                  onChange={(e) => setManagerComments(e.target.value)}
+                />
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-muted-foreground flex-1">
                     {form.comments_finalized_at
                       ? `Finalized ${format(parseISO(form.comments_finalized_at), "MMM d, yyyy")}`
-                      : "Control C2 — HR cross-checks the score before year-end close-out"}
+                      : managerComments.trim()
+                        ? "Control C2 — HR cross-checks the score before year-end close-out"
+                        : "A summary of overall performance is mandatory before comments can be finalized."}
                   </span>
                   {canManage && (
-                    <Button size="sm" variant="outline" disabled={busy === "cmt"}
+                    <Button size="sm" variant="outline"
+                      disabled={busy === "cmt" || !managerComments.trim()}
+                      title={managerComments.trim() ? undefined : "Enter a feedback summary first"}
                       onClick={() => patch({ manager_comments: managerComments || null, comments_finalized_at: now() }, "cmt", "Comments finalized")}>
-                      Finalize comments
+                      Submit comments
                     </Button>
                   )}
                 </div>
