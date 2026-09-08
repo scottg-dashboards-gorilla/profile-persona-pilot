@@ -111,6 +111,8 @@ export function RatingsGrid({ year }: { year: number }) {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
   const [dmBudget, setDmBudget] = useState(0);
+  const [equityBudget, setEquityBudget] = useState(0);
+  const [sharePrice, setSharePrice] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -125,6 +127,8 @@ export function RatingsGrid({ year }: { year: number }) {
     const next: Record<string, Draft> = {};
     list.forEach((r) => (next[r.id] = toDraft(r)));
     setDrafts(next);
+    const priced = list.find((r) => (r.equity_price_per_share ?? 0) > 0);
+    setSharePrice(priced ? String(priced.equity_price_per_share) : "");
     const bs = (budgets ?? []) as unknown as ManagerBudget[];
     if (bs.length > 0) {
       setBudget({
@@ -133,9 +137,11 @@ export function RatingsGrid({ year }: { year: number }) {
         bonus_budget_amount: bs.reduce((s, b) => s + (b.bonus_budget_amount ?? 0), 0),
       });
       setDmBudget(Math.round(bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0) * 0.25));
+      setEquityBudget(bs.reduce((s, b) => s + (b.equity_budget_amount ?? 0), 0));
     } else {
       setBudget(null);
       setDmBudget(0);
+      setEquityBudget(0);
     }
     setLoading(false);
   }, [year]);
@@ -146,6 +152,8 @@ export function RatingsGrid({ year }: { year: number }) {
 
   const set = (id: string, patch: Partial<Draft>) =>
     setDrafts((d) => ({ ...d, [id]: { ...d[id], ...patch } }));
+
+  const price = sharePrice === "" ? null : Number(sharePrice);
 
   const computed = useMemo(() => {
     return rows.map((r) => {
@@ -161,6 +169,9 @@ export function RatingsGrid({ year }: { year: number }) {
       const proration = focalPointMeritEligibility(r.hire_date, year);
       const prorated = meritAmount != null ? Math.round(meritAmount * proration.prorationFactor) : null;
       const dmAmount = dmPct != null && d.dmEligible ? amountFromPercent(comp, dmPct) : null;
+      const eqRange = equityRange(score);
+      const eqPct = d.eq === "" || !d.eqEligible ? null : Number(d.eq);
+      const award = equityAward({ salary: comp, percent: eqPct, pricePerShare: price });
       return {
         row: r,
         draft: d,
@@ -174,18 +185,25 @@ export function RatingsGrid({ year }: { year: number }) {
         prorated,
         proration,
         dmAmount,
+        eqRange,
+        eqPct,
+        eqValue: award.value,
+        eqShares: award.shares,
         meritOk: withinRange(meritPct, mRange),
         icOk: withinRange(ic, iRange),
         dmOk: dmPct == null ? null : dmPct >= DM_RANGE.min && dmPct <= DM_RANGE.max,
+        eqOk: withinRange(eqPct, eqRange),
       };
     });
-  }, [rows, drafts, year]);
+  }, [rows, drafts, year, price]);
 
   const spend = useMemo(() => {
     const merit = computed.reduce((s, c) => s + (c.prorated ?? 0), 0);
     const dm = computed.reduce((s, c) => s + (c.dmAmount ?? 0), 0);
+    const equity = computed.reduce((s, c) => s + (c.eqValue ?? 0), 0);
+    const shares = computed.reduce((s, c) => s + (c.eqShares ?? 0), 0);
     const icAvg = icAverage(computed.filter((c) => c.row.bonus_eligible).map((c) => c.ic));
-    return { merit, dm, icAvg };
+    return { merit, dm, equity, shares, icAvg };
   }, [computed]);
 
   const eligibleCount = rows.length;
@@ -193,11 +211,13 @@ export function RatingsGrid({ year }: { year: number }) {
   const meritBudget = budget?.merit_budget_amount ?? 0;
   const meritOver = gateEnforced && spend.merit > meritBudget;
   const dmOver = dmBudget > 0 && spend.dm > dmBudget;
+  const equityOver = equityBudget > 0 && spend.equity > equityBudget;
   const icOver =
     gateEnforced && spend.icAvg != null && spend.icAvg > IC_TARGET;
   const rangeBreaches = computed.filter(
-    (c) => c.meritOk === false || c.icOk === false || c.dmOk === false,
+    (c) => c.meritOk === false || c.icOk === false || c.dmOk === false || c.eqOk === false,
   ).length;
+
   const blocked = meritOver || icOver || rangeBreaches > 0;
 
   const dirty = computed.some((c) => {
