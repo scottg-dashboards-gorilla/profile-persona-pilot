@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2 } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +15,8 @@ import {
 
 const primary = [
   { title: "Overview", url: "/", icon: LayoutDashboard },
+  { title: "Development reviews", url: "/pdr", icon: Workflow },
+  { title: "Annual Pay Review", url: "/apr", icon: Wallet },
   { title: "Reviews", url: "/reviews", icon: ClipboardCheck },
   { title: "People", url: "/people", icon: Users },
   { title: "Cycles", url: "/cycles", icon: CalendarRange },

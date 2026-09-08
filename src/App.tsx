@@ -24,6 +24,8 @@ import CompanyPerformance from "./pages/perf/CompanyPerformance";
 import AuditLog from "./pages/perf/AuditLog";
 import MyReview from "./pages/perf/MyReview";
 import Playbook from "./pages/perf/Playbook";
+import PDR from "./pages/perf/PDR";
+import APR from "./pages/perf/APR";
 import ReviewForm from "./pages/ReviewForm";
 import RequireArea from "./components/perf/RequireArea";
 
