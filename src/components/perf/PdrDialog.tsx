@@ -296,30 +296,112 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
               </div>
             </section>
 
-            {/* Stage 3 — year-end */}
+            {/* Stage 3a — employee input */}
             <section className="rounded-md border p-3 space-y-3">
-              <div className="text-sm font-medium">3 · Year-end input and manager comments</div>
+              <header className="flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <div className="text-sm font-medium">3 · Employee input</div>
+                  <p className="text-xs text-muted-foreground">
+                    Written by the employee. Accomplishments against the objectives and Datapath core
+                    values. Due Dec 01–15.
+                  </p>
+                </div>
+                <Badge
+                  className={
+                    form.self_input_submitted_at
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-amber-100 text-amber-900"
+                  }
+                >
+                  {form.self_input_submitted_at ? "Submitted" : "Awaiting employee"}
+                </Badge>
+              </header>
               <div className="grid gap-2">
-                <Label className="text-xs">Employee self-input — accomplishments against core values</Label>
-                <Textarea rows={4} value={selfInput} onChange={(e) => setSelfInput(e.target.value)} />
+                <Label className="text-xs">Self-assessment for the year</Label>
+                <Textarea
+                  rows={5}
+                  value={selfInput}
+                  onChange={(e) => setSelfInput(e.target.value)}
+                  placeholder="What did you deliver this year, and how did you live the core values?"
+                />
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground flex-1">
                     {form.self_input_submitted_at
                       ? `Submitted ${format(parseISO(form.self_input_submitted_at), "MMM d, yyyy")}`
-                      : "Due Dec – Jan"}
+                      : "Due Dec 01 – 15"}
                   </span>
-                  <Button size="sm" variant="outline" disabled={busy === "self"}
+                  <Button size="sm" variant="outline" disabled={busy === "self" || !selfInput.trim()}
                     onClick={() => patch({ employee_self_input: selfInput || null, self_input_submitted_at: now(), stage: "year_end" }, "self", "Self-input submitted")}>
                     Submit self-input
                   </Button>
                 </div>
               </div>
+            </section>
+
+            {/* Stage 3b — manager input */}
+            <section className="rounded-md border p-3 space-y-3">
+              <header className="flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <div className="text-sm font-medium">4 · Manager input</div>
+                  <p className="text-xs text-muted-foreground">
+                    Written by the manager after reading the employee input. Comments per objective are
+                    optional; the overall summary is required. Dec 02 – Jan 06.
+                  </p>
+                </div>
+                <Badge
+                  className={
+                    form.comments_finalized_at
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-amber-100 text-amber-900"
+                  }
+                >
+                  {form.comments_finalized_at ? "Submitted" : "Awaiting manager"}
+                </Badge>
+              </header>
+
+              {!form.self_input_submitted_at && (
+                <p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">
+                  The employee hasn't submitted their input yet — read it first where possible.
+                </p>
+              )}
+
+              {form.self_input_submitted_at && form.employee_self_input && (
+                <div className="rounded-md bg-muted/60 p-2">
+                  <div className="text-[10px] uppercase text-muted-foreground">
+                    Employee said
+                  </div>
+                  <p className="text-xs whitespace-pre-wrap">{form.employee_self_input}</p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                {objectives.map((o) => (
+                  <div key={o.id} className="grid gap-1">
+                    <Label className="text-[10px] uppercase text-muted-foreground">
+                      {PDR_CATEGORIES.find((c) => c.id === o.category)?.label ?? o.category} · {o.title}
+                    </Label>
+                    <Textarea
+                      rows={2}
+                      className="text-xs"
+                      disabled={!canManage}
+                      placeholder="Manager comments on this objective (optional)"
+                      defaultValue={o.manager_comment ?? ""}
+                      onBlur={(e) => updateObjective(o.id, { manager_comment: e.target.value || null })}
+                    />
+                  </div>
+                ))}
+                {objectives.length === 0 && (
+                  <p className="text-xs text-muted-foreground">Add objectives above to comment on them.</p>
+                )}
+              </div>
+
               <div className="grid gap-2 border-t pt-3">
                 <Label className="text-xs">
                   Feedback summary for overall performance <span className="text-destructive">(required)</span>
                 </Label>
                 <Textarea
                   rows={4}
+                  disabled={!canManage}
                   placeholder="Enter manager feedback summary comments here"
                   value={managerComments}
                   onChange={(e) => setManagerComments(e.target.value)}
@@ -343,6 +425,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                 </div>
               </div>
             </section>
+
 
             {/* Stage 4 — score */}
             <section className="rounded-md border p-3 space-y-2">
