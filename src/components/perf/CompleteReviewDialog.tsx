@@ -290,19 +290,20 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
           )}
 
           <div className="grid gap-2">
-            <Label>Overall rating</Label>
+            <Label>Performance rating (1–5)</Label>
             <Select
-              value={rating}
+              value={String(scoreValue)}
               onValueChange={(v) => {
-                setRating(v);
+                setRating(ratingBand(Number(v)) ?? "meets");
+                setScoreOverride(Number(v));
                 setAutoSuggest(false);
               }}
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="exceeds">Exceeds expectations</SelectItem>
-                <SelectItem value="meets">Meets expectations</SelectItem>
-                <SelectItem value="below">Below expectations</SelectItem>
+                {RATING_SCALE.map((r) => (
+                  <SelectItem key={r.score} value={String(r.score)}>{r.short}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {breakdown.overall != null && (
