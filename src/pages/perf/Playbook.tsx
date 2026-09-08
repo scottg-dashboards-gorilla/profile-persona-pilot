@@ -12,7 +12,16 @@ import {
   Repeat,
   ArrowRight,
 } from "lucide-react";
-import { APR_STAGES, IC_TARGET, PDR_STAGES } from "@/lib/pmp";
+import {
+  APR_STAGES,
+  IC_TARGET,
+  PDR_STAGES,
+  PMP_PILLARS,
+  PMP_ROLES,
+  RATING_LENSES,
+  RATING_SCALE,
+  YEAR_END_STEPS,
+} from "@/lib/pmp";
 
 type Owner = "HR" | "Employee" | "Manager";
 
