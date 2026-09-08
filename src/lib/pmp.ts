@@ -208,6 +208,8 @@ export type PdrObjective = {
   cascaded_from_manager: boolean;
   manager_validated: boolean;
   sort_order: number;
+  /** Manager's year-end comment for this objective category (optional). */
+  manager_comment: string | null;
 };
 
 /** Control C1 — every drafted objective must map to a category and be validated by the manager. */
