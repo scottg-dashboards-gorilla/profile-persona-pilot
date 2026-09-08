@@ -437,6 +437,16 @@ function ManagerBudgets({ year }: { year: number }) {
                   onChange={(e) => setBudgets((p) => ({ ...p, [m.uuid]: { ...v, bonus: e.target.value } }))}
                 />
               </div>
+              <div className="grid gap-1">
+                <Label className="text-[10px] uppercase text-muted-foreground">Share budget</Label>
+                <Input
+                  className="h-9 w-32"
+                  type="number"
+                  value={v.equity}
+                  onChange={(e) => setBudgets((p) => ({ ...p, [m.uuid]: { ...v, equity: e.target.value } }))}
+                />
+              </div>
+
               <Button size="sm" variant="outline" disabled={saving === m.uuid} onClick={() => save(m)}>
                 {saving === m.uuid ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
               </Button>
