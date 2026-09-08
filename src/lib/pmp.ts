@@ -246,7 +246,7 @@ export type AprStage = "manager_entry" | "escalated" | "hr_review" | "coo_financ
 export const APR_STAGES: {
   id: AprStage;
   label: string;
-  owner: "Manager" | "HR / TR" | "COO & Finance" | "System";
+  owner: "Manager" | "HR" | "COO & Finance" | "System";
   window: string;
   what: string;
 }[] = [
@@ -266,8 +266,8 @@ export const APR_STAGES: {
   },
   {
     id: "hr_review",
-    label: "HR / TR review",
-    owner: "HR / TR",
+    label: "HR review",
+    owner: "HR",
     window: "Jan",
     what: "Finalize, enter promotions and verify bonus-eligible teams.",
   },

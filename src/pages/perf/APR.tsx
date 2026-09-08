@@ -129,7 +129,7 @@ export default function APR() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Annual Pay Review (APR)</h1>
           <p className="text-sm text-muted-foreground">
-            Rating and pay entries from managers, over-budget exceptions, HR/TR finalization, COO &amp;
+            Rating and pay entries from managers, over-budget exceptions, HR finalization, COO &amp;
             Finance sign-off, then close to payroll.
           </p>
         </div>
@@ -272,7 +272,7 @@ export default function APR() {
                             {r.apr_stage === "manager_entry" && r.escalation_status !== "pending" && (
                               <Button size="sm" disabled={busy === r.id || r.rating_score == null}
                                 title={r.rating_score == null ? "Enter a rating first" : undefined}
-                                onClick={() => advance(r, "hr_review", {}, "Sent to HR / TR")}>
+                                onClick={() => advance(r, "hr_review", {}, "Sent to HR")}>
                                 <ArrowRight className="h-3.5 w-3.5 mr-1" /> To HR
                               </Button>
                             )}
