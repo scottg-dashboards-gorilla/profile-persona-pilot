@@ -334,6 +334,7 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead colSpan={4} className="text-center bg-muted">I/C SCORE</TableHead>
                     <TableHead colSpan={5} className="text-center bg-muted/60">MERIT</TableHead>
                     <TableHead colSpan={3} className="text-center bg-muted">DIFFERENTIATED MERIT</TableHead>
+                    <TableHead colSpan={4} className="text-center bg-muted/60">SHARE AWARD</TableHead>
                   </TableRow>
                   <TableRow>
                     <TableHead className="text-right">Min</TableHead>
@@ -348,6 +349,11 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead className="text-center">Eligibility</TableHead>
                     <TableHead className="text-right">Min – Max</TableHead>
                     <TableHead className="text-right">% / Amount</TableHead>
+                    <TableHead className="text-center">Eligibility</TableHead>
+                    <TableHead className="text-right">Min – Max %</TableHead>
+                    <TableHead className="text-right">%</TableHead>
+                    <TableHead className="text-right">Value / Shares</TableHead>
+
                   </TableRow>
                 </TableHeader>
                 <TableBody>
