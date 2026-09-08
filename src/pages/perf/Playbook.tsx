@@ -12,7 +12,16 @@ import {
   Repeat,
   ArrowRight,
 } from "lucide-react";
-import { APR_STAGES, IC_TARGET, PDR_STAGES } from "@/lib/pmp";
+import {
+  APR_STAGES,
+  IC_TARGET,
+  PDR_STAGES,
+  PMP_PILLARS,
+  PMP_ROLES,
+  RATING_LENSES,
+  RATING_SCALE,
+  YEAR_END_STEPS,
+} from "@/lib/pmp";
 
 type Owner = "HR" | "Employee" | "Manager";
 
@@ -121,6 +130,105 @@ export default function Playbook() {
           The order things happen in, and who owns each step. Every step below maps to a real screen —
           the Workflow panel on any review row tracks exactly where that person is.
         </p>
+      </div>
+
+      <Card className="border-primary/30 bg-primary/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Performance Management Process (PMP)</CardTitle>
+          <CardDescription className="text-foreground">
+            Datapath's strategy is to <em className="font-semibold text-primary not-italic">provide managers flexibility and ownership on pay decisions for their teams.</em>
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-3">
+          {PMP_PILLARS.map((p) => (
+            <div key={p.id} className="rounded-md bg-background border p-3">
+              <div className="text-sm font-semibold text-primary">{p.label}</div>
+              <p className="text-xs text-muted-foreground mt-1">{p.what}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">3 steps to year-end</CardTitle>
+          <CardDescription>Manager input timelines can vary by team.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-3">
+          {YEAR_END_STEPS.map((s) => (
+            <div key={s.n} className="rounded-md border p-3">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                  {s.n}
+                </span>
+                <span className="text-sm font-medium">{s.label}</span>
+              </div>
+              <div className="mt-1 text-xs font-medium italic text-muted-foreground">{s.window}</div>
+              <Badge className={`mt-2 text-[10px] border-0 ${ownerTone[s.owner]}`}>{s.owner}</Badge>
+              <p className="text-xs text-muted-foreground mt-2">{s.what}</p>
+              {s.href && (
+                <Button asChild size="sm" variant="ghost" className="h-7 px-0 text-xs mt-1">
+                  <Link to={s.href}>
+                    Go there <ArrowRight className="h-3 w-3 ml-1" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Global performance rating scale</CardTitle>
+          <CardDescription>Everyone receives one rating for overall performance.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2 sm:grid-cols-5">
+            {[...RATING_SCALE].reverse().map((r) => (
+              <div key={r.score} className={`rounded-md border p-2 text-center ${r.tone}`}>
+                <div className="text-lg font-semibold">{r.score}</div>
+                <div className="text-[11px] leading-tight font-medium">{r.label}</div>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="text-sm font-medium">
+              Managers are encouraged to think through three lenses when deciding each rating.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3 mt-2">
+              {RATING_LENSES.map((l) => (
+                <div key={l.id} className="rounded-md border p-3">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-primary">{l.label}</div>
+                  <ul className="mt-1 space-y-1">
+                    {l.questions.map((q) => (
+                      <li key={q} className="text-xs text-muted-foreground flex gap-1.5">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                        {q}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {PMP_ROLES.map((r) => (
+          <Card key={r.id}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">{r.label}</CardTitle>
+              <CardDescription>Roles and responsibilities</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              {r.points.map((p) => (
+                <Rule key={p}>{p}</Rule>
+              ))}
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
