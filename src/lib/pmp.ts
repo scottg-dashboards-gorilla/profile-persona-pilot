@@ -338,3 +338,211 @@ export function budgetGate(opts: {
     bonusRemaining: (opts.budget?.bonus_budget_amount ?? 0) - opts.plannedBonus,
   };
 }
+
+/* ----------------------------- Governing principles ---------------------------- */
+
+/**
+ * Worked example of how a rating is decided: one set of objectives, then what
+ * evidence at each point on the scale looks like. Used as the manager's anchor
+ * so ratings stay evidence-based rather than impressionistic.
+ */
+export const RATING_EXAMPLE = {
+  objectives: [
+    {
+      category: "faster" as PdrCategory,
+      points: [
+        "Streamline the approval process & review process by at least 2 business days.",
+        "Complete 6 tax projects for client groups and deliver on time according to the tax timelines.",
+      ],
+    },
+    {
+      category: "stronger" as PdrCategory,
+      points: [
+        "Participate in a strategic 3-year team project to help expand functional capability. First year target is to revise and socialize the function capability framework with function leaders and employees.",
+      ],
+    },
+    {
+      category: "better" as PdrCategory,
+      points: [
+        "Leverage the Choose Inclusion Toolkit and Diagnostic Survey to foster an inclusive culture: identify the biggest opportunity areas in my team, identify 2-3 targeted actions, execute them and re-evaluate success within the year.",
+      ],
+    },
+  ],
+  evidence: [
+    {
+      score: 1 as RatingScore,
+      points: [
+        "Missed few key deadlines, causing major delays of the project.",
+        "Peers often had to spend additional time to correct major mistakes.",
+        "Worked on a capability development program, did not consult stakeholders of key deliverables and did not get buy-in from the business leaders.",
+      ],
+    },
+    {
+      score: 2 as RatingScore,
+      points: [
+        "Streamlined the review and approval process by a day.",
+        "Some deadlines of deliverables were met but missed a few deadlines on shared project.",
+        "Incorporated the Practicing the Datapath Values methodology to get things done fast.",
+        "Made mistakes that required multiple revisions, which delayed the project deployment of the development program.",
+      ],
+    },
+    {
+      score: 3 as RatingScore,
+      points: [
+        "Streamlined the approval and review process by 2 days.",
+        "Met the targeted timelines.",
+        "Contributed to the development of a capability program.",
+        "Coached the project team on the Practicing the Datapath Values methodology, which helped the project launch the framework on the targeted timeline.",
+      ],
+    },
+    {
+      score: 4 as RatingScore,
+      points: [
+        "Streamlined the approval and review process by 3 days.",
+        "Provided alternative approaches for next year based on industry research and stakeholder input.",
+        "Took the lead on the framework design of the capability development program.",
+        "Coached the project team on Practicing the Datapath Values that shortened feedback collections and the revision and reviews process, launched ahead to the targeted deadline.",
+      ],
+    },
+    {
+      score: 5 as RatingScore,
+      points: [
+        "Streamlined the approval and review process by 3 days.",
+        "Secured a new vendor to leverage the digital platform that will automate the standard report output.",
+        "Became a certified master coach in Practicing the Datapath Values and leveraged the methodology to lead the project team.",
+        "The team is ahead of schedule on launching the capability framework.",
+        "Helped other projects meeting deadlines in the function.",
+      ],
+    },
+  ],
+};
+
+/**
+ * Being aware of unconscious biases is a good reminder to keep to objective,
+ * data or evidence-based performance evaluations.
+ */
+export const UNCONSCIOUS_BIASES: { label: string; what: string }[] = [
+  { label: "Halo", what: "Inappropriate positive generalizations from one aspect of an individual's performance to all areas of that person's performance, like an outgoing personality." },
+  { label: "Horn", what: "Inappropriate negative generalizations from one negative perception to all areas of that person's performance, like an unkept appearance." },
+  { label: "Contrast", what: "The tendency is based on unfair comparison. For example, one employee might be rated lower than a top performer on every competency instead of fair acknowledgment what they do well." },
+  { label: "Central", what: "The inclination to rate people in the middle of the scale even when their performance clearly warrants substantially higher or lower rating." },
+  { label: "Recency / Spillover", what: "The tendency for minor events that have happened recently to have more influence on the rating than major events of many months ago; or the opposite, leaning more on earlier events than a holistic year review." },
+  { label: "Leniency", what: "Consistently rating at the high-end of the scale. Employees will be happy to receive a glowing review but won't get constructive feedback that helps them improve." },
+  { label: "First Impression", what: "Ratings reflect only initial observation of behavior, like relying on how an interview went." },
+  { label: "Strictness", what: "This tendency causes managers to be overly critical and give low scores on most competencies. If not based on actual performance, it can cause employees to disengage." },
+  { label: "Similar-to-Me", what: "This bias can result in managers giving preferential treatment to people they can relate to, like similar gender, age or race, but also similar working style, etc. This can lead to inaccurate evaluations and be non-inclusive." },
+  { label: "Past Performance", what: "Permitting an individual's poor (or excellent) performance in a previous rating period to color the manager's judgment about her performance in this rating period." },
+];
+
+/** Merit increase — an increase to base salary that rewards prior-year individual performance. */
+export const MERIT_PRINCIPLES = {
+  what: "Merit Increase is an increase to an associate's base salary and is designed to reward individual performance for the prior year.",
+  eligibility: "Merit eligible associates as per local policy.",
+  delivery: "Each performance rating has an associated merit increase range — the higher the rating, the higher the range.",
+  watchOuts: [
+    "Managers cannot exceed the maximum of the merit increase range.",
+    "For managers with teams of more than 5 associates, entries cannot be saved if the merit spend is higher than the merit budget.",
+    "For managers with direct reports based in different countries, the budget will be shown in USD.",
+  ],
+};
+
+/** The Team Score behind the bonus: four key metrics and their weightings. */
+export const TEAM_SCORE_METRICS: { id: string; label: string; weight: number }[] = [
+  { id: "net_revenue", label: "Net Revenue", weight: 30 },
+  { id: "nopbt", label: "Net Operating Profit Before Taxes (NOPBT)", weight: 30 },
+  { id: "rcp", label: "Relative Competitive Performance (RCP)", weight: 30 },
+  { id: "cash_flow", label: "Cash Flow", weight: 10 },
+];
+
+export const BONUS_PRINCIPLES = {
+  teamScore: "The Team Score is based on four key metrics — Net Revenue, NOPBT, Relative Competitive Performance and Cash Flow — and can range from 0–200% of the bonus target.",
+  qualitative: "A qualitative review can adjust the 100% team score by +/- 15 points.",
+  icScore: "The Individual Contribution (I/C) Score is based on individual performance and can range from 0–150% of the bonus target.",
+  teamScoreMin: 0,
+  teamScoreMax: 200,
+  icMin: 0,
+  icMax: 150,
+  qualitativeSwing: 15,
+};
+
+/** I/C score rules — the lever managers use to differentiate bonus payouts. */
+export const IC_PRINCIPLES = {
+  what: "The I/C score allows managers to differentiate bonus payouts for bonus eligible employees.",
+  eligibility: "Bonus eligible associates as per local policy.",
+  watchOuts: [
+    "The I/C Score is a multiplier of the overall team score, impacting the payout for each employee — allowing greater differentiation based on individual performance as per our strong pay-for-performance culture.",
+    "Managers cannot exceed the maximum of the I/C Score range.",
+    "For managers with teams of more than 5 bonus eligible associates, entries cannot be saved if the I/C Score average for the team is above budget.",
+    `I/C Score average target is ${IC_TARGET}.`,
+  ],
+};
+
+/** Who is in and out of the focal point (year-end) process. */
+export const FOCAL_POINT_ELIGIBILITY: { id: string; label: string; points: string[] }[] = [
+  {
+    id: "new_hire",
+    label: "New Hire",
+    points: [
+      "Associates hired on or before October 1 are included and merit increases will be prorated to the number of days worked during the performance year.",
+      "New hires who join after October 1 are considered \"too new\" and do not receive a merit increase until the next merit cycle. That increase reflects a standard full-year merit increase with no pro-ration.",
+    ],
+  },
+  {
+    id: "promotion",
+    label: "Promotion",
+    points: [
+      "Associates promoted on or before December 1 will be calibrated on their new, higher level.",
+      "If promoted on or after December 2 they will be calibrated on their prior level.",
+      "Associates transferred after December 1 will be evaluated by the previous manager.",
+    ],
+  },
+  {
+    id: "loa",
+    label: "Leave of Absence",
+    points: [
+      "All associates under leave of absence, according to global salary planning policy and local legislation, are eligible to receive a performance rating and participate in the merit increase program.",
+    ],
+  },
+  {
+    id: "not_eligible",
+    label: "Not Eligible",
+    points: [
+      "Associates not eligible for the ratings process: terminated associates, retired associates, associates on LTD, interns, associates on severance pay and any other associates according to local legislation.",
+    ],
+  },
+];
+
+/**
+ * Focal point eligibility for a hire date within a performance year:
+ *  - hired on/before Oct 1  -> included, merit prorated by days worked
+ *  - hired after Oct 1      -> too new, no merit this cycle
+ */
+export function focalPointMeritEligibility(hireDate: string | null | undefined, fiscalYear: number) {
+  if (!hireDate) return { eligible: true, prorationFactor: 1, reason: "No hire date on record — treated as full year." };
+  const hire = new Date(hireDate);
+  const yearStart = new Date(Date.UTC(fiscalYear, 0, 1));
+  const yearEnd = new Date(Date.UTC(fiscalYear, 11, 31));
+  const cutoff = new Date(Date.UTC(fiscalYear, 9, 1)); // Oct 1
+  if (hire > cutoff) {
+    return { eligible: false, prorationFactor: 0, reason: "Hired after October 1 — too new for this merit cycle." };
+  }
+  if (hire <= yearStart) {
+    return { eligible: true, prorationFactor: 1, reason: "Full performance year worked." };
+  }
+  const dayMs = 86_400_000;
+  const daysWorked = Math.round((yearEnd.getTime() - hire.getTime()) / dayMs) + 1;
+  const daysInYear = Math.round((yearEnd.getTime() - yearStart.getTime()) / dayMs) + 1;
+  const factor = Math.max(0, Math.min(1, daysWorked / daysInYear));
+  return {
+    eligible: true,
+    prorationFactor: Math.round(factor * 1000) / 1000,
+    reason: `Merit prorated to ${daysWorked} of ${daysInYear} days worked.`,
+  };
+}
+
+/** Promotion calibration level per the Dec 1 / Dec 2 rule. */
+export function promotionCalibrationLevel(promotionDate: string | null | undefined, fiscalYear: number): "new" | "prior" | null {
+  if (!promotionDate) return null;
+  const d = new Date(promotionDate);
+  return d <= new Date(Date.UTC(fiscalYear, 11, 1)) ? "new" : "prior";
+}
