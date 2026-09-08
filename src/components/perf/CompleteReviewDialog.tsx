@@ -193,7 +193,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
       .update({
         status: "completed",
         completed_date: today(),
-        overall_rating: rating,
+        overall_rating: ratingBand(scoreValue) ?? rating,
+        rating_score: scoreValue,
         comp_adjustment_amount: amountNum,
         comp_adjustment_percent: pct != null ? Number(pct.toFixed(2)) : null,
         comp_effective_date: amountNum != null ? effectiveDate : null,
