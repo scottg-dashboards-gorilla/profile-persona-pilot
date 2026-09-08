@@ -184,6 +184,8 @@ export default function APR() {
         </CardContent>
       </Card>
 
+      <RatingsGrid year={year} />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">FY{year} pay entries</CardTitle>
