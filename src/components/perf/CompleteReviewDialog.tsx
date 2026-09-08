@@ -96,6 +96,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [presetContext, setPresetContext] = useState<DeltaContext | null>(null);
 
   const [rating, setRating] = useState<string>("meets");
+  const [scoreOverride, setScoreOverride] = useState<number | null>(null);
   const [autoSuggest, setAutoSuggest] = useState(true);
   const [compAmount, setCompAmount] = useState<string>("");
   const [effectiveDate, setEffectiveDate] = useState<string>(today());
@@ -103,9 +104,12 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [newTitle, setNewTitle] = useState("");
   const [notes, setNotes] = useState("");
 
+  const scoreValue = scoreOverride ?? scoreFromLegacy(rating) ?? 3;
+
   useEffect(() => {
     if (!review) return;
     setRating(review.overall_rating ?? "meets");
+    setScoreOverride(review.rating_score ?? null);
     setMethod(((review.aggregation_method as AggregationMethod) ?? "mean"));
     setAutoSuggest(!review.overall_rating);
     setCompAmount(review.comp_adjustment_amount?.toString() ?? "");
