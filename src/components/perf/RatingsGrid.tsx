@@ -530,9 +530,12 @@ export function RatingsGrid({ year }: { year: number }) {
                   <AlertTriangle className="h-3.5 w-3.5" />
                   {meritOver
                     ? "Merit spend is over budget — entries can't be saved."
-                    : icOver
-                      ? `Team I/C average is above ${IC_TARGET} — entries can't be saved.`
-                      : `${rangeBreaches} entr${rangeBreaches === 1 ? "y is" : "ies are"} outside the allowed range.`}
+                    : equityOver
+                      ? "Share award value is over the share budget — entries can't be saved."
+                      : icOver
+                        ? `Team I/C average is above ${IC_TARGET} — entries can't be saved.`
+                        : `${rangeBreaches} entr${rangeBreaches === 1 ? "y is" : "ies are"} outside the allowed range.`}
+
                 </span>
               )}
               {!gateEnforced && (
