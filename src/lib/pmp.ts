@@ -10,12 +10,125 @@ import type { Rating } from "@/lib/compensation";
 
 export type RatingScore = 1 | 2 | 3 | 4 | 5;
 
+/**
+ * The Global 5-point rating scale. Anchors are the official wording — every
+ * employee receives one rating for overall performance, and that rating drives
+ * the pay decision.
+ */
 export const RATING_SCALE: { score: RatingScore; label: string; short: string; tone: string }[] = [
-  { score: 5, label: "Outstanding", short: "5 — Outstanding", tone: "bg-emerald-100 text-emerald-800 border-emerald-200" },
-  { score: 4, label: "Exceeds expectations", short: "4 — Exceeds", tone: "bg-teal-100 text-teal-800 border-teal-200" },
-  { score: 3, label: "Meets expectations", short: "3 — Meets", tone: "bg-indigo-100 text-indigo-800 border-indigo-200" },
-  { score: 2, label: "Partially meets", short: "2 — Partially meets", tone: "bg-amber-100 text-amber-900 border-amber-200" },
-  { score: 1, label: "Below expectations", short: "1 — Below", tone: "bg-red-100 text-red-800 border-red-200" },
+  { score: 5, label: "Far Exceeded Expectations", short: "5 — Far Exceeded", tone: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+  { score: 4, label: "Exceeded Expectations", short: "4 — Exceeded", tone: "bg-teal-100 text-teal-800 border-teal-200" },
+  { score: 3, label: "Overall Met Expectations", short: "3 — Overall Met", tone: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+  { score: 2, label: "Partially Met Expectations", short: "2 — Partially Met", tone: "bg-amber-100 text-amber-900 border-amber-200" },
+  { score: 1, label: "Did Not Meet Expectations", short: "1 — Did Not Meet", tone: "bg-red-100 text-red-800 border-red-200" },
+];
+
+/** The three lenses a manager is asked to think through before rating. */
+export const RATING_LENSES: { id: string; label: string; questions: string[] }[] = [
+  {
+    id: "results",
+    label: "Results",
+    questions: [
+      "What expected objectives did they achieve — and to what extent did they exceed?",
+      "What was the quality of the deliverables and their work compared to peers?",
+      "What objectives were missed or not fully achieved, and what caused the misses?",
+    ],
+  },
+  {
+    id: "impact",
+    label: "Impact",
+    questions: [
+      "What were the impacts of the business results?",
+      "How did the results elevate the business, the team or their direct reports?",
+    ],
+  },
+  {
+    id: "leadership",
+    label: "Leadership",
+    questions: [
+      "In what ways did they live Datapath's values and uphold the Code of Conduct?",
+      "How effective were they at leading team members and interacting with others?",
+    ],
+  },
+];
+
+/**
+ * Datapath's strategy: give managers flexibility and ownership on pay decisions
+ * for their teams. These are the three levers that flexibility runs through.
+ */
+export const PMP_PILLARS: { id: string; label: string; what: string }[] = [
+  {
+    id: "rating",
+    label: "Performance Rating",
+    what: "Assessment of employee performance on the Global 5-point rating scale, which determines pay decisions.",
+  },
+  {
+    id: "merit",
+    label: "Merit",
+    what: "Flexibility to set base salary merit increases that reward individual contribution, through broad overlapping merit ranges.",
+  },
+  {
+    id: "bonus",
+    label: "Bonus",
+    what: "Empowerment to recognise individual contribution in bonus pay-outs by setting Individual Contribution (I/C) scores.",
+  },
+];
+
+/** Who owns what during the year-end process. */
+export const PMP_ROLES: { id: string; label: string; points: string[] }[] = [
+  {
+    id: "managers",
+    label: "People Managers",
+    points: [
+      "Act as owners: write feedback and assign a performance rating on the Global 5-point scale.",
+      "Recognise people using manager discretion for merit, I/C score, differentiated merit and differentiated LTI where applicable.",
+      "Stay within budget by differentiating the % increases across their team members.",
+      "Have continuous dialogue with their team — feedback throughout the year, not just at year end.",
+    ],
+  },
+  {
+    id: "hrbp",
+    label: "HRBP",
+    points: [
+      "Support managers and business leaders to take ownership of the year-end process.",
+      "Collaborate with business leaders to review recommendations in the pay review tool against allocated budget and guidance/timelines.",
+      "Ensure the business lands on budget.",
+    ],
+  },
+];
+
+/** The three steps to year-end, with the published windows. */
+export const YEAR_END_STEPS: {
+  n: number;
+  label: string;
+  window: string;
+  owner: "Employee" | "Manager";
+  what: string;
+  href?: string;
+}[] = [
+  {
+    n: 1,
+    label: "Year-end self input",
+    window: "Dec 01 – Dec 15",
+    owner: "Employee",
+    what: "Employees document how they made their goals a reality and the impact they had, entering their comments in their PDR form here.",
+    href: "/pdr",
+  },
+  {
+    n: 2,
+    label: "Manager input",
+    window: "Dec 15 – Jan 10",
+    owner: "Manager",
+    what: "Managers submit rating, merit and I/C in the pay review, and enter comments in their direct reports' PDRs (Dec 02 – Jan 06). Timelines can vary by team.",
+    href: "/apr",
+  },
+  {
+    n: 3,
+    label: "Year-end conversations",
+    window: "Feb 01 – Feb 15",
+    owner: "Manager",
+    what: "Dedicated time to give feedback, recognise achievements and communicate the pay changes that resulted from performance.",
+  },
 ];
 
 export function ratingMeta(score: number | null | undefined) {
