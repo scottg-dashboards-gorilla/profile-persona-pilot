@@ -192,6 +192,75 @@ export type Database = {
         }
         Relationships: []
       }
+      candidates: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          disc_profile: Json | null
+          elapsed_seconds: number | null
+          email: string | null
+          full_name: string
+          id: string
+          invited_at: string
+          notes: string | null
+          position_applied: string | null
+          raw_answers: Json | null
+          role_id: string
+          scores: Json | null
+          started_at: string | null
+          status: string
+          tier: string | null
+          token: string
+          truthfulness: Json | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          disc_profile?: Json | null
+          elapsed_seconds?: number | null
+          email?: string | null
+          full_name: string
+          id?: string
+          invited_at?: string
+          notes?: string | null
+          position_applied?: string | null
+          raw_answers?: Json | null
+          role_id?: string
+          scores?: Json | null
+          started_at?: string | null
+          status?: string
+          tier?: string | null
+          token?: string
+          truthfulness?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          disc_profile?: Json | null
+          elapsed_seconds?: number | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          invited_at?: string
+          notes?: string | null
+          position_applied?: string | null
+          raw_answers?: Json | null
+          role_id?: string
+          scores?: Json | null
+          started_at?: string | null
+          status?: string
+          tier?: string | null
+          token?: string
+          truthfulness?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_kpis: {
         Row: {
           actual_value: number | null
@@ -1454,11 +1523,25 @@ export type Database = {
       }
       is_review_manager: { Args: { _review_id: string }; Returns: boolean }
       is_self_employee: { Args: { _employee_uuid: string }; Returns: boolean }
+      mark_candidate_started: { Args: { _token: string }; Returns: undefined }
       queue_review_reminders: {
         Args: { _grace_days?: number; _max?: number }
         Returns: number
       }
+      resolve_candidate_token: { Args: { _token: string }; Returns: Json }
       resolve_review_token: { Args: { _token: string }; Returns: Json }
+      submit_candidate_assessment: {
+        Args: {
+          _disc_profile: Json
+          _elapsed_seconds: number
+          _raw_answers: Json
+          _scores: Json
+          _tier: string
+          _token: string
+          _truthfulness: Json
+        }
+        Returns: Json
+      }
       submit_contributor_feedback: {
         Args: {
           _collaboration: number
