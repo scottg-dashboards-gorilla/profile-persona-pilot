@@ -33,6 +33,13 @@ type Review = {
   released_at: string | null;
   employee_ack_at: string | null;
   employee_ack_comment: string | null;
+  pay_pushback_status: string;
+  pay_pushback_raised_at: string | null;
+  pay_pushback_employee_note: string | null;
+  pay_pushback_manager_note: string | null;
+  pay_pushback_manager_at: string | null;
+  pay_pushback_hr_note: string | null;
+  pay_pushback_resolved_at: string | null;
 };
 
 type SelfAssessment = {
@@ -107,7 +114,7 @@ export default function MyReview() {
       supabase
         .from("performance_reviews")
         .select(
-          "id, review_cycle, scheduled_date, completed_date, status, overall_rating, notes, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, promotion, new_title, released_at, employee_ack_at, employee_ack_comment",
+          "id, review_cycle, scheduled_date, completed_date, status, overall_rating, notes, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, promotion, new_title, released_at, employee_ack_at, employee_ack_comment, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at",
         )
         .eq("employee_uuid", (emp as Employee).uuid)
         .order("scheduled_date", { ascending: false }),
