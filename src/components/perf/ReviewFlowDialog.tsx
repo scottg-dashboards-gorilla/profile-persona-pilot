@@ -55,6 +55,13 @@ type ReviewState = {
   assessment_attempt_id: string | null;
   kickoff_at: string | null;
   completed_date: string | null;
+  pay_pushback_status: string;
+  pay_pushback_raised_at: string | null;
+  pay_pushback_employee_note: string | null;
+  pay_pushback_manager_note: string | null;
+  pay_pushback_manager_at: string | null;
+  pay_pushback_hr_note: string | null;
+  pay_pushback_resolved_at: string | null;
 };
 
 type Owner = "Employee" | "Manager" | "HR";
@@ -77,6 +84,8 @@ export function ReviewFlowDialog({
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [approvalNote, setApprovalNote] = useState("");
+  const [pushbackNote, setPushbackNote] = useState("");
+  const [hrNote, setHrNote] = useState("");
 
   const load = useCallback(async () => {
     if (!reviewId) return;
