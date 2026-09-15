@@ -94,7 +94,7 @@ export function ReviewFlowDialog({
       supabase
         .from("performance_reviews")
         .select(
-          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date",
+          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at",
         )
         .eq("id", reviewId)
         .maybeSingle(),
@@ -108,6 +108,8 @@ export function ReviewFlowDialog({
     const list = (cs ?? []) as { status: string }[];
     setContribs({ total: list.length, submitted: list.filter((c) => c.status === "submitted").length });
     setApprovalNote((r as ReviewState)?.comp_approval_note ?? "");
+    setPushbackNote((r as ReviewState)?.pay_pushback_manager_note ?? "");
+    setHrNote((r as ReviewState)?.pay_pushback_hr_note ?? "");
     setLoading(false);
   }, [reviewId]);
 
