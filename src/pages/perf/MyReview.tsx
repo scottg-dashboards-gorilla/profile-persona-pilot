@@ -84,6 +84,8 @@ export default function MyReview() {
   const [support, setSupport] = useState("");
   const [ackComment, setAckComment] = useState("");
   const [ackConfirmed, setAckConfirmed] = useState<string | null>(null);
+  const [concernFor, setConcernFor] = useState<string | null>(null);
+  const [concernNote, setConcernNote] = useState("");
 
   const active = reviews.find((r) => r.status !== "completed") ?? null;
   const released = reviews.filter((r) => r.released_at);
@@ -212,6 +214,27 @@ export default function MyReview() {
     toast({ title: "Acknowledged", description: "Thanks — that's on file." });
     setAckComment("");
     setAckConfirmed(null);
+    load();
+  }
+
+  async function raiseConcern(reviewId: string) {
+    if (!concernNote.trim()) return;
+    setSaving(true);
+    const { error } = await supabase.rpc("raise_pay_concern", {
+      _review_id: reviewId,
+      _note: concernNote.trim(),
+    });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Couldn't send", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Sent to your manager",
+      description: "They'll come back to you after speaking with HR.",
+    });
+    setConcernNote("");
+    setConcernFor(null);
     load();
   }
 
