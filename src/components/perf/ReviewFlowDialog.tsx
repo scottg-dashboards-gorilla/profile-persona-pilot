@@ -345,6 +345,91 @@ export function ReviewFlowDialog({
             : "They confirm on their own review page once the outcome is shared.",
           done: !!review.employee_ack_at,
         },
+        ...(review.pay_pushback_status !== "none"
+          ? [
+              {
+                key: "pushback",
+                owner: "Manager" as Owner,
+                title: "Employee pushed back on the pay amount",
+                detail: [
+                  review.pay_pushback_employee_note
+                    ? `They said: "${review.pay_pushback_employee_note}"`
+                    : "They raised a concern about the amount.",
+                  review.pay_pushback_manager_note ? `You logged: ${review.pay_pushback_manager_note}` : "",
+                  review.pay_pushback_hr_note ? `HR outcome: ${review.pay_pushback_hr_note}` : "",
+                  review.pay_pushback_status === "with_hr" ? "Taken to HR — waiting on their decision." : "",
+                  review.pay_pushback_status === "resolved" && review.pay_pushback_resolved_at
+                    ? `Closed ${format(parseISO(review.pay_pushback_resolved_at), "MMM d")}.`
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                done: review.pay_pushback_status === "resolved",
+                blocked: review.pay_pushback_status !== "resolved",
+                action:
+                  review.pay_pushback_status === "resolved" ? null : (
+                    <div className="flex flex-col items-end gap-2 w-full">
+                      {review.pay_pushback_status === "raised" ? (
+                        <>
+                          <Textarea
+                            rows={2}
+                            className="text-xs"
+                            placeholder="Why they're pushing back and what you'll raise with HR…"
+                            value={pushbackNote}
+                            onChange={(e) => setPushbackNote(e.target.value)}
+                          />
+                          <Button
+                            size="sm"
+                            disabled={busy === "pushback" || !pushbackNote.trim()}
+                            onClick={() =>
+                              patch(
+                                {
+                                  pay_pushback_status: "with_hr",
+                                  pay_pushback_manager_note: pushbackNote.trim(),
+                                  pay_pushback_manager_at: new Date().toISOString(),
+                                },
+                                "pushback",
+                                "Logged — HR can see it now",
+                              )
+                            }
+                          >
+                            I'll speak to HR
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Textarea
+                            rows={2}
+                            className="text-xs"
+                            placeholder="HR outcome — what was decided and why…"
+                            value={hrNote}
+                            onChange={(e) => setHrNote(e.target.value)}
+                          />
+                          <Button
+                            size="sm"
+                            disabled={busy === "pushback" || !isHr || !hrNote.trim()}
+                            title={isHr ? undefined : "Only HR or admin can close this out"}
+                            onClick={() =>
+                              patch(
+                                {
+                                  pay_pushback_status: "resolved",
+                                  pay_pushback_hr_note: hrNote.trim(),
+                                  pay_pushback_resolved_at: new Date().toISOString(),
+                                },
+                                "pushback",
+                                "Pay concern closed",
+                              )
+                            }
+                          >
+                            <ShieldCheck className="h-3.5 w-3.5 mr-1" /> Close with HR outcome
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  ),
+              },
+            ]
+          : []),
       ]
     : [];
 
