@@ -515,6 +515,80 @@ export default function MyReview() {
               </div>
             )}
 
+            {(r.comp_adjustment_amount ?? 0) !== 0 && (
+              <>
+                <Separator />
+                {r.pay_pushback_status === "none" ? (
+                  concernFor === r.id ? (
+                    <div className="space-y-2 rounded-md border p-3">
+                      <div className="text-sm font-medium">Tell your manager what doesn't sit right</div>
+                      <p className="text-xs text-muted-foreground">
+                        This goes to your manager and HR. Your manager will come back to you after
+                        speaking with HR.
+                      </p>
+                      <Textarea
+                        rows={3}
+                        placeholder="Why you think the amount isn't right…"
+                        value={concernNote}
+                        onChange={(e) => setConcernNote(e.target.value)}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => setConcernFor(null)}>
+                          Cancel
+                        </Button>
+                        <Button size="sm" disabled={saving || !concernNote.trim()} onClick={() => raiseConcern(r.id)}>
+                          {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                          Send
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        Not happy with the pay amount? Raise it and your manager will take it to HR.
+                      </p>
+                      <Button size="sm" variant="outline" onClick={() => setConcernFor(r.id)}>
+                        Raise a pay concern
+                      </Button>
+                    </div>
+                  )
+                ) : (
+                  <div className="rounded-md border border-amber-200 bg-amber-50/60 p-3 space-y-2 text-xs">
+                    <div className="font-medium text-sm">
+                      {r.pay_pushback_status === "resolved"
+                        ? "Your pay concern is closed"
+                        : r.pay_pushback_status === "with_hr"
+                          ? "Your manager is speaking to HR"
+                          : "Your pay concern was sent to your manager"}
+                    </div>
+                    {r.pay_pushback_employee_note && (
+                      <div>
+                        <span className="text-muted-foreground">You said: </span>
+                        "{r.pay_pushback_employee_note}"
+                        {r.pay_pushback_raised_at && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {format(parseISO(r.pay_pushback_raised_at), "MMM d, h:mma")}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {r.pay_pushback_manager_note && (
+                      <div>
+                        <span className="text-muted-foreground">Your manager: </span>
+                        {r.pay_pushback_manager_note}
+                      </div>
+                    )}
+                    {r.pay_pushback_hr_note && (
+                      <div>
+                        <span className="text-muted-foreground">HR outcome: </span>
+                        {r.pay_pushback_hr_note}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       ))}
