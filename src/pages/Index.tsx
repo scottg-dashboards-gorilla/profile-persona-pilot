@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAssessment, getSavedProgress, clearSavedProgress } from "@/hooks/useAssessment";
+import { useAssessment, clearSavedProgress, type SavedProgress } from "@/hooks/useAssessment";
 import { supabase } from "@/integrations/supabase/client";
 import IntroScreen from "@/components/assessment/IntroScreen";
 import QuestionScreen from "@/components/assessment/QuestionScreen";
@@ -40,7 +40,8 @@ const Index = () => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const handleBegin = useCallback((name: string, selectedRoleId: string) => {
-    clearSavedProgress();
+    // Starting fresh discards this person's previous draft (others are kept).
+    clearSavedProgress(name);
     const cfg = roles.find((r) => r.id === selectedRoleId);
     setRole(selectedRoleId, cfg?.dimensions);
     setEmployeeName(name);
@@ -48,12 +49,9 @@ const Index = () => {
     setScreen("questions");
   }, [setEmployeeName, setStartTime, setRole, roles]);
 
-  const handleResume = useCallback(() => {
-    const saved = getSavedProgress();
-    if (saved) {
-      restoreProgress(saved);
-      setScreen("questions");
-    }
+  const handleResume = useCallback((saved: SavedProgress) => {
+    restoreProgress(saved);
+    setScreen("questions");
   }, [restoreProgress]);
 
   const handleComplete = useCallback(async () => {

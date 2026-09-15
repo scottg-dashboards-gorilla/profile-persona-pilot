@@ -4,14 +4,14 @@ import { competencyDimensions, comptiaDimensions, discDimensions } from "@/data/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getSavedProgress } from "@/hooks/useAssessment";
+import { getAllSavedProgress, clearSavedProgress, type SavedProgress } from "@/hooks/useAssessment";
 import { DEFAULT_ROLE } from "@/data/roles";
 import { useRoles } from "@/hooks/useRoles";
 import { questions as allQuestions } from "@/data/questions";
 
 interface IntroScreenProps {
   onBegin: (name: string, role: string) => void;
-  onResume: () => void;
+  onResume: (saved: SavedProgress) => void;
 }
 
 const competencyAreas = [
@@ -41,7 +41,13 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
   const [name, setName] = useState("");
   const { roles } = useRoles();
   const [role, setRole] = useState<string>(DEFAULT_ROLE);
-  const savedProgress = getSavedProgress();
+  const savedDrafts = useMemo(() => getAllSavedProgress(), []);
+  // If the typed name matches a saved draft, offer that person's draft.
+  const matchedDraft = useMemo(() => {
+    const typed = name.trim().toLowerCase();
+    if (!typed) return null;
+    return savedDrafts.find((d) => d.employeeName.trim().toLowerCase() === typed) ?? null;
+  }, [name, savedDrafts]);
 
   // If default role isn't in the active list (e.g. admin hid it), pick the first available.
   useEffect(() => {
@@ -52,8 +58,8 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
 
   const selectedRole = roles.find((r) => r.id === role) ?? roles[0];
 
-  const answeredCount = savedProgress ? Object.keys(savedProgress.answers).length : 0;
-  const savedName = savedProgress?.employeeName ?? "";
+  const answeredCount = matchedDraft ? Object.keys(matchedDraft.answers).length : 0;
+  const savedName = matchedDraft?.employeeName ?? "";
 
   const questionCount = useMemo(() => {
     const allowed = new Set(selectedRole?.dimensions ?? []);
@@ -75,8 +81,8 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
           </p>
         </div>
 
-        {/* Saved Progress Banner */}
-        {savedProgress && (
+        {/* Saved Progress Banner — for the person whose name is typed */}
+        {matchedDraft && (
           <div className="mb-6 rounded-xl border-2 border-primary/30 bg-primary/5 p-5 animate-fade-in">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
@@ -90,15 +96,15 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
                   You have saved progress — <span className="font-semibold text-primary">{answeredCount} question{answeredCount === 1 ? "" : "s"}</span> answered. Pick up where you left off or start a new assessment.
                 </p>
                 <div className="flex items-center gap-3">
-                  <Button onClick={onResume} className="gap-2">
+                  <Button onClick={() => onResume(matchedDraft)} className="gap-2">
                     <PlayCircle className="w-4 h-4" />
                     Resume Assessment
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => {
-                      // Clear saved and let them start fresh via the form below
-                      localStorage.removeItem("datapath-assessment-progress");
+                      // Clear just this person's draft, keep everyone else's
+                      clearSavedProgress(matchedDraft.employeeName);
                       window.location.reload();
                     }}
                     className="gap-2"
@@ -108,6 +114,37 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
                   </Button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Other saved drafts on this device */}
+        {!matchedDraft && savedDrafts.length > 0 && (
+          <div className="mb-6 rounded-xl border-2 border-primary/30 bg-primary/5 p-5 animate-fade-in">
+            <h3 className="text-base font-semibold text-foreground mb-1">
+              Saved progress on this device
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              These people started an assessment here and can pick up where they left off:
+            </p>
+            <div className="flex flex-col gap-2">
+              {savedDrafts.map((draft) => {
+                const count = Object.keys(draft.answers).length;
+                return (
+                  <div key={draft.employeeName} className="flex items-center justify-between gap-3 rounded-lg bg-secondary/50 px-4 py-2.5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{draft.employeeName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {count} question{count === 1 ? "" : "s"} answered
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => onResume(draft)} className="gap-2 flex-shrink-0">
+                      <PlayCircle className="w-4 h-4" />
+                      Resume
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
