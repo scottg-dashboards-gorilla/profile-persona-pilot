@@ -907,6 +907,14 @@ export type Database = {
           new_title: string | null
           notes: string | null
           overall_rating: string | null
+          pay_pushback_employee_note: string | null
+          pay_pushback_hr_note: string | null
+          pay_pushback_manager_at: string | null
+          pay_pushback_manager_note: string | null
+          pay_pushback_raised_at: string | null
+          pay_pushback_resolved_at: string | null
+          pay_pushback_resolved_by: string | null
+          pay_pushback_status: string
           payroll_submitted_at: string | null
           promotion: boolean
           rating_score: number | null
@@ -979,6 +987,14 @@ export type Database = {
           new_title?: string | null
           notes?: string | null
           overall_rating?: string | null
+          pay_pushback_employee_note?: string | null
+          pay_pushback_hr_note?: string | null
+          pay_pushback_manager_at?: string | null
+          pay_pushback_manager_note?: string | null
+          pay_pushback_raised_at?: string | null
+          pay_pushback_resolved_at?: string | null
+          pay_pushback_resolved_by?: string | null
+          pay_pushback_status?: string
           payroll_submitted_at?: string | null
           promotion?: boolean
           rating_score?: number | null
@@ -1051,6 +1067,14 @@ export type Database = {
           new_title?: string | null
           notes?: string | null
           overall_rating?: string | null
+          pay_pushback_employee_note?: string | null
+          pay_pushback_hr_note?: string | null
+          pay_pushback_manager_at?: string | null
+          pay_pushback_manager_note?: string | null
+          pay_pushback_raised_at?: string | null
+          pay_pushback_resolved_at?: string | null
+          pay_pushback_resolved_by?: string | null
+          pay_pushback_status?: string
           payroll_submitted_at?: string | null
           promotion?: boolean
           rating_score?: number | null
@@ -1527,6 +1551,10 @@ export type Database = {
       queue_review_reminders: {
         Args: { _grace_days?: number; _max?: number }
         Returns: number
+      }
+      raise_pay_concern: {
+        Args: { _note: string; _review_id: string }
+        Returns: Json
       }
       resolve_candidate_token: { Args: { _token: string }; Returns: Json }
       resolve_review_token: { Args: { _token: string }; Returns: Json }

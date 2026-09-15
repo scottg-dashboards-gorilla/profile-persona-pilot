@@ -33,6 +33,13 @@ type Review = {
   released_at: string | null;
   employee_ack_at: string | null;
   employee_ack_comment: string | null;
+  pay_pushback_status: string;
+  pay_pushback_raised_at: string | null;
+  pay_pushback_employee_note: string | null;
+  pay_pushback_manager_note: string | null;
+  pay_pushback_manager_at: string | null;
+  pay_pushback_hr_note: string | null;
+  pay_pushback_resolved_at: string | null;
 };
 
 type SelfAssessment = {
@@ -77,6 +84,8 @@ export default function MyReview() {
   const [support, setSupport] = useState("");
   const [ackComment, setAckComment] = useState("");
   const [ackConfirmed, setAckConfirmed] = useState<string | null>(null);
+  const [concernFor, setConcernFor] = useState<string | null>(null);
+  const [concernNote, setConcernNote] = useState("");
 
   const active = reviews.find((r) => r.status !== "completed") ?? null;
   const released = reviews.filter((r) => r.released_at);
@@ -107,7 +116,7 @@ export default function MyReview() {
       supabase
         .from("performance_reviews")
         .select(
-          "id, review_cycle, scheduled_date, completed_date, status, overall_rating, notes, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, promotion, new_title, released_at, employee_ack_at, employee_ack_comment",
+          "id, review_cycle, scheduled_date, completed_date, status, overall_rating, notes, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, promotion, new_title, released_at, employee_ack_at, employee_ack_comment, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at",
         )
         .eq("employee_uuid", (emp as Employee).uuid)
         .order("scheduled_date", { ascending: false }),
@@ -205,6 +214,27 @@ export default function MyReview() {
     toast({ title: "Acknowledged", description: "Thanks — that's on file." });
     setAckComment("");
     setAckConfirmed(null);
+    load();
+  }
+
+  async function raiseConcern(reviewId: string) {
+    if (!concernNote.trim()) return;
+    setSaving(true);
+    const { error } = await supabase.rpc("raise_pay_concern", {
+      _review_id: reviewId,
+      _note: concernNote.trim(),
+    });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Couldn't send", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Sent to your manager",
+      description: "They'll come back to you after speaking with HR.",
+    });
+    setConcernNote("");
+    setConcernFor(null);
     load();
   }
 
@@ -485,6 +515,80 @@ export default function MyReview() {
               </div>
             )}
 
+            {(r.comp_adjustment_amount ?? 0) !== 0 && (
+              <>
+                <Separator />
+                {r.pay_pushback_status === "none" ? (
+                  concernFor === r.id ? (
+                    <div className="space-y-2 rounded-md border p-3">
+                      <div className="text-sm font-medium">Tell your manager what doesn't sit right</div>
+                      <p className="text-xs text-muted-foreground">
+                        This goes to your manager and HR. Your manager will come back to you after
+                        speaking with HR.
+                      </p>
+                      <Textarea
+                        rows={3}
+                        placeholder="Why you think the amount isn't right…"
+                        value={concernNote}
+                        onChange={(e) => setConcernNote(e.target.value)}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => setConcernFor(null)}>
+                          Cancel
+                        </Button>
+                        <Button size="sm" disabled={saving || !concernNote.trim()} onClick={() => raiseConcern(r.id)}>
+                          {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                          Send
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        Not happy with the pay amount? Raise it and your manager will take it to HR.
+                      </p>
+                      <Button size="sm" variant="outline" onClick={() => setConcernFor(r.id)}>
+                        Raise a pay concern
+                      </Button>
+                    </div>
+                  )
+                ) : (
+                  <div className="rounded-md border border-amber-200 bg-amber-50/60 p-3 space-y-2 text-xs">
+                    <div className="font-medium text-sm">
+                      {r.pay_pushback_status === "resolved"
+                        ? "Your pay concern is closed"
+                        : r.pay_pushback_status === "with_hr"
+                          ? "Your manager is speaking to HR"
+                          : "Your pay concern was sent to your manager"}
+                    </div>
+                    {r.pay_pushback_employee_note && (
+                      <div>
+                        <span className="text-muted-foreground">You said: </span>
+                        "{r.pay_pushback_employee_note}"
+                        {r.pay_pushback_raised_at && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {format(parseISO(r.pay_pushback_raised_at), "MMM d, h:mma")}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {r.pay_pushback_manager_note && (
+                      <div>
+                        <span className="text-muted-foreground">Your manager: </span>
+                        {r.pay_pushback_manager_note}
+                      </div>
+                    )}
+                    {r.pay_pushback_hr_note && (
+                      <div>
+                        <span className="text-muted-foreground">HR outcome: </span>
+                        {r.pay_pushback_hr_note}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       ))}
