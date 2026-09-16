@@ -40,6 +40,15 @@ type Props = {
   canManage: boolean;
 };
 
+type PayReviewLink = {
+  id: string;
+  review_cycle: string;
+  overall_rating: string | null;
+  rating_score: number | null;
+  apr_stage: string;
+  status: string;
+};
+
 const now = () => new Date().toISOString();
 
 export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props) {
@@ -54,6 +63,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [midyear, setMidyear] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState<PdrCategory>("faster");
+  const [payReview, setPayReview] = useState<PayReviewLink | null>(null);
 
   const load = useCallback(async () => {
     if (!formId) return;
@@ -68,6 +78,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
+    if (rec?.review_id) {
+      const { data: rev } = await supabase
+        .from("performance_reviews")
+        .select("id,review_cycle,overall_rating,rating_score,apr_stage,status")
+        .eq("id", rec.review_id)
+        .maybeSingle();
+      setPayReview((rev as PayReviewLink) ?? null);
+    } else {
+      setPayReview(null);
+    }
     setLoading(false);
   }, [formId]);
 
@@ -434,6 +454,40 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                 Suggested from weighted objective progress: <strong>{suggested ?? "—"}</strong> / 5. HR
                 cross-checks before the year is closed.
               </p>
+
+              {/* Control C2 — development score vs the pay rating on the linked review */}
+              <div className="rounded-md border bg-muted/40 p-2 text-xs space-y-1">
+                {!payReview ? (
+                  <span className="text-muted-foreground">
+                    No pay review on file for {form.employee_name} in FY{form.fiscal_year} yet — the
+                    score will be cross-checked automatically as soon as one is created.
+                  </span>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">Control C2 · cross-check</span>
+                      <Badge variant="outline" className="text-[10px]">{payReview.review_cycle}</Badge>
+                      <span className="text-muted-foreground">
+                        Pay rating: <strong>{payReview.rating_score ?? "—"}</strong>
+                        {payReview.overall_rating ? ` · ${payReview.overall_rating}` : ""}
+                      </span>
+                      <span className="text-muted-foreground">
+                        Development score: <strong>{form.year_end_score ?? "—"}</strong>
+                      </span>
+                    </div>
+                    {form.year_end_score != null && payReview.rating_score != null && (
+                      Math.abs(form.year_end_score - payReview.rating_score) > 1 ? (
+                        <p className="text-amber-700">
+                          These two differ by more than one point — HR should confirm the reason before
+                          the year is closed.
+                        </p>
+                      ) : (
+                        <p className="text-emerald-700">The two scores are consistent.</p>
+                      )
+                    )}
+                  </>
+                )}
+              </div>
               <div className="flex items-end gap-2 flex-wrap">
                 <div className="grid gap-1">
                   <Label className="text-[10px] uppercase text-muted-foreground">Score (1–5)</Label>
