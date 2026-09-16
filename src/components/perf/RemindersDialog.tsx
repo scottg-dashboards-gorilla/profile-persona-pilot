@@ -69,12 +69,13 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
   const [sending, setSending] = useState(false);
   const [outstanding, setOutstanding] = useState<Outstanding[]>([]);
   const [log, setLog] = useState<Reminder[]>([]);
+  const [sendLog, setSendLog] = useState<SendLogRow[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     const today = new Date().toISOString().slice(0, 10);
 
-    const [{ data: reviews }, { data: reminders }] = await Promise.all([
+    const [{ data: reviews }, { data: reminders }, { data: sends }] = await Promise.all([
       supabase
         .from("performance_reviews")
         .select("id, employee_name, employee_email, scheduled_date, status")
@@ -87,9 +88,17 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
         )
         .order("created_at", { ascending: false })
         .limit(100),
+      supabase
+        .from("reminder_send_log")
+        .select(
+          "id, employee_name, kind, recipient_name, recipient_email, due_date, status, error, attempted_at",
+        )
+        .order("attempted_at", { ascending: false })
+        .limit(100),
     ]);
 
     setLog((reminders ?? []) as Reminder[]);
+    setSendLog((sends ?? []) as SendLogRow[]);
 
     const list = (reviews ?? []) as {
       id: string;
