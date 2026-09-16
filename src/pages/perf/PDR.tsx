@@ -26,14 +26,23 @@ import { ReviewTimeline } from "@/components/perf/ReviewTimeline";
 import { PdrDialog } from "@/components/perf/PdrDialog";
 import { usePermissions } from "@/hooks/usePermissions";
 
-type Emp = { uuid: string; first_name: string; last_name: string; department: string | null };
+type Emp = {
+  uuid: string;
+  first_name: string;
+  last_name: string;
+  department: string | null;
+  manager_uuid: string | null;
+  user_id: string | null;
+};
 
 const thisYear = new Date().getFullYear();
 
 export default function PDR() {
   const { toast } = useToast();
   const { has, unconfigured } = usePermissions();
-  const canManage = unconfigured || has("admin") || has("hr") || has("manager");
+  const isAdminHr = unconfigured || has("admin") || has("hr");
+  const isManager = has("manager");
+  const canManage = isAdminHr || isManager;
 
   const [year, setYear] = useState(thisYear);
   const [forms, setForms] = useState<PdrForm[]>([]);
@@ -47,13 +56,31 @@ export default function PDR() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: f }, { data: emps }] = await Promise.all([
+    const [{ data: f }, { data: emps }, { data: auth }] = await Promise.all([
       supabase.from("pdr_forms").select("*").eq("fiscal_year", year).order("employee_name"),
-      supabase.from("employees").select("uuid,first_name,last_name,department").eq("terminated", false).order("first_name"),
+      supabase
+        .from("employees")
+        .select("uuid,first_name,last_name,department,manager_uuid,user_id")
+        .eq("terminated", false)
+        .order("first_name"),
+      supabase.auth.getUser(),
     ]);
     const list = (f ?? []) as PdrForm[];
     setForms(list);
-    setEmployees((emps ?? []) as Emp[]);
+
+    // Who can this person start a PDR for? Admin/HR: anyone. Manager: their own
+    // team (direct reports and one level below). Employee: nobody.
+    const all = (emps ?? []) as Emp[];
+    const meUuid = all.find((e) => e.user_id && e.user_id === auth?.user?.id)?.uuid ?? null;
+    if (isAdminHr) {
+      setEmployees(all);
+    } else if (isManager && meUuid) {
+      const direct = all.filter((e) => e.manager_uuid === meUuid).map((e) => e.uuid);
+      const team = new Set([...direct, ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid)]);
+      setEmployees(all.filter((e) => team.has(e.uuid)));
+    } else {
+      setEmployees([]);
+    }
     if (list.length > 0) {
       const { data: objs } = await supabase
         .from("pdr_objectives")
@@ -68,7 +95,7 @@ export default function PDR() {
       setObjectives({});
     }
     setLoading(false);
-  }, [year]);
+  }, [year, isAdminHr, isManager]);
 
   useEffect(() => {
     load();
@@ -121,6 +148,13 @@ export default function PDR() {
             The annual PMP cycle: objectives in Jan–Feb, mid-year check-in around Jun–Jul, year-end input
             and score in Dec–Jan. The score feeds the person's pay review cycle.
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isAdminHr
+              ? "You can see every employee's development review."
+              : isManager
+                ? "You can see your own development review and those of the people you manage."
+                : "You can see your own development review only."}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
@@ -154,24 +188,30 @@ export default function PDR() {
         <CardHeader className="flex-row items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-base">FY{year} PDRs</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
-              <Input className="pl-8 w-[180px]" placeholder="Find a person…" value={q} onChange={(e) => setQ(e.target.value)} />
-            </div>
-            <Select value={newEmp} onValueChange={setNewEmp}>
-              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Start a PDR for…" /></SelectTrigger>
-              <SelectContent>
-                {employees.map((e) => (
-                  <SelectItem key={e.uuid} value={e.uuid}>
-                    {e.first_name} {e.last_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={startPdr} disabled={!newEmp || creating}>
-              {creating ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
-              Start
-            </Button>
+            {canManage && (
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
+                <Input className="pl-8 w-[180px]" placeholder="Find a person…" value={q} onChange={(e) => setQ(e.target.value)} />
+              </div>
+            )}
+            {canManage && employees.length > 0 && (
+              <>
+                <Select value={newEmp} onValueChange={setNewEmp}>
+                  <SelectTrigger className="w-[200px]"><SelectValue placeholder="Start a PDR for…" /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map((e) => (
+                      <SelectItem key={e.uuid} value={e.uuid}>
+                        {e.first_name} {e.last_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={startPdr} disabled={!newEmp || creating}>
+                  {creating ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+                  Start
+                </Button>
+              </>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -181,7 +221,9 @@ export default function PDR() {
             </div>
           ) : rows.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No PDRs for FY{year} yet — start one above.
+              {canManage
+                ? `No PDRs for FY${year} yet — start one above.`
+                : `You don't have a FY${year} development review yet. Your manager or HR will start it.`}
             </p>
           ) : (
             <Table>
