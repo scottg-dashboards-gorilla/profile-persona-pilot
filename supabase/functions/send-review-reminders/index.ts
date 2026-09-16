@@ -112,6 +112,23 @@ Deno.serve(async (req) => {
   let failed = 0;
   let skipped = 0;
 
+  // Permanent audit trail: one row per send attempt, whatever the outcome.
+  async function logAttempt(r: Reminder, status: string, error: string | null) {
+    await admin.from("reminder_send_log").insert({
+      reminder_id: r.id,
+      review_id: r.review_id,
+      employee_uuid: r.employee_uuid,
+      employee_name: r.employee_name,
+      kind: r.kind,
+      recipient_name: r.recipient_name,
+      recipient_email: r.recipient_email,
+      due_date: r.due_date,
+      status,
+      error,
+      attempted_at: new Date().toISOString(),
+    });
+  }
+
   for (const r of (queued ?? []) as Reminder[]) {
     if (!r.recipient_email) {
       skipped++;
@@ -119,6 +136,7 @@ Deno.serve(async (req) => {
         .from("review_reminders")
         .update({ status: "skipped", last_error: "No email address on file." })
         .eq("id", r.id);
+      await logAttempt(r, "skipped", "No email address on file.");
       continue;
     }
 
@@ -179,16 +197,16 @@ Deno.serve(async (req) => {
         .from("review_reminders")
         .update({ status: "sent", sent_at: new Date().toISOString(), last_error: null })
         .eq("id", r.id);
+      await logAttempt(r, "sent", null);
       sent++;
     } catch (e) {
       failed++;
+      const msg = String((e as Error).message ?? e).slice(0, 500);
       await admin
         .from("review_reminders")
-        .update({
-          status: "failed",
-          last_error: String((e as Error).message ?? e).slice(0, 500),
-        })
+        .update({ status: "failed", last_error: msg })
         .eq("id", r.id);
+      await logAttempt(r, "failed", msg);
     }
   }
 

@@ -53,6 +53,18 @@ type Reminder = {
   created_at: string;
 };
 
+type SendLogRow = {
+  id: string;
+  employee_name: string | null;
+  kind: string;
+  recipient_name: string | null;
+  recipient_email: string | null;
+  due_date: string | null;
+  status: string;
+  error: string | null;
+  attempted_at: string;
+};
+
 const KIND_LABEL: Record<string, string> = {
   self: "self-assessment",
   contributor: "360 feedback",
@@ -69,12 +81,13 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
   const [sending, setSending] = useState(false);
   const [outstanding, setOutstanding] = useState<Outstanding[]>([]);
   const [log, setLog] = useState<Reminder[]>([]);
+  const [sendLog, setSendLog] = useState<SendLogRow[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     const today = new Date().toISOString().slice(0, 10);
 
-    const [{ data: reviews }, { data: reminders }] = await Promise.all([
+    const [{ data: reviews }, { data: reminders }, { data: sends }] = await Promise.all([
       supabase
         .from("performance_reviews")
         .select("id, employee_name, employee_email, scheduled_date, status")
@@ -87,9 +100,17 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
         )
         .order("created_at", { ascending: false })
         .limit(100),
+      supabase
+        .from("reminder_send_log")
+        .select(
+          "id, employee_name, kind, recipient_name, recipient_email, due_date, status, error, attempted_at",
+        )
+        .order("attempted_at", { ascending: false })
+        .limit(100),
     ]);
 
     setLog((reminders ?? []) as Reminder[]);
+    setSendLog((sends ?? []) as SendLogRow[]);
 
     const list = (reviews ?? []) as {
       id: string;
@@ -380,6 +401,45 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
                       {format(parseISO(l.due_date), "MMM d")} · queued{" "}
                       {format(parseISO(l.created_at), "MMM d, h:mma")}
                     </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {sendLog.length > 0 && (
+          <>
+            <Separator />
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Send log — every reminder that left the system
+              </div>
+              <div className="space-y-1">
+                {sendLog.map((s) => (
+                  <div key={s.id} className="text-xs">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge
+                        variant={
+                          s.status === "sent"
+                            ? "default"
+                            : s.status === "failed"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                        className="text-[10px]"
+                      >
+                        {s.status}
+                      </Badge>
+                      <span className="font-medium">{s.recipient_name ?? "—"}</span>
+                      <span className="text-muted-foreground">
+                        {s.recipient_email ?? "no email"} · {KIND_LABEL[s.kind] ?? s.kind}
+                        {s.employee_name ? ` · about ${s.employee_name}` : ""}
+                        {s.due_date ? ` · milestone ${format(parseISO(s.due_date), "MMM d")}` : ""} ·{" "}
+                        {format(parseISO(s.attempted_at), "MMM d, h:mma")}
+                      </span>
+                    </div>
+                    {s.error && <div className="text-[11px] text-amber-700 pl-1">{s.error}</div>}
                   </div>
                 ))}
               </div>
