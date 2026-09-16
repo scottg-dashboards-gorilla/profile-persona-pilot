@@ -45,6 +45,9 @@ export const areaLabels: Record<PermissionArea, string> = {
   salary: "Salary history",
 };
 
+/** Areas any signed-in person can open; the rows they see are scoped by database rules. */
+const OPEN_AREAS: PermissionArea[] = ["pdr"];
+
 export function rolesForArea(area: PermissionArea) {
   return AREA_ROLES[area];
 }
