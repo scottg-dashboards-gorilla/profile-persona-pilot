@@ -382,6 +382,32 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         {o.description && (
                           <p className="text-xs text-muted-foreground">{o.description}</p>
                         )}
+                        {canManage ? (
+                          <div className="grid gap-1">
+                            <Label className="text-[10px] uppercase text-muted-foreground">
+                              Manager comment
+                            </Label>
+                            <Textarea
+                              rows={2}
+                              placeholder="Your input on this objective"
+                              defaultValue={o.setting_manager_comment ?? ""}
+                              onBlur={(e) =>
+                                updateObjective(o.id, {
+                                  setting_manager_comment: e.target.value.trim() || null,
+                                })
+                              }
+                            />
+                          </div>
+                        ) : (
+                          o.setting_manager_comment && (
+                            <div className="rounded-md bg-muted/50 p-2">
+                              <div className="text-[10px] uppercase text-muted-foreground">
+                                Manager said
+                              </div>
+                              <p className="text-xs whitespace-pre-wrap">{o.setting_manager_comment}</p>
+                            </div>
+                          )
+                        )}
                         <div className="flex items-center gap-2 flex-wrap">
                           {canManage && (
                             <Button

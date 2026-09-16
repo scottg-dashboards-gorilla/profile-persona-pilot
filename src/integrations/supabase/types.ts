@@ -986,6 +986,7 @@ export type Database = {
           midyear_employee_comment: string | null
           midyear_manager_comment: string | null
           progress_percent: number
+          setting_manager_comment: string | null
           sort_order: number
           status: string
           title: string
@@ -1004,6 +1005,7 @@ export type Database = {
           midyear_employee_comment?: string | null
           midyear_manager_comment?: string | null
           progress_percent?: number
+          setting_manager_comment?: string | null
           sort_order?: number
           status?: string
           title: string
@@ -1022,6 +1024,7 @@ export type Database = {
           midyear_employee_comment?: string | null
           midyear_manager_comment?: string | null
           progress_percent?: number
+          setting_manager_comment?: string | null
           sort_order?: number
           status?: string
           title?: string
