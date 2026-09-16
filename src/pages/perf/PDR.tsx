@@ -181,24 +181,30 @@ export default function PDR() {
         <CardHeader className="flex-row items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-base">FY{year} PDRs</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
-              <Input className="pl-8 w-[180px]" placeholder="Find a person…" value={q} onChange={(e) => setQ(e.target.value)} />
-            </div>
-            <Select value={newEmp} onValueChange={setNewEmp}>
-              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Start a PDR for…" /></SelectTrigger>
-              <SelectContent>
-                {employees.map((e) => (
-                  <SelectItem key={e.uuid} value={e.uuid}>
-                    {e.first_name} {e.last_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={startPdr} disabled={!newEmp || creating}>
-              {creating ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
-              Start
-            </Button>
+            {canManage && (
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
+                <Input className="pl-8 w-[180px]" placeholder="Find a person…" value={q} onChange={(e) => setQ(e.target.value)} />
+              </div>
+            )}
+            {canManage && employees.length > 0 && (
+              <>
+                <Select value={newEmp} onValueChange={setNewEmp}>
+                  <SelectTrigger className="w-[200px]"><SelectValue placeholder="Start a PDR for…" /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map((e) => (
+                      <SelectItem key={e.uuid} value={e.uuid}>
+                        {e.first_name} {e.last_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={startPdr} disabled={!newEmp || creating}>
+                  {creating ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+                  Start
+                </Button>
+              </>
+            )}
           </div>
         </CardHeader>
         <CardContent>
