@@ -229,19 +229,29 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
         <div className="rounded-md border border-amber-200 bg-amber-50/60 p-3 text-xs flex items-start gap-2">
           <MailWarning className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
           <div>
-            <span className="font-medium">Email sending isn't switched on yet.</span> Reminders are
-            queued and tracked here, and will start going out automatically once a sender domain is
-            connected for this workspace. Until then use “Copy link” to nudge people directly.
+            <span className="font-medium">Sending needs a sender address.</span> Reminder emails are
+            written and ready to go out; they'll deliver as soon as a sender domain is connected for
+            this workspace. Until then use “Copy link” to nudge people directly.
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-muted-foreground">
             {loading ? "Checking…" : `${outstanding.length} outstanding · ${queued} queued`}
           </span>
-          <Button size="sm" className="ml-auto" onClick={queueAll} disabled={queueing || loading}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            onClick={queueAll}
+            disabled={queueing || loading}
+          >
             {queueing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <BellRing className="h-3.5 w-3.5 mr-1" />}
             Queue reminders now
+          </Button>
+          <Button size="sm" onClick={sendQueued} disabled={sending || loading || queued === 0}>
+            {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Send className="h-3.5 w-3.5 mr-1" />}
+            Send queued reminders
           </Button>
         </div>
 
