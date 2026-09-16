@@ -584,3 +584,183 @@ function ManagerBudgets({ year }: { year: number }) {
     </Card>
   );
 }
+
+type Person = {
+  uuid: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  department: string | null;
+  title: string | null;
+  hire_date: string | null;
+  current_annual_comp: number | null;
+};
+
+/**
+ * Pay reviews are anchored to each person's start-date anniversary rather than one
+ * company-wide cycle, so this panel shows who is coming up and lets HR/managers open
+ * that person's review with the anniversary as its due date.
+ */
+function AnniversaryPanel({
+  year,
+  rows,
+  onCreated,
+}: {
+  year: number;
+  rows: { employee_uuid: string }[];
+  onCreated: () => void;
+}) {
+  const { toast } = useToast();
+  const [people, setPeople] = useState<Person[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("employees")
+        .select("uuid, first_name, last_name, email, department, title, hire_date, current_annual_comp")
+        .eq("terminated", false);
+      setPeople((data ?? []) as unknown as Person[]);
+      setLoading(false);
+    })();
+  }, []);
+
+  const existing = useMemo(() => new Set(rows.map((r) => r.employee_uuid)), [rows]);
+
+  const due = useMemo(() => {
+    return people
+      .map((p) => ({ p, due: payReviewDue(p.hire_date) }))
+      .filter((x): x is { p: Person; due: NonNullable<ReturnType<typeof payReviewDue>> } => !!x.due)
+      .filter((x) => x.due.daysUntil <= 90)
+      .sort((a, b) => a.due.daysUntil - b.due.daysUntil);
+  }, [people]);
+
+  const noStart = people.filter((p) => !p.hire_date).length;
+
+  async function startReview(p: Person, on: Date) {
+    setBusy(p.uuid);
+    const { error } = await supabase.from("performance_reviews").insert({
+      employee_uuid: p.uuid,
+      employee_name: `${p.first_name} ${p.last_name}`,
+      employee_email: p.email,
+      department: p.department,
+      title: p.title,
+      hire_date: p.hire_date,
+      current_annual_comp: p.current_annual_comp,
+      scheduled_date: format(on, "yyyy-MM-dd"),
+      comp_effective_date: format(on, "yyyy-MM-dd"),
+      review_cycle: `Anniversary ${on.getFullYear()}`,
+      review_type: "annual",
+      status: "scheduled",
+      fiscal_year: year,
+      apr_stage: "manager_entry",
+    });
+    setBusy(null);
+    if (error) {
+      toast({ title: "Couldn't open the review", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Pay review opened",
+      description: `${p.first_name} ${p.last_name} · due ${format(on, "d MMM yyyy")}`,
+    });
+    onCreated();
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Anniversaries coming up</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading…
+          </div>
+        ) : due.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            No start-date anniversaries in the next three months.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Anniversary</TableHead>
+                  <TableHead>Years</TableHead>
+                  <TableHead>Where it stands</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {due.map(({ p, due: d }) => {
+                  const started = existing.has(p.uuid);
+                  return (
+                    <TableRow key={p.uuid}>
+                      <TableCell>
+                        <div className="font-medium">{p.first_name} {p.last_name}</div>
+                        <div className="text-xs text-muted-foreground">{p.title ?? p.department ?? "—"}</div>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {format(d.date, "d MMM yyyy")}
+                        <div className="text-xs text-muted-foreground">
+                          {d.daysUntil < 0
+                            ? `${Math.abs(d.daysUntil)} days ago`
+                            : d.daysUntil === 0
+                              ? "Today"
+                              : `in ${d.daysUntil} days`}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm">{d.years}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[11px]",
+                            d.status === "overdue" && "bg-red-100 text-red-800 border-red-200",
+                            d.status === "due" && "bg-amber-100 text-amber-900 border-amber-200",
+                            d.status === "open" && "bg-emerald-100 text-emerald-800 border-emerald-200",
+                          )}
+                        >
+                          {PAY_REVIEW_STATUS_LABEL[d.status]}
+                        </Badge>
+                        {!started && d.status === "upcoming" && (
+                          <div className="text-[11px] text-muted-foreground mt-1">
+                            Opens {format(d.opensOn, "d MMM")}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {started ? (
+                          <span className="text-xs text-muted-foreground">Review open below</span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={busy === p.uuid}
+                            onClick={() => startReview(p, d.date)}
+                          >
+                            Open pay review
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+        {noStart > 0 && (
+          <p className="text-xs text-muted-foreground mt-3">
+            {noStart} {noStart === 1 ? "person has" : "people have"} no start date on file, so no
+            anniversary can be worked out for them.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
