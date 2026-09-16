@@ -290,7 +290,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           </div>
                         </div>
                         <div className="grid gap-1">
-                          <Label className="text-[10px] uppercase text-muted-foreground">Detail (optional)</Label>
+                          <Label className="text-[10px] uppercase text-muted-foreground">Description *</Label>
                           <Textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
@@ -302,7 +302,11 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
                             <X className="h-3.5 w-3.5 mr-1" /> Cancel
                           </Button>
-                          <Button size="sm" disabled={busy === "edit" || !editTitle.trim()} onClick={saveEdit}>
+                          <Button
+                            size="sm"
+                            disabled={busy === "edit" || !editTitle.trim() || !editDescription.trim()}
+                            onClick={saveEdit}
+                          >
                             {busy === "edit" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Check className="h-3.5 w-3.5 mr-1" />}
                             Save
                           </Button>
@@ -376,12 +380,21 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     <CategoryPicker value={newCategory} onChange={(v) => setNewCategory(v)} />
                 </div>
                 <div className="grid gap-1 flex-1 min-w-[200px]">
-                  <Label className="text-[10px] uppercase text-muted-foreground">New objective</Label>
+                  <Label className="text-[10px] uppercase text-muted-foreground">Objective name *</Label>
                   <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="What will they deliver?" />
                 </div>
-                <Button onClick={addObjective} disabled={busy === "add" || !newTitle.trim()}>
+                <Button onClick={addObjective} disabled={busy === "add" || !newTitle.trim() || !newDescription.trim()}>
                   <Plus className="h-4 w-4 mr-1" /> Add
                 </Button>
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-[10px] uppercase text-muted-foreground">Description *</Label>
+                <Textarea
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  rows={2}
+                  placeholder="How will it be measured?"
+                />
               </div>
 
               <div className="flex items-center gap-2 flex-wrap pt-1 border-t">
