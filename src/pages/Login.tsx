@@ -82,6 +82,44 @@ const Login = () => {
     setLoading(false);
   };
 
+  const handlePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setBlocked(null);
+
+    if (resetMode) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/login`,
+      });
+      setLoading(false);
+      toast({
+        title: error ? "Couldn't send the reset email" : "Check your inbox",
+        description: error
+          ? error.message
+          : "If that address is on the staff list, a password reset link is on its way.",
+        variant: error ? "destructive" : undefined,
+      });
+      if (!error) setResetMode(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) {
+      toast({
+        title: "Couldn't sign you in",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+    await admitOrTurnAway();
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in">
