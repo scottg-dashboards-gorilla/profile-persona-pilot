@@ -8,7 +8,15 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { format, differenceInDays, parseISO, isAfter, subMonths, startOfYear } from "date-fns";
+import {
+  format,
+  differenceInDays,
+  parseISO,
+  isAfter,
+  subMonths,
+  startOfYear,
+  formatDistanceToNow,
+} from "date-fns";
 import { formatCompDelta, ratingLabel } from "@/data/mockEmployees";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { cn } from "@/lib/utils";
@@ -49,6 +57,43 @@ type ReviewRow = {
   assessment_attempt_id: string | null;
   cycle_id: string | null;
 };
+
+type AuditRow = {
+  id: string;
+  created_at: string;
+  actor_email: string | null;
+  table_name: string;
+  action: string;
+  summary: string | null;
+};
+
+type ActivityEvent = {
+  id: string;
+  at: string;
+  who: string;
+  what: string;
+  extra?: string;
+  to?: string;
+};
+
+function auditLabel(row: AuditRow): string | null {
+  if (row.summary) return row.summary;
+  const nouns: Record<string, string> = {
+    performance_reviews: "review",
+    review_cycles: "review cycle",
+    user_roles: "access role",
+    company_performance_years: "company performance year",
+    company_kpis: "company KPI",
+    funding_curve_points: "funding curve",
+    goals: "goal",
+    pdr_forms: "PDR",
+    manager_budgets: "manager budget",
+  };
+  const noun = nouns[row.table_name];
+  if (!noun) return null;
+  const verb = row.action === "insert" ? "Created" : row.action === "delete" ? "Removed" : "Updated";
+  return `${verb} a ${noun}`;
+}
 
 type PayYear = {
   year: string;
@@ -138,15 +183,25 @@ export default function Overview() {
     })();
   }, []);
 
+  const [audit, setAudit] = useState<AuditRow[]>([]);
+
   useEffect(() => {
     (async () => {
-      const { data: a } = await supabase
-        .from("assessment_attempts")
-        .select(
-          "id,employee_uuid,review_id,cycle_id,taken_at,submitted_at,disc_scores,disc_primary,tier,technical_scores,truthfulness_score",
-        )
-        .order("taken_at", { ascending: false });
+      const [{ data: a }, { data: au }] = await Promise.all([
+        supabase
+          .from("assessment_attempts")
+          .select(
+            "id,employee_uuid,review_id,cycle_id,taken_at,submitted_at,disc_scores,disc_primary,tier,technical_scores,truthfulness_score",
+          )
+          .order("taken_at", { ascending: false }),
+        supabase
+          .from("audit_log")
+          .select("id,created_at,actor_email,table_name,action,summary")
+          .order("created_at", { ascending: false })
+          .limit(30),
+      ]);
       setAttempts((a ?? []) as AttemptRow[]);
+      setAudit((au ?? []) as AuditRow[]);
     })();
   }, []);
 
@@ -290,14 +345,76 @@ export default function Overview() {
     [open],
   );
 
-  const recent = useMemo(
-    () =>
-      reviews
-        .filter((r) => r.status === "completed" && r.completed_date)
-        .sort((a, b) => (b.completed_date ?? "").localeCompare(a.completed_date ?? ""))
-        .slice(0, 5),
-    [reviews],
-  );
+  const nameByUuid = useMemo(() => {
+    const m = new Map<string, string>();
+    reviews.forEach((r) => m.set(r.employee_uuid, r.employee_name));
+    return m;
+  }, [reviews]);
+
+  const activity = useMemo<ActivityEvent[]>(() => {
+    const events: ActivityEvent[] = [];
+
+    reviews.forEach((r) => {
+      if (r.completed_date)
+        events.push({
+          id: `${r.id}-completed`,
+          at: r.completed_date,
+          who: r.employee_name,
+          what: r.overall_rating
+            ? `Review completed — ${(ratingLabel as any)[r.overall_rating] ?? r.overall_rating}`
+            : "Review completed",
+          extra: formatCompDelta(r.comp_adjustment_amount, r.comp_adjustment_percent) || undefined,
+          to: `/reviews?focus=${r.id}`,
+        });
+      if (r.released_at)
+        events.push({
+          id: `${r.id}-released`,
+          at: r.released_at,
+          who: r.employee_name,
+          what: "Outcome shared with the employee",
+          to: `/reviews?focus=${r.id}`,
+        });
+      if (r.employee_ack_at)
+        events.push({
+          id: `${r.id}-ack`,
+          at: r.employee_ack_at,
+          who: r.employee_name,
+          what: "Employee confirmed they received the outcome",
+          to: `/reviews?focus=${r.id}`,
+        });
+      if (!["none", "resolved"].includes(r.pay_pushback_status ?? "none"))
+        events.push({
+          id: `${r.id}-pushback`,
+          at: r.completed_date ?? r.scheduled_date,
+          who: r.employee_name,
+          what: "Raised a concern about the pay amount",
+          to: `/reviews?focus=${r.id}`,
+        });
+    });
+
+    attempts.forEach((a) => {
+      const at = a.submitted_at ?? a.taken_at;
+      if (!at) return;
+      events.push({
+        id: `att-${a.id}`,
+        at,
+        who: nameByUuid.get(a.employee_uuid) ?? "Assessment",
+        what: a.tier ? `Assessment recorded — ${a.tier}` : "Assessment recorded",
+        extra: a.disc_primary ? `DISC ${a.disc_primary}` : undefined,
+      });
+    });
+
+    audit.forEach((row) => {
+      const label = auditLabel(row);
+      if (!label) return;
+      events.push({ id: `aud-${row.id}`, at: row.created_at, who: row.actor_email ?? "System", what: label });
+    });
+
+    return events
+      .filter((e) => !!e.at)
+      .sort((a, b) => (b.at > a.at ? 1 : b.at < a.at ? -1 : 0))
+      .slice(0, 8);
+  }, [reviews, attempts, audit, nameByUuid]);
 
   return (
     <div className="space-y-6">
@@ -527,57 +644,42 @@ export default function Overview() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Recent activity</CardTitle>
+            <p className="text-xs text-muted-foreground">Latest changes across reviews, assessments and settings.</p>
           </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Completed</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Comp change</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recent.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.employee_name}</TableCell>
-                    <TableCell>{r.completed_date && format(parseISO(r.completed_date), "MMM d")}</TableCell>
-                    <TableCell>
-                      {r.overall_rating && (
-                        <StatusPill
-                          tone={
-                            r.overall_rating === "exceeds"
-                              ? "completed"
-                              : r.overall_rating === "below"
-                                ? "overdue"
-                                : "in_progress"
-                          }
-                          label={(ratingLabel as any)[r.overall_rating] ?? r.overall_rating}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell
-                      className={cn(
-                        "font-medium",
-                        (r.comp_adjustment_amount ?? 0) > 0 && "text-emerald-700",
-                        (r.comp_adjustment_amount ?? 0) < 0 && "text-red-700",
-                      )}
-                    >
-                      {formatCompDelta(r.comp_adjustment_amount, r.comp_adjustment_percent)}
-                      {r.promotion && <span className="ml-2 text-xs text-primary">★ Promoted</span>}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {loaded && recent.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-6">
-                      Nothing completed yet.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+          <CardContent>
+            <ul className="space-y-3">
+              {activity.map((e) => {
+                const body = (
+                  <div className="flex items-start gap-3">
+                    <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{e.who}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {e.what}
+                        {e.extra && <span className="ml-1 font-medium text-foreground">{e.extra}</span>}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(parseISO(e.at), "MMM d, yyyy")} · {formatDistanceToNow(parseISO(e.at), { addSuffix: true })}
+                      </p>
+                    </div>
+                  </div>
+                );
+                return (
+                  <li key={e.id}>
+                    {e.to ? (
+                      <Link to={e.to} className="block rounded-md p-1 -m-1 hover:bg-muted/60">
+                        {body}
+                      </Link>
+                    ) : (
+                      body
+                    )}
+                  </li>
+                );
+              })}
+              {loaded && activity.length === 0 && (
+                <li className="text-center text-sm text-muted-foreground py-6">No activity yet.</li>
+              )}
+            </ul>
           </CardContent>
         </Card>
       </div>
