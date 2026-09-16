@@ -14,6 +14,7 @@ import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { formatCompDelta } from "@/data/mockEmployees";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type Employee = { uuid: string; first_name: string; last_name: string; title: string | null };
 
@@ -61,6 +62,15 @@ type Kr = {
 
 type Goal = { id: string; title: string; status: string; category: string };
 
+type PdrScore = {
+  id: string;
+  fiscal_year: number;
+  year_end_score: number | null;
+  score_recorded_at: string | null;
+  comments_finalized_at: string | null;
+  stage: string;
+};
+
 const ratingLabel: Record<string, string> = {
   exceeds: "Exceeds expectations",
   meets: "Meets expectations",
@@ -77,6 +87,9 @@ export default function MyReview() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [krs, setKrs] = useState<Kr[]>([]);
   const [saving, setSaving] = useState(false);
+  const [pdrScores, setPdrScores] = useState<PdrScore[]>([]);
+  const { roles } = usePermissions();
+  const canScore = roles.includes("admin") || roles.includes("hr");
 
   const [wins, setWins] = useState("");
   const [challenges, setChallenges] = useState("");
@@ -143,6 +156,13 @@ export default function MyReview() {
       setKrs([]);
     }
 
+    const { data: pdrRows } = await supabase
+      .from("pdr_forms")
+      .select("id, fiscal_year, year_end_score, score_recorded_at, comments_finalized_at, stage")
+      .eq("employee_uuid", (emp as Employee).uuid)
+      .order("fiscal_year", { ascending: false });
+    setPdrScores((pdrRows ?? []) as PdrScore[]);
+
     const open = reviewList.find((r) => r.status !== "completed");
     if (open) {
       const { data: sa } = await supabase
@@ -198,6 +218,26 @@ export default function MyReview() {
       return;
     }
     setKrs((p) => p.map((k) => (k.id === kr.id ? { ...k, current_value: Number(value) } : k)));
+  }
+
+  async function saveScore(form: PdrScore, raw: string, close: boolean) {
+    const value = raw === "" ? null : Number(raw);
+    setSaving(true);
+    const { error } = await supabase
+      .from("pdr_forms")
+      .update(
+        close
+          ? { year_end_score: value, score_recorded_at: new Date().toISOString(), stage: "closed" }
+          : { year_end_score: value },
+      )
+      .eq("id", form.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Couldn't save the score", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: close ? "Score recorded" : "Score saved" });
+    load();
   }
 
   async function acknowledge(reviewId: string) {
@@ -284,6 +324,63 @@ export default function MyReview() {
         </h1>
         <p className="text-sm text-muted-foreground">{me.title ?? "—"}</p>
       </div>
+
+      {pdrScores.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Your development score</CardTitle>
+            <CardDescription>
+              Recorded against your anniversary review. {canScore
+                ? "As an admin you can record or update the score here."
+                : "Set by HR — read-only for you."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {pdrScores.map((f) => (
+              <div key={f.id} className="flex flex-wrap items-end gap-3 rounded-md border p-3">
+                <div className="flex-1 min-w-[8rem]">
+                  <div className="text-sm font-medium">FY{f.fiscal_year}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {f.score_recorded_at
+                      ? `Recorded ${format(parseISO(f.score_recorded_at), "MMM d, yyyy")}`
+                      : "Not recorded yet"}
+                  </div>
+                </div>
+                {canScore ? (
+                  <>
+                    <div className="grid gap-1">
+                      <Label className="text-[10px] uppercase text-muted-foreground">Score (1–5)</Label>
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.1"
+                        min={1}
+                        max={5}
+                        defaultValue={f.year_end_score ?? ""}
+                        onBlur={(e) => {
+                          const v = e.target.value === "" ? null : Number(e.target.value);
+                          if (v !== f.year_end_score) saveScore(f, e.target.value, false);
+                        }}
+                      />
+                    </div>
+                    <Button
+                      size="sm"
+                      disabled={saving || f.year_end_score == null || !!f.score_recorded_at}
+                      onClick={() => saveScore(f, String(f.year_end_score ?? ""), true)}
+                    >
+                      Record score
+                    </Button>
+                  </>
+                ) : (
+                  <Badge variant="outline" className="text-xs">
+                    {f.year_end_score ?? "—"}
+                  </Badge>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {!active && released.length === 0 && (
         <Card>
