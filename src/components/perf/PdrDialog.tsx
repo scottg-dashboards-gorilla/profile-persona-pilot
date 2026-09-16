@@ -40,6 +40,15 @@ type Props = {
   canManage: boolean;
 };
 
+type PayReviewLink = {
+  id: string;
+  review_cycle: string;
+  overall_rating: string | null;
+  rating_score: number | null;
+  apr_stage: string;
+  status: string;
+};
+
 const now = () => new Date().toISOString();
 
 export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props) {
@@ -68,6 +77,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
+    if (rec?.review_id) {
+      const { data: rev } = await supabase
+        .from("performance_reviews")
+        .select("id,review_cycle,overall_rating,rating_score,apr_stage,status")
+        .eq("id", rec.review_id)
+        .maybeSingle();
+      setPayReview((rev as PayReviewLink) ?? null);
+    } else {
+      setPayReview(null);
+    }
     setLoading(false);
   }, [formId]);
 
