@@ -20,7 +20,7 @@ import { format, parseISO } from "date-fns";
 import {
   PDR_CATEGORIES,
   c1Passed,
-  derivedPdrScore,
+  
   type PdrCategory,
   type PdrForm,
   type PdrObjective,
@@ -305,7 +305,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   if (!formId) return null;
 
   const c1 = c1Passed(objectives);
-  const suggested = derivedPdrScore(objectives);
+  
 
   return (
     <Dialog open={!!formId} onOpenChange={onOpenChange}>
