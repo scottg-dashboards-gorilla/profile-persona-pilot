@@ -123,42 +123,54 @@ Deno.serve(async (req) => {
     }
 
     try {
-      const { data: token, error: tokenErr } = await admin.rpc("create_review_token", {
-        _review_id: r.review_id,
-        _kind: r.kind,
-        _contributor_id: r.contributor_id,
-        _days: 30,
-      });
-      if (tokenErr) throw tokenErr;
+      const milestone = MILESTONES[r.kind];
+      let subject: string;
+      let html: string;
 
-      const { data: review } = await admin
-        .from("performance_reviews")
-        .select("employee_name")
-        .eq("id", r.review_id)
-        .maybeSingle();
+      if (milestone) {
+        const who = r.employee_name ?? "a team member";
+        const url = `${APP_URL}/apr`;
+        subject = milestone.subject(who);
+        html = body(r.recipient_name ?? "", milestone.what(who), r.due_date, url, milestone.cta);
+      } else {
+        const { data: token, error: tokenErr } = await admin.rpc("create_review_token", {
+          _review_id: r.review_id,
+          _kind: r.kind,
+          _contributor_id: r.contributor_id,
+          _days: 30,
+        });
+        if (tokenErr) throw tokenErr;
 
-      const url = `${APP_URL}/review-form/${token}`;
+        const { data: review } = await admin
+          .from("performance_reviews")
+          .select("employee_name")
+          .eq("id", r.review_id)
+          .maybeSingle();
+
+        const who = review?.employee_name ?? "a colleague";
+        const url = `${APP_URL}/review-form/${token}`;
+        subject =
+          r.kind === "self"
+            ? "Reminder: your review input is still outstanding"
+            : `Reminder: feedback on ${who}`;
+        html = body(
+          r.recipient_name ?? "",
+          r.kind === "self"
+            ? `This is a reminder that your own review input is still outstanding. It was due on ${r.due_date}.`
+            : `This is a reminder that your feedback on ${who} is still outstanding. It was due on ${r.due_date}.`,
+          r.due_date,
+          url,
+          "Open your form",
+        );
+      }
+
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${RESEND_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          from: FROM,
-          to: [r.recipient_email],
-          subject:
-            r.kind === "self"
-              ? "Reminder: your review input is still outstanding"
-              : `Reminder: feedback on ${review?.employee_name ?? "a colleague"}`,
-          html: body(
-            r.recipient_name ?? "",
-            r.kind,
-            review?.employee_name ?? "a colleague",
-            r.due_date,
-            url,
-          ),
-        }),
+        body: JSON.stringify({ from: FROM, to: [r.recipient_email], subject, html }),
       });
 
       if (!res.ok) throw new Error(await res.text());
