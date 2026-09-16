@@ -175,6 +175,10 @@ export default function AdminAccess() {
     );
   });
 
+  const linkedCount = employees.filter((e) => !!e.user_id).length;
+  const noEmailCount = employees.filter((e) => !e.email).length;
+  const unlinkedCount = employees.length - linkedCount - noEmailCount;
+
   const rolesByUser = roles.reduce<Record<string, AppRole[]>>((acc, r) => {
     (acc[r.user_id] ||= []).push(r.role);
     return acc;
@@ -190,6 +194,31 @@ export default function AdminAccess() {
           Grant admin, HR, or manager roles to authenticated users, and link employee records to their auth account.
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Sign-in link-up</CardTitle>
+          <CardDescription>
+            When someone signs in with their work email, their account is matched to their employee
+            record automatically, and anyone with direct reports is given the manager role. Only
+            people whose sign-in email differs from the address on file need linking by hand below.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-6 text-sm">
+          <div>
+            <div className="text-2xl font-semibold">{linkedCount}</div>
+            <div className="text-muted-foreground">signed in and linked</div>
+          </div>
+          <div>
+            <div className="text-2xl font-semibold">{unlinkedCount}</div>
+            <div className="text-muted-foreground">not signed in yet</div>
+          </div>
+          <div>
+            <div className="text-2xl font-semibold">{noEmailCount}</div>
+            <div className="text-muted-foreground">no email on file — cannot self-link</div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
