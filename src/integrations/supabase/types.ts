@@ -1629,6 +1629,7 @@ export type Database = {
       }
       resolve_candidate_token: { Args: { _token: string }; Returns: Json }
       resolve_review_token: { Args: { _token: string }; Returns: Json }
+      roles_configured: { Args: never; Returns: boolean }
       submit_candidate_assessment: {
         Args: {
           _disc_profile: Json
