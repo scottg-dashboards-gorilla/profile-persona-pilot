@@ -175,15 +175,25 @@ export default function Overview() {
     })();
   }, []);
 
+  const [audit, setAudit] = useState<AuditRow[]>([]);
+
   useEffect(() => {
     (async () => {
-      const { data: a } = await supabase
-        .from("assessment_attempts")
-        .select(
-          "id,employee_uuid,review_id,cycle_id,taken_at,submitted_at,disc_scores,disc_primary,tier,technical_scores,truthfulness_score",
-        )
-        .order("taken_at", { ascending: false });
+      const [{ data: a }, { data: au }] = await Promise.all([
+        supabase
+          .from("assessment_attempts")
+          .select(
+            "id,employee_uuid,review_id,cycle_id,taken_at,submitted_at,disc_scores,disc_primary,tier,technical_scores,truthfulness_score",
+          )
+          .order("taken_at", { ascending: false }),
+        supabase
+          .from("audit_log")
+          .select("id,created_at,actor_email,table_name,action,summary")
+          .order("created_at", { ascending: false })
+          .limit(30),
+      ]);
       setAttempts((a ?? []) as AttemptRow[]);
+      setAudit((au ?? []) as AuditRow[]);
     })();
   }, []);
 
