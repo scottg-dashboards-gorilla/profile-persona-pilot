@@ -57,6 +57,8 @@ type ReviewState = {
   completed_date: string | null;
   reopened_at: string | null;
   reopened_reason: string | null;
+  connect_held_at: string | null;
+  connect_note: string | null;
   pay_pushback_status: string;
   pay_pushback_raised_at: string | null;
   pay_pushback_employee_note: string | null;
