@@ -99,6 +99,9 @@ export function usePermissions() {
 
   const can = (area: PermissionArea) => {
     if (state.unconfigured) return true;
+    // Development reviews are open to every signed-in person: employees reach
+    // their own PDR, managers their team's, admins/HR everyone's (enforced in the database).
+    if (OPEN_AREAS.includes(area)) return !!state.userId;
     return AREA_ROLES[area].some((r) => state.roles.includes(r));
   };
 
