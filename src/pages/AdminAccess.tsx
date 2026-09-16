@@ -193,6 +193,31 @@ export default function AdminAccess() {
 
       <Card>
         <CardHeader>
+          <CardTitle className="text-base">Sign-in link-up</CardTitle>
+          <CardDescription>
+            When someone signs in with their work email, their account is matched to their employee
+            record automatically, and anyone with direct reports is given the manager role. Only
+            people whose sign-in email differs from the address on file need linking by hand below.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-6 text-sm">
+          <div>
+            <div className="text-2xl font-semibold">{linkedCount}</div>
+            <div className="text-muted-foreground">signed in and linked</div>
+          </div>
+          <div>
+            <div className="text-2xl font-semibold">{unlinkedCount}</div>
+            <div className="text-muted-foreground">not signed in yet</div>
+          </div>
+          <div>
+            <div className="text-2xl font-semibold">{noEmailCount}</div>
+            <div className="text-muted-foreground">no email on file — cannot self-link</div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <UserPlus className="h-4 w-4" /> Grant a role
           </CardTitle>
