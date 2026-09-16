@@ -208,6 +208,9 @@ export type PdrForm = {
   aspiration_conversation_at: string | null;
   midyear_checkin_at: string | null;
   midyear_manager_feedback: string | null;
+  midyear_self_input: string | null;
+  midyear_self_submitted_at: string | null;
+  midyear_manager_submitted_at: string | null;
   employee_self_input: string | null;
   self_input_submitted_at: string | null;
   manager_comments: string | null;
