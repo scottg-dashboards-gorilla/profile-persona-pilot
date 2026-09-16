@@ -100,6 +100,36 @@ export default function Overview() {
   const [activeGoals, setActiveGoals] = useState(0);
   const [queuedReminders, setQueuedReminders] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const [payTrend, setPayTrend] = useState<PayYear[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("comp_salary_history")
+        .select(
+          "salary_2023,salary_2024,salary_2025,salary_2026,increment_2024,increment_2025,increment_2026",
+        );
+      const rows = data ?? [];
+      const avg = (values: (number | null)[]) => {
+        const nums = values.filter((v): v is number => typeof v === "number" && v > 0);
+        return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
+      };
+      const years: PayYear[] = [2023, 2024, 2025, 2026].map((year) => {
+        const salaries = rows.map((r) => (r as Record<string, number | null>)[`salary_${year}`] ?? null);
+        const increases =
+          year === 2023 ? [] : rows.map((r) => (r as Record<string, number | null>)[`increment_${year}`] ?? null);
+        const paid = increases.filter((v): v is number => typeof v === "number" && v > 0);
+        return {
+          year: String(year),
+          avgSalary: avg(salaries),
+          avgIncreasePct: paid.length ? (paid.reduce((a, b) => a + b, 0) / paid.length) * 100 : null,
+          peopleWithIncrease: paid.length,
+          peoplePaid: salaries.filter((v) => typeof v === "number" && v > 0).length,
+        };
+      });
+      setPayTrend(years);
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
