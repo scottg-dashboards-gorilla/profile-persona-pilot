@@ -103,7 +103,6 @@ export default function Overview() {
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
-  const [cycles, setCycles] = useState<CycleRow[]>([]);
   const [headcount, setHeadcount] = useState(0);
   const [activeGoals, setActiveGoals] = useState(0);
   const [queuedReminders, setQueuedReminders] = useState(0);
@@ -153,18 +152,13 @@ export default function Overview() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: pr }, { data: cy }, { count: hc }, { count: gc }, { count: rc }] = await Promise.all([
+      const [{ data: pr }, { count: hc }, { count: gc }, { count: rc }] = await Promise.all([
         supabase
           .from("performance_reviews")
           .select(
             "id,employee_uuid,employee_name,department,scheduled_date,completed_date,status,overall_rating,comp_adjustment_amount,comp_adjustment_percent,promotion,comp_approval_status,released_at,employee_ack_at,pay_pushback_status,escalation_status,reviewer_uuid,assessment_attempt_id,cycle_id",
           )
           .order("scheduled_date", { ascending: true }),
-        supabase
-          .from("review_cycles")
-          .select("id,name,status,starts_at,ends_at,review_types")
-          .eq("status", "active")
-          .order("starts_at", { ascending: false }),
         supabase.from("employees").select("uuid", { count: "exact", head: true }).eq("terminated", false),
         supabase.from("goals").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("review_reminders").select("id", { count: "exact", head: true }).eq("status", "queued"),
