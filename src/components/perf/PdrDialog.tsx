@@ -668,7 +668,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                   </div>
                 )}
                 <Textarea rows={3} disabled={!canManage} value={midyear} onChange={(e) => setMidyear(e.target.value)}
-                  placeholder="Overall mid-year feedback…" />
+                  placeholder="Overall mid-year feedback (optional)…" />
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground flex-1">
                     {form.midyear_checkin_at
@@ -676,7 +676,9 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                       : "Not held yet"}
                   </span>
                   {canManage && (
-                    <Button size="sm" variant="outline" disabled={busy === "mid" || !midyear.trim()}
+                    <Button size="sm" variant="outline"
+                      disabled={busy === "mid" || (!midyear.trim() && !objectives.some((o) => (midMgr[o.id] ?? o.midyear_manager_comment ?? "").trim()))}
+                      title="Comment on at least one objective, or leave overall feedback"
                       onClick={submitMidyearManager}>
                       Submit feedback
                     </Button>
