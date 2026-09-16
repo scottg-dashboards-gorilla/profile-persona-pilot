@@ -1362,12 +1362,14 @@ export type Database = {
           contributor_id: string | null
           created_at: string
           due_date: string
+          employee_name: string | null
+          employee_uuid: string | null
           id: string
           kind: string
           last_error: string | null
           recipient_email: string | null
           recipient_name: string | null
-          review_id: string
+          review_id: string | null
           sent_at: string | null
           status: string
           updated_at: string
@@ -1377,12 +1379,14 @@ export type Database = {
           contributor_id?: string | null
           created_at?: string
           due_date: string
+          employee_name?: string | null
+          employee_uuid?: string | null
           id?: string
           kind: string
           last_error?: string | null
           recipient_email?: string | null
           recipient_name?: string | null
-          review_id: string
+          review_id?: string | null
           sent_at?: string | null
           status?: string
           updated_at?: string
@@ -1392,12 +1396,14 @@ export type Database = {
           contributor_id?: string | null
           created_at?: string
           due_date?: string
+          employee_name?: string | null
+          employee_uuid?: string | null
           id?: string
           kind?: string
           last_error?: string | null
           recipient_email?: string | null
           recipient_name?: string | null
-          review_id?: string
+          review_id?: string | null
           sent_at?: string | null
           status?: string
           updated_at?: string
@@ -1561,6 +1567,10 @@ export type Database = {
       is_review_manager: { Args: { _review_id: string }; Returns: boolean }
       is_self_employee: { Args: { _employee_uuid: string }; Returns: boolean }
       mark_candidate_started: { Args: { _token: string }; Returns: undefined }
+      queue_anniversary_reminders: {
+        Args: { _max?: number; _window_days?: number }
+        Returns: number
+      }
       queue_review_reminders: {
         Args: { _grace_days?: number; _max?: number }
         Returns: number

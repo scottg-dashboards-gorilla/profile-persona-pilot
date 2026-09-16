@@ -9,7 +9,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, BellRing, Link as LinkIcon, Loader2, MailWarning, Send } from "lucide-react";
+import {
+  AlertTriangle,
+  BellRing,
+  CalendarClock,
+  Link as LinkIcon,
+  Loader2,
+  MailWarning,
+  Send,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
@@ -33,9 +41,10 @@ type Outstanding = {
 
 type Reminder = {
   id: string;
-  review_id: string;
+  review_id: string | null;
   contributor_id: string | null;
   kind: string;
+  employee_name?: string | null;
   recipient_name: string | null;
   recipient_email: string | null;
   due_date: string;
@@ -44,10 +53,19 @@ type Reminder = {
   created_at: string;
 };
 
+const KIND_LABEL: Record<string, string> = {
+  self: "self-assessment",
+  contributor: "360 feedback",
+  manager_entry: "pay review opens — 3 weeks out",
+  hr_signoff: "HR sign-off — 2 weeks out",
+  connect_share: "connect & share — 1 week out",
+};
+
 export function RemindersDialog({ open, onOpenChange }: Props) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [queueing, setQueueing] = useState(false);
+  const [queueingAnniv, setQueueingAnniv] = useState(false);
   const [sending, setSending] = useState(false);
   const [outstanding, setOutstanding] = useState<Outstanding[]>([]);
   const [log, setLog] = useState<Reminder[]>([]);
@@ -65,7 +83,7 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
       supabase
         .from("review_reminders")
         .select(
-          "id, review_id, contributor_id, kind, recipient_name, recipient_email, due_date, status, sent_at, created_at",
+          "id, review_id, contributor_id, kind, employee_name, recipient_name, recipient_email, due_date, status, sent_at, created_at",
         )
         .order("created_at", { ascending: false })
         .limit(100),
@@ -180,6 +198,32 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
     load();
   }
 
+  async function queueAnniversaries() {
+    setQueueingAnniv(true);
+    const { data, error } = await supabase.rpc("queue_anniversary_reminders", {
+      _window_days: 3,
+      _max: 500,
+    });
+    setQueueingAnniv(false);
+    if (error) {
+      toast({
+        title: "Couldn't queue anniversary reminders",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    const n = Number(data ?? 0);
+    toast({
+      title: n === 0 ? "No milestones due" : `${n} anniversary reminder${n === 1 ? "" : "s"} queued`,
+      description:
+        n === 0
+          ? "Nobody hits the 3, 2 or 1 week mark right now, or they've already been nudged."
+          : "Managers are nudged at 3 and 1 week, HR at 2 weeks before each anniversary.",
+    });
+    load();
+  }
+
   async function sendQueued() {
     setSending(true);
     const { data, error } = await supabase.functions.invoke("send-review-reminders");
@@ -221,8 +265,9 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
             <BellRing className="h-4 w-4" /> Reminders
           </DialogTitle>
           <DialogDescription>
-            Anyone whose form is still open past its due date. A scheduled job queues these
-            automatically every morning; you can also queue them now.
+            Anyone whose form is still open past its due date, plus the anniversary milestones:
+            managers are nudged 3 weeks and 1 week before each person's anniversary, HR 2 weeks
+            before. Both run automatically every morning; you can also queue them now.
           </DialogDescription>
         </DialogHeader>
 
@@ -248,6 +293,19 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
           >
             {queueing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <BellRing className="h-3.5 w-3.5 mr-1" />}
             Queue reminders now
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={queueAnniversaries}
+            disabled={queueingAnniv || loading}
+          >
+            {queueingAnniv ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+            ) : (
+              <CalendarClock className="h-3.5 w-3.5 mr-1" />
+            )}
+            Queue anniversary milestones
           </Button>
           <Button size="sm" onClick={sendQueued} disabled={sending || loading || queued === 0}>
             {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Send className="h-3.5 w-3.5 mr-1" />}
@@ -317,7 +375,8 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
                     </Badge>
                     <span className="font-medium">{l.recipient_name ?? "—"}</span>
                     <span className="text-muted-foreground">
-                      {l.kind === "self" ? "self-assessment" : "360 feedback"} · due{" "}
+                      {KIND_LABEL[l.kind] ?? l.kind}
+                      {l.employee_name ? ` · ${l.employee_name}` : ""} · due{" "}
                       {format(parseISO(l.due_date), "MMM d")} · queued{" "}
                       {format(parseISO(l.created_at), "MMM d, h:mma")}
                     </span>
