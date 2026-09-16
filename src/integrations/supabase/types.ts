@@ -853,6 +853,9 @@ export type Database = {
           manager_comments: string | null
           midyear_checkin_at: string | null
           midyear_manager_feedback: string | null
+          midyear_manager_submitted_at: string | null
+          midyear_self_input: string | null
+          midyear_self_submitted_at: string | null
           objectives_approved_at: string | null
           objectives_revision_note: string | null
           objectives_submitted_at: string | null
@@ -876,6 +879,9 @@ export type Database = {
           manager_comments?: string | null
           midyear_checkin_at?: string | null
           midyear_manager_feedback?: string | null
+          midyear_manager_submitted_at?: string | null
+          midyear_self_input?: string | null
+          midyear_self_submitted_at?: string | null
           objectives_approved_at?: string | null
           objectives_revision_note?: string | null
           objectives_submitted_at?: string | null
@@ -899,6 +905,9 @@ export type Database = {
           manager_comments?: string | null
           midyear_checkin_at?: string | null
           midyear_manager_feedback?: string | null
+          midyear_manager_submitted_at?: string | null
+          midyear_self_input?: string | null
+          midyear_self_submitted_at?: string | null
           objectives_approved_at?: string | null
           objectives_revision_note?: string | null
           objectives_submitted_at?: string | null
