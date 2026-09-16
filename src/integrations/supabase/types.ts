@@ -920,6 +920,8 @@ export type Database = {
           rating_score: number | null
           released_at: string | null
           released_by: string | null
+          reopened_at: string | null
+          reopened_reason: string | null
           review_cycle: string
           review_type: string
           reviewer_uuid: string | null
@@ -1000,6 +1002,8 @@ export type Database = {
           rating_score?: number | null
           released_at?: string | null
           released_by?: string | null
+          reopened_at?: string | null
+          reopened_reason?: string | null
           review_cycle?: string
           review_type?: string
           reviewer_uuid?: string | null
@@ -1080,6 +1084,8 @@ export type Database = {
           rating_score?: number | null
           released_at?: string | null
           released_by?: string | null
+          reopened_at?: string | null
+          reopened_reason?: string | null
           review_cycle?: string
           review_type?: string
           reviewer_uuid?: string | null

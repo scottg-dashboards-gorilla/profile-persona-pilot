@@ -112,6 +112,8 @@ export default function Reviews() {
       comp_approval_status: (r as any).comp_approval_status ?? null,
       comp_approved_at: (r as any).comp_approved_at ?? null,
       released_at: (r as any).released_at ?? null,
+      reopened_at: (r as any).reopened_at ?? null,
+      reopened_reason: (r as any).reopened_reason ?? null,
       employee_ack_at: (r as any).employee_ack_at ?? null,
       selfSubmittedAt: selfByReview[r.id] ?? null,
       contributorsTotal: c?.total ?? 0,
