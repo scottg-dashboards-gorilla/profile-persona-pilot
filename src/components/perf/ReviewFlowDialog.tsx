@@ -115,6 +115,7 @@ export function ReviewFlowDialog({
     setApprovalNote((r as ReviewState)?.comp_approval_note ?? "");
     setPushbackNote((r as ReviewState)?.pay_pushback_manager_note ?? "");
     setHrNote((r as ReviewState)?.pay_pushback_hr_note ?? "");
+    setConnectNote((r as ReviewState)?.connect_note ?? "");
     setLoading(false);
   }, [reviewId]);
 
