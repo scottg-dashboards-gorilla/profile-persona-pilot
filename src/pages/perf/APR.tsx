@@ -49,12 +49,15 @@ import { cn } from "@/lib/utils";
 const thisYear = new Date().getFullYear();
 
 const SELECT =
-  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at";
+  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, released_at";
 
 type Row = AprReview & {
   hr_finalized_at: string | null;
   coo_finance_approved_at: string | null;
   payroll_submitted_at: string | null;
+  comp_approval_status: string | null;
+  connect_held_at: string | null;
+  released_at: string | null;
 };
 
 const EXPORT_SELECT =
