@@ -13,6 +13,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -158,6 +167,8 @@ export default function APR() {
   const [busy, setBusy] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [open, setOpen] = useState<AprReview | null>(null);
+  const [connectRow, setConnectRow] = useState<Row | null>(null);
+  const [connectNote, setConnectNote] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -424,10 +435,10 @@ export default function APR() {
                             )}
                             {r.apr_stage === "closed" && !r.connect_held_at && (
                               <Button size="sm" variant="secondary" disabled={busy === r.id}
-                                onClick={() =>
-                                  advance(r, "closed", { connect_held_at: new Date().toISOString() },
-                                    "Connect logged — you can share the outcome now")
-                                }>
+                                onClick={() => {
+                                  setConnectRow(r);
+                                  setConnectNote("");
+                                }}>
                                 <Handshake className="h-3.5 w-3.5 mr-1" /> Log connect
                               </Button>
                             )}
@@ -466,6 +477,47 @@ export default function APR() {
           load();
         }}
       />
+
+      <Dialog open={!!connectRow} onOpenChange={(o) => !o && setConnectRow(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Handshake className="h-4 w-4" /> Log the connect with {connectRow?.employee_name}
+            </DialogTitle>
+            <DialogDescription>
+              Confirm you've sat down with them and note what you covered. The outcome can't be
+              shared until this is logged.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={4}
+            placeholder="What you covered in the sit-down (rating, pay outcome, questions raised)…"
+            value={connectNote}
+            onChange={(e) => setConnectNote(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConnectRow(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!connectNote.trim() || busy === connectRow?.id}
+              onClick={async () => {
+                if (!connectRow) return;
+                const row = connectRow;
+                await advance(
+                  row,
+                  "closed",
+                  { connect_held_at: new Date().toISOString(), connect_note: connectNote.trim() },
+                  "Connect logged — you can share the outcome now",
+                );
+                setConnectRow(null);
+              }}
+            >
+              <Handshake className="h-3.5 w-3.5 mr-1" /> Save connect
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

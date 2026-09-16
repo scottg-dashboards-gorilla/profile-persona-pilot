@@ -20,6 +20,7 @@ import {
   Send,
   ShieldCheck,
   Clock,
+  Handshake,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -57,6 +58,8 @@ type ReviewState = {
   completed_date: string | null;
   reopened_at: string | null;
   reopened_reason: string | null;
+  connect_held_at: string | null;
+  connect_note: string | null;
   pay_pushback_status: string;
   pay_pushback_raised_at: string | null;
   pay_pushback_employee_note: string | null;
@@ -88,6 +91,7 @@ export function ReviewFlowDialog({
   const [approvalNote, setApprovalNote] = useState("");
   const [pushbackNote, setPushbackNote] = useState("");
   const [hrNote, setHrNote] = useState("");
+  const [connectNote, setConnectNote] = useState("");
 
   const load = useCallback(async () => {
     if (!reviewId) return;
@@ -96,7 +100,7 @@ export function ReviewFlowDialog({
       supabase
         .from("performance_reviews")
         .select(
-          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date, reopened_at, reopened_reason, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at",
+          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date, reopened_at, reopened_reason, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at, connect_held_at, connect_note",
         )
         .eq("id", reviewId)
         .maybeSingle(),
@@ -112,6 +116,7 @@ export function ReviewFlowDialog({
     setApprovalNote((r as ReviewState)?.comp_approval_note ?? "");
     setPushbackNote((r as ReviewState)?.pay_pushback_manager_note ?? "");
     setHrNote((r as ReviewState)?.pay_pushback_hr_note ?? "");
+    setConnectNote((r as ReviewState)?.connect_note ?? "");
     setLoading(false);
   }, [reviewId]);
 
@@ -315,6 +320,47 @@ export function ReviewFlowDialog({
             ) : null,
         },
         {
+          key: "connect",
+          owner: "Manager",
+          title: "Hold the connect conversation",
+          detail: review.connect_held_at
+            ? `Connect held ${format(parseISO(review.connect_held_at), "MMM d, h:mma")}${review.connect_note ? ` — "${review.connect_note}"` : ""}`
+            : "Sit down with the employee and talk it through before anything is shared. Write a short note of what you covered — this is required.",
+          done: !!review.connect_held_at && !!review.connect_note,
+          blocked: !review.connect_held_at && review.status === "completed",
+          action: review.connect_held_at ? null : (
+            <div className="space-y-2 w-full">
+              <Textarea
+                rows={2}
+                placeholder="What you covered in the sit-down (rating, pay outcome, questions raised)…"
+                value={connectNote}
+                onChange={(e) => setConnectNote(e.target.value)}
+              />
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={busy === "connect" || review.status !== "completed" || !connectNote.trim()}
+                title={
+                  review.status !== "completed"
+                    ? "Complete the review first"
+                    : !connectNote.trim()
+                      ? "Add a note about the conversation first"
+                      : undefined
+                }
+                onClick={() =>
+                  patch(
+                    { connect_held_at: new Date().toISOString(), connect_note: connectNote.trim() },
+                    "connect",
+                    "Connect logged",
+                  )
+                }
+              >
+                <Handshake className="h-3.5 w-3.5 mr-1" /> Log connect
+              </Button>
+            </div>
+          ),
+        },
+        {
           key: "release",
           owner: "Manager",
           title: "Share the outcome with the employee",
@@ -327,13 +373,21 @@ export function ReviewFlowDialog({
           action: review.released_at ? null : (
             <Button
               size="sm"
-              disabled={busy === "release" || review.status !== "completed" || (compProposed && !compApproved)}
+              disabled={
+                busy === "release" ||
+                review.status !== "completed" ||
+                (compProposed && !compApproved) ||
+                !review.connect_held_at ||
+                !review.connect_note
+              }
               title={
                 review.status !== "completed"
                   ? "Complete the review first"
                   : compProposed && !compApproved
                     ? "HR needs to approve the pay change first"
-                    : undefined
+                    : !review.connect_held_at || !review.connect_note
+                      ? "Log the connect conversation and note first"
+                      : undefined
               }
               onClick={() => patch({ released_at: new Date().toISOString() }, "release", "Outcome shared")}
             >
