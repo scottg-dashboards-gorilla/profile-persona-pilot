@@ -23,6 +23,7 @@ import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
+  Download,
   Loader2,
   ShieldCheck,
   Wallet,
@@ -53,6 +54,91 @@ type Row = AprReview & {
   payroll_submitted_at: string | null;
 };
 
+const EXPORT_SELECT =
+  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
+
+type ExportRow = Record<string, string | number | boolean | null>;
+
+const EXPORT_COLUMNS: { key: string; label: string }[] = [
+  { key: "employee_uuid", label: "Employee ID" },
+  { key: "employee_name", label: "Employee" },
+  { key: "employee_email", label: "Email" },
+  { key: "department", label: "Department" },
+  { key: "title", label: "Job title" },
+  { key: "hire_date", label: "Start date" },
+  { key: "current_annual_comp", label: "Current annual pay" },
+  { key: "rating_score", label: "Rating (1-5)" },
+  { key: "rating_label", label: "Rating meaning" },
+  { key: "merit_percent", label: "Merit %" },
+  { key: "merit_amount", label: "Merit amount" },
+  { key: "merit_prorated_amount", label: "Merit amount (prorated)" },
+  { key: "dm_eligible", label: "Differentiated award eligible" },
+  { key: "dm_percent", label: "Differentiated award %" },
+  { key: "dm_amount", label: "Differentiated award amount" },
+  { key: "new_annual_comp", label: "New annual pay" },
+  { key: "increase_percent", label: "Total increase %" },
+  { key: "bonus_eligible", label: "Bonus eligible" },
+  { key: "bonus_amount", label: "Bonus amount" },
+  { key: "ic_score", label: "I/C score" },
+  { key: "is_executive", label: "Executive" },
+  { key: "exec_payout_amount", label: "Executive pay-out" },
+  { key: "equity_eligible", label: "Share award eligible" },
+  { key: "equity_percent", label: "Share award %" },
+  { key: "equity_value", label: "Share award value" },
+  { key: "equity_shares", label: "Shares" },
+  { key: "equity_price_per_share", label: "Price per share" },
+  { key: "comp_adjustment_amount", label: "Pay change amount" },
+  { key: "comp_adjustment_percent", label: "Pay change %" },
+  { key: "comp_effective_date", label: "Effective date" },
+  { key: "comp_approval_status", label: "HR approval" },
+  { key: "comp_approval_note", label: "HR approval note" },
+  { key: "apr_stage", label: "Stage" },
+  { key: "escalation_status", label: "Over-budget exception" },
+  { key: "hr_finalized_at", label: "HR approved on" },
+  { key: "released_at", label: "Shared with employee on" },
+  { key: "employee_ack_at", label: "Employee confirmed on" },
+  { key: "pay_pushback_status", label: "Pay concern" },
+];
+
+function csvCell(v: unknown) {
+  if (v == null) return "";
+  if (typeof v === "boolean") return v ? "Yes" : "No";
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function buildPayChangeCsv(rows: ExportRow[], year: number) {
+  const lines = [
+    `Datapath Annual Pay Review — FY${year} pay changes,Generated ${new Date().toISOString().slice(0, 10)}`,
+    "",
+    EXPORT_COLUMNS.map((c) => csvCell(c.label)).join(","),
+  ];
+  rows.forEach((r) => {
+    const base = Number(r.current_annual_comp ?? 0);
+    const merit = Number(r.merit_prorated_amount ?? r.merit_amount ?? 0);
+    const dm = Number(r.dm_amount ?? 0);
+    const increase = merit + dm;
+    const enriched: Record<string, unknown> = {
+      ...r,
+      rating_label: ratingMeta(r.rating_score as number | null)?.label ?? "",
+      new_annual_comp: base ? Math.round(base + increase) : "",
+      increase_percent: base ? Number(((increase / base) * 100).toFixed(2)) : "",
+    };
+    lines.push(EXPORT_COLUMNS.map((c) => csvCell(enriched[c.key])).join(","));
+  });
+  return lines.join("\n");
+}
+
+function downloadCsv(filename: string, csv: string) {
+  const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
 export default function APR() {
   const { toast } = useToast();
   const { has, unconfigured } = usePermissions();
@@ -62,6 +148,7 @@ export default function APR() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [open, setOpen] = useState<AprReview | null>(null);
 
   const load = useCallback(async () => {
@@ -122,6 +209,27 @@ export default function APR() {
     await load();
   }
 
+  async function exportPayChanges() {
+    setExporting(true);
+    const { data, error } = await supabase
+      .from("performance_reviews")
+      .select(EXPORT_SELECT)
+      .eq("fiscal_year", year)
+      .order("employee_name");
+    setExporting(false);
+    if (error) {
+      toast({ title: "Couldn't build the file", description: error.message, variant: "destructive" });
+      return;
+    }
+    const list = (data ?? []) as unknown as ExportRow[];
+    if (list.length === 0) {
+      toast({ title: "Nothing to export", description: `No pay entries dated in FY${year}.` });
+      return;
+    }
+    downloadCsv(`datapath-pay-changes-FY${year}.csv`, buildPayChangeCsv(list, year));
+    toast({ title: "Pay change file downloaded", description: `${list.length} people · FY${year}` });
+  }
+
   return (
     <div className="space-y-5">
       <header className="flex items-start justify-between gap-3 flex-wrap">
@@ -132,15 +240,28 @@ export default function APR() {
             employee. Over-budget entries route to an exception first.
           </p>
         </div>
-        <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {[thisYear + 1, thisYear, thisYear - 1, thisYear - 2].map((y) => (
-              <SelectItem key={y} value={String(y)}>FY{y}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          {isHr && (
+            <Button variant="outline" size="sm" disabled={exporting} onClick={exportPayChanges}>
+              {exporting ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-1" />
+              )}
+              Export pay changes
+            </Button>
+          )}
+          <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {[thisYear + 1, thisYear, thisYear - 1, thisYear - 2].map((y) => (
+                <SelectItem key={y} value={String(y)}>FY{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </header>
+
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Merit planned" value={formatMoney(totals.merit)} icon={Wallet} />
