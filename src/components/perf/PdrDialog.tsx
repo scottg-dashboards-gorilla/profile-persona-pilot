@@ -129,6 +129,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [managerComments, setManagerComments] = useState("");
   const [midyear, setMidyear] = useState("");
   const [midyearSelf, setMidyearSelf] = useState("");
+  /** Mid-year employee progress + comment, keyed by objective id. */
+  const [midObj, setMidObj] = useState<Record<string, { progress: string; comment: string }>>({});
+  /** Mid-year manager comment, keyed by objective id. */
+  const [midMgr, setMidMgr] = useState<Record<string, string>>({});
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCategory, setNewCategory] = useState<PdrCategory>("faster");
@@ -147,7 +151,17 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     ]);
     const rec = (f as PdrForm) ?? null;
     setForm(rec);
-    setObjectives((objs ?? []) as PdrObjective[]);
+    const objList = (objs ?? []) as PdrObjective[];
+    setObjectives(objList);
+    setMidObj(
+      Object.fromEntries(
+        objList.map((o) => [
+          o.id,
+          { progress: String(o.progress_percent ?? 0), comment: o.midyear_employee_comment ?? "" },
+        ]),
+      ),
+    );
+    setMidMgr(Object.fromEntries(objList.map((o) => [o.id, o.midyear_manager_comment ?? ""])));
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
@@ -211,6 +225,66 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     }
     await load();
   }
+
+  /** Saves each objective's mid-year progress and comment, then the overall employee input. */
+  async function submitMidyearSelf() {
+    if (!form) return;
+    setBusy("midself");
+    for (const o of objectives) {
+      const row = midObj[o.id];
+      if (!row) continue;
+      const pct = Math.max(0, Math.min(100, Number(row.progress) || 0));
+      const { error } = await supabase
+        .from("pdr_objectives")
+        .update({ progress_percent: pct, midyear_employee_comment: row.comment.trim() || null })
+        .eq("id", o.id);
+      if (error) {
+        setBusy(null);
+        toast({ title: "Didn't save", description: error.message, variant: "destructive" });
+        return;
+      }
+    }
+    setBusy(null);
+    await patch(
+      {
+        midyear_self_input: midyearSelf || null,
+        midyear_self_submitted_at: now(),
+        stage: form.stage === "objectives" ? "midyear" : form.stage,
+      },
+      "midself",
+      "Mid-year input submitted",
+    );
+  }
+
+  /** Saves the manager's per-objective comments, then the overall mid-year feedback. */
+  async function submitMidyearManager() {
+    if (!form) return;
+    setBusy("mid");
+    for (const [id, comment] of Object.entries(midMgr)) {
+      const { error } = await supabase
+        .from("pdr_objectives")
+        .update({ midyear_manager_comment: comment.trim() || null })
+        .eq("id", id);
+      if (error) {
+        setBusy(null);
+        toast({ title: "Didn't save", description: error.message, variant: "destructive" });
+        return;
+      }
+    }
+    setBusy(null);
+    await patch(
+      {
+        midyear_manager_feedback: midyear || null,
+        midyear_checkin_at: form.midyear_checkin_at ?? now(),
+        midyear_manager_submitted_at: now(),
+        stage: form.stage === "objectives" ? form.stage : "midyear",
+      },
+      "mid",
+      "Mid-year feedback saved",
+    );
+  }
+
+
 
   function startEdit(o: PdrObjective) {
     setEditingId(o.id);
@@ -468,13 +542,70 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                 </Badge>
               </header>
 
-              <div className="grid gap-2">
-                <Label className="text-xs">Employee input — progress so far</Label>
+              <div className="grid gap-3">
+                <Label className="text-xs">
+                  Employee input — progress against the objectives you signed off on
+                </Label>
+                {objectives.length === 0 ? (
+                  <p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">
+                    No objectives yet — set them in step 1 first.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {objectives.map((o) => {
+                      const cat = PDR_CATEGORIES.find((c) => c.id === o.category);
+                      const row = midObj[o.id] ?? {
+                        progress: String(o.progress_percent ?? 0),
+                        comment: o.midyear_employee_comment ?? "",
+                      };
+                      return (
+                        <div key={o.id} className="rounded-md border p-2 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="text-xs font-medium">{o.title}</div>
+                              <div className="text-[10px] uppercase text-muted-foreground">
+                                {cat?.label ?? o.category}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Input
+                                className="h-7 w-16 text-xs"
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={row.progress}
+                                onChange={(e) =>
+                                  setMidObj((m) => ({ ...m, [o.id]: { ...row, progress: e.target.value } }))
+                                }
+                              />
+                              <span className="text-xs text-muted-foreground">%</span>
+                            </div>
+                          </div>
+                          <Textarea
+                            rows={2}
+                            value={row.comment}
+                            onChange={(e) =>
+                              setMidObj((m) => ({ ...m, [o.id]: { ...row, comment: e.target.value } }))
+                            }
+                            placeholder="Progress made, what's working, what's in the way…"
+                          />
+                          {o.midyear_manager_comment && (
+                            <div className="rounded-md bg-muted/60 p-2">
+                              <div className="text-[10px] uppercase text-muted-foreground">Manager said</div>
+                              <p className="text-xs whitespace-pre-wrap">{o.midyear_manager_comment}</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <Label className="text-xs">Overall mid-year comment</Label>
                 <Textarea
-                  rows={4}
+                  rows={3}
                   value={midyearSelf}
                   onChange={(e) => setMidyearSelf(e.target.value)}
-                  placeholder="Where are you against each objective, and what support do you need?"
+                  placeholder="Anything across all your objectives, and support you need."
                 />
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground flex-1">
@@ -482,8 +613,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                       ? `Submitted ${format(parseISO(form.midyear_self_submitted_at), "MMM d, yyyy")}`
                       : "Not submitted yet"}
                   </span>
-                  <Button size="sm" variant="outline" disabled={busy === "midself" || !midyearSelf.trim()}
-                    onClick={() => patch({ midyear_self_input: midyearSelf || null, midyear_self_submitted_at: now(), stage: form.stage === "objectives" ? "midyear" : form.stage }, "midself", "Mid-year input submitted")}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy === "midself" || !midyearSelf.trim() || objectives.length === 0}
+                    onClick={submitMidyearSelf}
+                  >
                     Submit mid-year input
                   </Button>
                 </div>
@@ -496,14 +631,44 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     The employee hasn't given their mid-year update yet — read it first where possible.
                   </p>
                 )}
+                {form.midyear_self_submitted_at && (
+                  <div className="space-y-2">
+                    {objectives.map((o) => {
+                      const cat = PDR_CATEGORIES.find((c) => c.id === o.category);
+                      return (
+                        <div key={o.id} className="rounded-md border p-2 space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-xs font-medium">{o.title}</div>
+                            <Badge variant="secondary" className="text-[10px]">
+                              {cat?.label ?? o.category} · {o.progress_percent ?? 0}%
+                            </Badge>
+                          </div>
+                          {o.midyear_employee_comment && (
+                            <div className="rounded-md bg-muted/60 p-2">
+                              <div className="text-[10px] uppercase text-muted-foreground">Employee said</div>
+                              <p className="text-xs whitespace-pre-wrap">{o.midyear_employee_comment}</p>
+                            </div>
+                          )}
+                          <Textarea
+                            rows={2}
+                            disabled={!canManage}
+                            value={midMgr[o.id] ?? o.midyear_manager_comment ?? ""}
+                            onChange={(e) => setMidMgr((m) => ({ ...m, [o.id]: e.target.value }))}
+                            placeholder="Your feedback on this objective (optional)…"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 {form.midyear_self_submitted_at && form.midyear_self_input && (
                   <div className="rounded-md bg-muted/60 p-2">
-                    <div className="text-[10px] uppercase text-muted-foreground">Employee said</div>
+                    <div className="text-[10px] uppercase text-muted-foreground">Employee overall comment</div>
                     <p className="text-xs whitespace-pre-wrap">{form.midyear_self_input}</p>
                   </div>
                 )}
                 <Textarea rows={3} disabled={!canManage} value={midyear} onChange={(e) => setMidyear(e.target.value)}
-                  placeholder="Mid-year feedback…" />
+                  placeholder="Overall mid-year feedback…" />
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground flex-1">
                     {form.midyear_checkin_at
@@ -512,7 +677,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                   </span>
                   {canManage && (
                     <Button size="sm" variant="outline" disabled={busy === "mid" || !midyear.trim()}
-                      onClick={() => patch({ midyear_manager_feedback: midyear || null, midyear_checkin_at: form.midyear_checkin_at ?? now(), midyear_manager_submitted_at: now(), stage: form.stage === "objectives" ? form.stage : "midyear" }, "mid", "Mid-year feedback saved")}>
+                      onClick={submitMidyearManager}>
                       Submit feedback
                     </Button>
                   )}
