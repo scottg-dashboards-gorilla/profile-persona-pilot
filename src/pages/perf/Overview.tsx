@@ -164,7 +164,6 @@ export default function Overview() {
         supabase.from("review_reminders").select("id", { count: "exact", head: true }).eq("status", "queued"),
       ]);
       setReviews((pr ?? []) as ReviewRow[]);
-      setCycles((cy ?? []) as CycleRow[]);
       setHeadcount(hc ?? 0);
       setActiveGoals(gc ?? 0);
       setQueuedReminders(rc ?? 0);
@@ -299,12 +298,6 @@ export default function Overview() {
         .slice(0, 5),
     [reviews],
   );
-
-  const cycleStats = (cycleId: string) => {
-    const inCycle = reviews.filter((r) => r.cycle_id === cycleId);
-    const done = inCycle.filter((r) => r.status === "completed").length;
-    return { total: inCycle.length, done, pct: inCycle.length ? Math.round((done / inCycle.length) * 100) : 0 };
-  };
 
   return (
     <div className="space-y-6">
