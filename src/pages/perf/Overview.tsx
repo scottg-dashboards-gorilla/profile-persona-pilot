@@ -6,8 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   ArrowRight,
   CalendarRange,
-  TrendingUp,
-  TrendingDown,
   FlaskConical,
   CheckCircle2,
   AlertTriangle,
@@ -17,7 +15,7 @@ import { formatCompDelta, ratingLabel } from "@/data/mockEmployees";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { AttemptRow, compositeImprovement, readableTier } from "@/lib/assessmentDeltas";
+import { AttemptRow } from "@/lib/assessmentDeltas";
 import { Link } from "react-router-dom";
 import { TestCycleWizard } from "@/components/perf/TestCycleWizard";
 
@@ -95,7 +93,7 @@ export default function Overview() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
-  const [empNames, setEmpNames] = useState<Record<string, string>>({});
+  
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [cycles, setCycles] = useState<CycleRow[]>([]);
   const [headcount, setHeadcount] = useState(0);
@@ -112,15 +110,6 @@ export default function Overview() {
         )
         .order("taken_at", { ascending: false });
       setAttempts((a ?? []) as AttemptRow[]);
-      const ids = Array.from(new Set((a ?? []).map((x: any) => x.employee_uuid)));
-      if (ids.length) {
-        const { data: emps } = await supabase.from("employees").select("uuid,first_name,last_name").in("uuid", ids);
-        const m: Record<string, string> = {};
-        (emps ?? []).forEach((e: any) => {
-          m[e.uuid] = `${e.first_name ?? ""} ${e.last_name ?? ""}`.trim() || e.uuid;
-        });
-        setEmpNames(m);
-      }
     })();
   }, []);
 
@@ -264,49 +253,6 @@ export default function Overview() {
     ).size;
     return { overdue, dueIn30, inProgress, completedQ, assessedThisYear };
   }, [reviews, open, attempts]);
-
-  const growth = useMemo(() => {
-    const byEmp = new Map<string, AttemptRow[]>();
-    for (const a of attempts) {
-      const list = byEmp.get(a.employee_uuid) ?? [];
-      list.push(a);
-      byEmp.set(a.employee_uuid, list);
-    }
-    const items: { uuid: string; name: string; score: number; tierFrom: string | null; tierTo: string | null }[] = [];
-    let tierShiftSum = 0;
-    let withPrev = 0;
-    byEmp.forEach((list, uuid) => {
-      const sorted = [...list].sort((a, b) => b.taken_at.localeCompare(a.taken_at));
-      const current = sorted[0];
-      const previous = sorted[1] ?? null;
-      if (!current) return;
-      if (previous) {
-        withPrev += 1;
-        const tierMap: Record<string, number> = {
-          "tier-1": 1,
-          tier_1: 1,
-          "tier-2": 2,
-          tier_2: 2,
-          "team-leader": 3,
-          team_leader: 3,
-        };
-        const from = tierMap[previous.tier ?? ""] ?? 0;
-        const to = tierMap[current.tier ?? ""] ?? 0;
-        tierShiftSum += to - from;
-      }
-      items.push({
-        uuid,
-        name: empNames[uuid] ?? uuid,
-        score: compositeImprovement(previous, current),
-        tierFrom: previous?.tier ?? null,
-        tierTo: current.tier,
-      });
-    });
-    const improvers = [...items].sort((a, b) => b.score - a.score).slice(0, 3);
-    const declining = [...items].filter((x) => x.score < 0).sort((a, b) => a.score - b.score).slice(0, 3);
-    const avgTierShift = withPrev ? tierShiftSum / withPrev : 0;
-    return { improvers, declining, avgTierShift, sampleSize: withPrev };
-  }, [attempts, empNames]);
 
   const upcoming = useMemo(
     () => [...open].sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date)).slice(0, 5),
@@ -453,77 +399,6 @@ export default function Overview() {
           value={headcount ? `${stats.assessedThisYear} / ${headcount}` : stats.assessedThisYear}
           sub={activeGoals ? `${activeGoals} active goals` : "No goals set yet"}
         />
-      </div>
-
-      {/* Growth tiles */}
-      <div className="grid lg:grid-cols-3 gap-5">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Avg tier shift</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={cn(
-                "text-3xl font-bold",
-                growth.avgTierShift > 0 && "text-emerald-600",
-                growth.avgTierShift < 0 && "text-red-600",
-              )}
-            >
-              {growth.avgTierShift > 0 ? "+" : ""}
-              {growth.avgTierShift.toFixed(2)}
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              Across {growth.sampleSize} employee{growth.sampleSize === 1 ? "" : "s"} with at least two attempts.
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-emerald-600" /> Biggest improvers
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1.5 text-sm">
-            {growth.improvers.length === 0 && <div className="text-muted-foreground">No data yet.</div>}
-            {growth.improvers.map((i) => (
-              <Link
-                key={i.uuid}
-                to={`/people/${i.uuid}`}
-                className="flex items-center justify-between hover:bg-muted/50 -mx-1 px-1 py-0.5 rounded"
-              >
-                <span className="truncate">{i.name}</span>
-                <span className="text-emerald-700 font-medium text-xs">+{i.score.toFixed(1)}</span>
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-red-600" /> Trending down
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1.5 text-sm">
-            {growth.declining.length === 0 && (
-              <div className="text-muted-foreground">Nobody trending down. Nice.</div>
-            )}
-            {growth.declining.map((i) => (
-              <Link
-                key={i.uuid}
-                to={`/people/${i.uuid}`}
-                className="flex items-center justify-between hover:bg-muted/50 -mx-1 px-1 py-0.5 rounded"
-              >
-                <span className="truncate">
-                  {i.name}
-                  <span className="text-xs text-muted-foreground ml-1">
-                    {readableTier(i.tierFrom)} → {readableTier(i.tierTo)}
-                  </span>
-                </span>
-                <span className="text-red-700 font-medium text-xs">{i.score.toFixed(1)}</span>
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
       </div>
 
       {/* Two-column tables */}
