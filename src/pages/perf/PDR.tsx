@@ -54,8 +54,6 @@ export default function PDR() {
   const [creating, setCreating] = useState(false);
   const [newEmp, setNewEmp] = useState("");
 
-  const [visibleUuids, setVisibleUuids] = useState<string[] | null>(null);
-
   const load = useCallback(async () => {
     setLoading(true);
     const [{ data: f }, { data: emps }, { data: auth }] = await Promise.all([
@@ -83,8 +81,6 @@ export default function PDR() {
       setEmployees([]);
       visible = meUuid ? [meUuid] : [];
     }
-    setVisibleUuids(visible);
-
     const list = ((f ?? []) as PdrForm[]).filter(
       (x) => visible === null || visible.includes(x.employee_uuid),
     );
