@@ -175,6 +175,10 @@ export default function AdminAccess() {
     );
   });
 
+  const linkedCount = employees.filter((e) => !!e.user_id).length;
+  const noEmailCount = employees.filter((e) => !e.email).length;
+  const unlinkedCount = employees.length - linkedCount - noEmailCount;
+
   const rolesByUser = roles.reduce<Record<string, AppRole[]>>((acc, r) => {
     (acc[r.user_id] ||= []).push(r.role);
     return acc;
