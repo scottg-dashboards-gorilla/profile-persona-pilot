@@ -1,7 +1,8 @@
 /**
- * Shared rules for the two annual Datapath processes:
+ * Shared rules for the two Datapath processes:
  *  - PMP  : PDR objectives -> mid-year check-in -> year-end self input -> manager comments -> score
- *  - APR  : rating (1-5) -> merit / bonus / I-C / exec pay-out -> budget gate -> HR approval -> shared with the employee
+ *  - Pay review cycle : each person's pay review runs on their own start-date anniversary —
+ *    rating (1-5) -> merit / bonus / I-C / exec pay-out -> budget gate -> HR approval -> shared with the employee
  */
 
 import type { Rating } from "@/lib/compensation";
@@ -239,7 +240,7 @@ export function pdrProgress(form: PdrForm, objectives: PdrObjective[]) {
   return { done: done.filter(Boolean).length, total: done.length, steps: done };
 }
 
-/* ----------------------------------- APR ----------------------------------- */
+/* ---------------------------- Pay review cycle ---------------------------- */
 
 export type AprStage = "manager_entry" | "escalated" | "hr_review" | "coo_finance" | "closed";
 
@@ -254,31 +255,101 @@ export const APR_STAGES: {
     id: "manager_entry",
     label: "Manager entry",
     owner: "Manager",
-    window: "Dec – Jan 1st half",
+    window: "From 6 weeks before the anniversary",
     what: "Review self input, assign the 1–5 rating, then enter merit %, bonus, I/C score and any executive pay-out.",
   },
   {
     id: "escalated",
     label: "Over-budget exception",
     owner: "Manager",
-    window: "Jan 1st half",
+    window: "Before the anniversary",
     what: "Entries above the team budget cannot be saved — they route to the next-level manager to approve or send back.",
   },
   {
     id: "hr_review",
     label: "HR approval",
     owner: "HR",
-    window: "Jan",
+    window: "At least 2 weeks before the anniversary",
     what: "HR checks the rating, merit, bonus and I/C against budget and Datapath pay rules, then approves the pay outcome.",
   },
   {
     id: "closed",
     label: "Shared with the employee",
     owner: "Employee",
-    window: "Feb 1st half",
-    what: "Approved outcome is visible on the employee's own review page for the pay conversation and their confirmation.",
+    window: "On or before the anniversary",
+    what: "Approved outcome is visible on the employee's own review page for the pay conversation and their confirmation. Pay changes take effect from the anniversary date.",
   },
 ];
+
+/* --------------------- Anniversary-based pay review dates ------------------- */
+
+/** Manager entry opens this many days before someone's start-date anniversary. */
+export const PAY_REVIEW_LEAD_DAYS = 42;
+
+/** HR sign-off should be in place this many days before the anniversary. */
+export const PAY_REVIEW_HR_DAYS = 14;
+
+function startOfDay(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+/**
+ * The pay review anniversary that falls in the given calendar year for someone
+ * who started on `hireDate`. Feb 29 starts land on Feb 28 in non-leap years.
+ */
+export function anniversaryInYear(hireDate: string | null | undefined, year: number): Date | null {
+  if (!hireDate) return null;
+  const hire = new Date(hireDate);
+  if (Number.isNaN(hire.getTime())) return null;
+  const month = hire.getUTCMonth();
+  const day = hire.getUTCDate();
+  const candidate = new Date(year, month, day);
+  return candidate.getMonth() === month ? candidate : new Date(year, month + 1, 0);
+}
+
+export type PayReviewDue = {
+  /** The anniversary this review is anchored to. */
+  date: Date;
+  /** Completed years of service reached on that date. */
+  years: number;
+  /** Negative = the anniversary has already passed. */
+  daysUntil: number;
+  /** Date manager entry opens. */
+  opensOn: Date;
+  status: "overdue" | "due" | "open" | "upcoming";
+};
+
+/**
+ * Where someone sits in their own pay review cycle right now.
+ * `open` means manager entry has opened; `due` means the anniversary is within a week.
+ */
+export function payReviewDue(
+  hireDate: string | null | undefined,
+  today: Date = new Date(),
+): PayReviewDue | null {
+  const ref = startOfDay(today);
+  let date = anniversaryInYear(hireDate, ref.getFullYear());
+  if (!date) return null;
+  // Anniversaries more than a month past roll to next year's cycle.
+  const monthAgo = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() - 30);
+  if (date < monthAgo) {
+    date = anniversaryInYear(hireDate, ref.getFullYear() + 1)!;
+  }
+  const hire = new Date(hireDate as string);
+  const years = date.getFullYear() - hire.getUTCFullYear();
+  const daysUntil = Math.round((date.getTime() - ref.getTime()) / 86_400_000);
+  const opensOn = new Date(date.getFullYear(), date.getMonth(), date.getDate() - PAY_REVIEW_LEAD_DAYS);
+  const status: PayReviewDue["status"] =
+    daysUntil < 0 ? "overdue" : daysUntil <= 7 ? "due" : ref >= opensOn ? "open" : "upcoming";
+  return { date, years, daysUntil, opensOn, status };
+}
+
+export const PAY_REVIEW_STATUS_LABEL: Record<PayReviewDue["status"], string> = {
+  overdue: "Anniversary passed",
+  due: "Due this week",
+  open: "Open for manager entry",
+  upcoming: "Not open yet",
+};
 
 export function aprStageMeta(stage: string | null | undefined) {
   return APR_STAGES.find((s) => s.id === stage) ?? APR_STAGES[0];
