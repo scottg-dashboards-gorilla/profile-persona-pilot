@@ -67,22 +67,28 @@ export default function PDR() {
         .order("first_name"),
       supabase.auth.getUser(),
     ]);
-    const list = (f ?? []) as PdrForm[];
-    setForms(list);
-
     // Who can this person start a PDR for? Admin/HR: anyone. Manager: their own
     // team (direct reports and one level below). Employee: nobody.
     const all = (emps ?? []) as Emp[];
     const meUuid = all.find((e) => e.user_id && e.user_id === auth?.user?.id)?.uuid ?? null;
+    let visible: string[] | null = null;
     if (isAdminHr) {
       setEmployees(all);
     } else if (isManager && meUuid) {
       const direct = all.filter((e) => e.manager_uuid === meUuid).map((e) => e.uuid);
       const team = new Set([...direct, ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid)]);
       setEmployees(all.filter((e) => team.has(e.uuid)));
+      visible = [meUuid, ...team];
     } else {
       setEmployees([]);
+      visible = meUuid ? [meUuid] : [];
     }
+    setVisibleUuids(visible);
+
+    const list = ((f ?? []) as PdrForm[]).filter(
+      (x) => visible === null || visible.includes(x.employee_uuid),
+    );
+    setForms(list);
     if (list.length > 0) {
       const { data: objs } = await supabase
         .from("pdr_objectives")
