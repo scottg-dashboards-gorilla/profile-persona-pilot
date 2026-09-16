@@ -198,6 +198,14 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     Employee drafts; manager cascades from their own PDR and validates each one maps to a
                     category — control C1.
                   </p>
+                  <dl className="mt-1 grid gap-0.5 text-[11px] text-muted-foreground">
+                    {PDR_CATEGORIES.map((c) => (
+                      <div key={c.id} className="flex gap-1.5">
+                        <dt className="font-medium text-foreground shrink-0">{c.label}:</dt>
+                        <dd>{c.blurb}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
                 <Badge className={c1 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}>
                   {c1 ? "C1 passed" : "C1 pending"}
@@ -216,7 +224,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                               <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 {PDR_CATEGORIES.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                                  <SelectItem key={c.id} value={c.id}>
+                            <span className="font-medium">{c.label}</span>
+                            <span className="block text-[11px] text-muted-foreground whitespace-normal">{c.blurb}</span>
+                          </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -269,15 +280,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         )}
                         <div className="flex items-end gap-2 flex-wrap">
                           <div className="grid gap-1">
-                            <Label className="text-[10px] uppercase text-muted-foreground">Weight %</Label>
-                            <Input
-                              className="h-8 w-20"
-                              type="number"
-                              defaultValue={o.weight}
-                              onBlur={(e) => updateObjective(o.id, { weight: Number(e.target.value) || 0 })}
-                            />
-                          </div>
-                          <div className="grid gap-1">
                             <Label className="text-[10px] uppercase text-muted-foreground">Progress %</Label>
                             <Input
                               className="h-8 w-24"
@@ -323,7 +325,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {PDR_CATEGORIES.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                        <SelectItem key={c.id} value={c.id}>
+                            <span className="font-medium">{c.label}</span>
+                            <span className="block text-[11px] text-muted-foreground whitespace-normal">{c.blurb}</span>
+                          </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -524,7 +529,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
             <section className="rounded-md border p-3 space-y-2">
               <div className="text-sm font-medium">5 · Year-end PDR score</div>
               <p className="text-xs text-muted-foreground">
-                Suggested from weighted objective progress: <strong>{suggested ?? "—"}</strong> / 5. HR
+                Suggested from average objective progress: <strong>{suggested ?? "—"}</strong> / 5. HR
                 cross-checks before the year is closed.
               </p>
 
