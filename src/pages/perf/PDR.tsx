@@ -221,7 +221,9 @@ export default function PDR() {
             </div>
           ) : rows.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No PDRs for FY{year} yet — start one above.
+              {canManage
+                ? `No PDRs for FY${year} yet — start one above.`
+                : `You don't have a FY${year} development review yet. Your manager or HR will start it.`}
             </p>
           ) : (
             <Table>
