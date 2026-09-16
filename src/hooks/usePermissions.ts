@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useViewMode, type ViewMode } from "@/hooks/useViewMode";
 
 export type AppRole = "admin" | "hr" | "manager";
 
