@@ -1,0 +1,1 @@
+revoke execute on function public.guard_objective_add_after_alignment() from public, anon, authenticated;
