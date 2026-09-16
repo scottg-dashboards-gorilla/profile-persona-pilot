@@ -6,5 +6,6 @@
 - [x] Pay pushback trail: employee raises a pay concern on their review, manager logs "I'll speak to HR" with detail, HR closes with outcome (raise_pay_concern RPC + pay_pushback_* fields)
 - [x] Hard guard: an outcome cannot be shared with the employee until a proposed pay change is approved (enforce_comp_approved_before_release_trg)
 - [x] Point 3 (reopen after sharing): saving a completed review that was already shared now requires a written reason, pulls the outcome back from the employee, clears their acknowledgement, and resets HR pay approval (reopened_at/reopened_reason columns + CompleteReviewDialog/flow dialog/timeline updates)
+- [x] Point 4 (pay review close): APR flow simplified to manager entry -> HR approval -> shared with the employee. The separate COO/Finance + one-click payroll stage is gone; HR approval stamps the pay approval and releases the outcome to the employee in one guarded step.
 - [ ] Point 2 (reminder emails): share email-domain setup with Scott — he must complete the setup form for mydatapath.com (sender HR@mydatapath.com). Only the domain connection remains; queueing, daily cron, and the send edge function are done.
 - [x] Housekeeping: demo employees, their reviews and the 6 stale queued reminders removed. Team list is 66 real people.
