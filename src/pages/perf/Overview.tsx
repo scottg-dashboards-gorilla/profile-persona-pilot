@@ -6,8 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   ArrowRight,
   CalendarRange,
-  TrendingUp,
-  TrendingDown,
   FlaskConical,
   CheckCircle2,
   AlertTriangle,
@@ -17,7 +15,7 @@ import { formatCompDelta, ratingLabel } from "@/data/mockEmployees";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { AttemptRow, compositeImprovement, readableTier } from "@/lib/assessmentDeltas";
+import { AttemptRow } from "@/lib/assessmentDeltas";
 import { Link } from "react-router-dom";
 import { TestCycleWizard } from "@/components/perf/TestCycleWizard";
 
