@@ -26,6 +26,7 @@ import MyReview from "./pages/perf/MyReview";
 import Playbook from "./pages/perf/Playbook";
 import PDR from "./pages/perf/PDR";
 import APR from "./pages/perf/APR";
+import SalaryHistory from "./pages/perf/SalaryHistory";
 import ReviewForm from "./pages/ReviewForm";
 import RequireArea from "./components/perf/RequireArea";
 
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/goals" element={<Goals />} />
             <Route path="/company" element={<RequireArea area="company"><CompanyPerformance /></RequireArea>} />
             <Route path="/compensation" element={<RequireArea area="compensation"><Compensation /></RequireArea>} />
+            <Route path="/salary-history" element={<RequireArea area="salary"><SalaryHistory /></RequireArea>} />
             <Route path="/calibration" element={<RequireArea area="calibration"><Calibration /></RequireArea>} />
             <Route path="/org" element={<RequireArea area="org"><OrgRollups /></RequireArea>} />
             <Route path="/admin/audit" element={<RequireArea area="audit"><AuditLog /></RequireArea>} />
