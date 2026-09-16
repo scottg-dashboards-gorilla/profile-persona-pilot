@@ -319,6 +319,47 @@ export function ReviewFlowDialog({
             ) : null,
         },
         {
+          key: "connect",
+          owner: "Manager",
+          title: "Hold the connect conversation",
+          detail: review.connect_held_at
+            ? `Connect held ${format(parseISO(review.connect_held_at), "MMM d, h:mma")}${review.connect_note ? ` — "${review.connect_note}"` : ""}`
+            : "Sit down with the employee and talk it through before anything is shared. Write a short note of what you covered — this is required.",
+          done: !!review.connect_held_at && !!review.connect_note,
+          blocked: !review.connect_held_at && review.status === "completed",
+          action: review.connect_held_at ? null : (
+            <div className="space-y-2 w-full">
+              <Textarea
+                rows={2}
+                placeholder="What you covered in the sit-down (rating, pay outcome, questions raised)…"
+                value={connectNote}
+                onChange={(e) => setConnectNote(e.target.value)}
+              />
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={busy === "connect" || review.status !== "completed" || !connectNote.trim()}
+                title={
+                  review.status !== "completed"
+                    ? "Complete the review first"
+                    : !connectNote.trim()
+                      ? "Add a note about the conversation first"
+                      : undefined
+                }
+                onClick={() =>
+                  patch(
+                    { connect_held_at: new Date().toISOString(), connect_note: connectNote.trim() },
+                    "connect",
+                    "Connect logged",
+                  )
+                }
+              >
+                <Handshake className="h-3.5 w-3.5 mr-1" /> Log connect
+              </Button>
+            </div>
+          ),
+        },
+        {
           key: "release",
           owner: "Manager",
           title: "Share the outcome with the employee",
