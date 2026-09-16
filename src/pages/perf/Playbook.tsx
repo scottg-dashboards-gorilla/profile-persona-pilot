@@ -458,7 +458,7 @@ export default function Playbook() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">The annual PMP cycle</CardTitle>
-            <CardDescription>Development reviews · <Link className="underline" to="/pdr">open PDRs</Link></CardDescription>
+            <CardDescription>Objective setting · <Link className="underline" to="/pdr">open PDRs</Link></CardDescription>
           </CardHeader>
           <CardContent className="text-sm space-y-2">
             {PDR_STAGES.map((s, i) => (

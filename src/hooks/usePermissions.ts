@@ -40,7 +40,7 @@ export const areaLabels: Record<PermissionArea, string> = {
   org: "Org rollups",
   audit: "Audit log",
   company: "Company performance",
-  pdr: "Development reviews (PDR)",
+  pdr: "Objective setting (PDR)",
   apr: "Pay review cycle",
   overview: "Overview",
   salary: "Salary history",

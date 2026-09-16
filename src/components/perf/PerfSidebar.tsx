@@ -26,7 +26,7 @@ type Item = {
 
 const primary: Item[] = [
   { title: "Overview", url: "/", icon: LayoutDashboard, area: "overview" },
-  { title: "Development reviews", url: "/pdr", icon: Workflow, area: "pdr" },
+  { title: "Objective setting", url: "/pdr", icon: Workflow, area: "pdr" },
   { title: "Pay review cycle", url: "/apr", icon: Wallet, area: "apr" },
   { title: "Reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
   { title: "People", url: "/people", icon: Users, area: "reviews" },

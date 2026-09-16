@@ -246,7 +246,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       <DialogContent className="max-w-3xl max-h-[88vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            Development review (PDR){form ? ` · ${form.employee_name} · FY${form.fiscal_year}` : ""}
+            Objective setting (PDR){form ? ` · ${form.employee_name} · FY${form.fiscal_year}` : ""}
           </DialogTitle>
           <DialogDescription>
             Objectives in Jan–Feb, mid-year check-in around Jun–Jul, year-end input in Dec–Jan.
