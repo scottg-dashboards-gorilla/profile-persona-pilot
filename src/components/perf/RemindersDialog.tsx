@@ -265,8 +265,9 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
             <BellRing className="h-4 w-4" /> Reminders
           </DialogTitle>
           <DialogDescription>
-            Anyone whose form is still open past its due date. A scheduled job queues these
-            automatically every morning; you can also queue them now.
+            Anyone whose form is still open past its due date, plus the anniversary milestones:
+            managers are nudged 3 weeks and 1 week before each person's anniversary, HR 2 weeks
+            before. Both run automatically every morning; you can also queue them now.
           </DialogDescription>
         </DialogHeader>
 
