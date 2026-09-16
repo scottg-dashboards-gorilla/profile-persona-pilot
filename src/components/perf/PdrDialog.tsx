@@ -128,6 +128,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [selfInput, setSelfInput] = useState("");
   const [managerComments, setManagerComments] = useState("");
   const [midyear, setMidyear] = useState("");
+  const [midyearSelf, setMidyearSelf] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCategory, setNewCategory] = useState<PdrCategory>("faster");
