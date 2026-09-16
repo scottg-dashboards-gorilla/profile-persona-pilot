@@ -439,6 +439,106 @@ export default function Overview() {
         />
       </div>
 
+      {/* Pay trend year on year */}
+      {payTrend.some((y) => y.avgSalary || y.avgIncreasePct) && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Pay year on year</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Average salary paid each year and the average increase given to the people who received one.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={payTrend} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="year" tickLine={false} axisLine={false} className="text-xs" />
+                  <YAxis
+                    yAxisId="salary"
+                    tickLine={false}
+                    axisLine={false}
+                    className="text-xs"
+                    tickFormatter={(v: number) => `${Math.round(v / 1000)}k`}
+                  />
+                  <YAxis
+                    yAxisId="pct"
+                    orientation="right"
+                    tickLine={false}
+                    axisLine={false}
+                    className="text-xs"
+                    tickFormatter={(v: number) => `${v.toFixed(0)}%`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                      fontSize: 12,
+                      color: "hsl(var(--popover-foreground))",
+                    }}
+                    formatter={(value, name) =>
+                      value == null
+                        ? ["—", String(name)]
+                        : name === "Average increase"
+                          ? [`${Number(value).toFixed(1)}%`, String(name)]
+                          : [
+                              Number(value).toLocaleString(undefined, {
+                                style: "currency",
+                                currency: "USD",
+                                maximumFractionDigits: 0,
+                              }),
+                              String(name),
+                            ]
+                    }
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar
+                    yAxisId="salary"
+                    dataKey="avgSalary"
+                    name="Average salary"
+                    fill="hsl(var(--primary))"
+                    radius={[4, 4, 0, 0]}
+                    barSize={44}
+                  />
+                  <Line
+                    yAxisId="pct"
+                    type="monotone"
+                    dataKey="avgIncreasePct"
+                    name="Average increase"
+                    stroke="hsl(var(--chart-2, var(--accent-foreground)))"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    connectNulls
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+              {payTrend.map((y) => (
+                <div key={y.year} className="rounded-lg border p-3">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{y.year}</div>
+                  <div className="text-lg font-semibold mt-0.5">
+                    {y.avgSalary
+                      ? y.avgSalary.toLocaleString(undefined, {
+                          style: "currency",
+                          currency: "USD",
+                          maximumFractionDigits: 0,
+                        })
+                      : "—"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {y.avgIncreasePct
+                      ? `${y.avgIncreasePct.toFixed(1)}% average increase · ${y.peopleWithIncrease} people`
+                      : "No increases recorded"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Two-column tables */}
       <div className="grid lg:grid-cols-2 gap-5">
         <Card>
