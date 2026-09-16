@@ -636,57 +636,42 @@ export default function Overview() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Recent activity</CardTitle>
+            <p className="text-xs text-muted-foreground">Latest changes across reviews, assessments and settings.</p>
           </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Completed</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Comp change</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recent.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.employee_name}</TableCell>
-                    <TableCell>{r.completed_date && format(parseISO(r.completed_date), "MMM d")}</TableCell>
-                    <TableCell>
-                      {r.overall_rating && (
-                        <StatusPill
-                          tone={
-                            r.overall_rating === "exceeds"
-                              ? "completed"
-                              : r.overall_rating === "below"
-                                ? "overdue"
-                                : "in_progress"
-                          }
-                          label={(ratingLabel as any)[r.overall_rating] ?? r.overall_rating}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell
-                      className={cn(
-                        "font-medium",
-                        (r.comp_adjustment_amount ?? 0) > 0 && "text-emerald-700",
-                        (r.comp_adjustment_amount ?? 0) < 0 && "text-red-700",
-                      )}
-                    >
-                      {formatCompDelta(r.comp_adjustment_amount, r.comp_adjustment_percent)}
-                      {r.promotion && <span className="ml-2 text-xs text-primary">★ Promoted</span>}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {loaded && recent.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-6">
-                      Nothing completed yet.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+          <CardContent>
+            <ul className="space-y-3">
+              {activity.map((e) => {
+                const body = (
+                  <div className="flex items-start gap-3">
+                    <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{e.who}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {e.what}
+                        {e.extra && <span className="ml-1 font-medium text-foreground">{e.extra}</span>}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(parseISO(e.at), "MMM d, yyyy")} · {formatDistanceToNow(parseISO(e.at), { addSuffix: true })}
+                      </p>
+                    </div>
+                  </div>
+                );
+                return (
+                  <li key={e.id}>
+                    {e.to ? (
+                      <Link to={e.to} className="block rounded-md p-1 -m-1 hover:bg-muted/60">
+                        {body}
+                      </Link>
+                    ) : (
+                      body
+                    )}
+                  </li>
+                );
+              })}
+              {loaded && activity.length === 0 && (
+                <li className="text-center text-sm text-muted-foreground py-6">No activity yet.</li>
+              )}
+            </ul>
           </CardContent>
         </Card>
       </div>
