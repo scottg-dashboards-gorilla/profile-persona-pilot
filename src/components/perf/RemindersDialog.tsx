@@ -57,6 +57,7 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [queueing, setQueueing] = useState(false);
+  const [queueingAnniv, setQueueingAnniv] = useState(false);
   const [sending, setSending] = useState(false);
   const [outstanding, setOutstanding] = useState<Outstanding[]>([]);
   const [log, setLog] = useState<Reminder[]>([]);
