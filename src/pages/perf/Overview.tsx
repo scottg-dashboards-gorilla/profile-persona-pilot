@@ -290,14 +290,76 @@ export default function Overview() {
     [open],
   );
 
-  const recent = useMemo(
-    () =>
-      reviews
-        .filter((r) => r.status === "completed" && r.completed_date)
-        .sort((a, b) => (b.completed_date ?? "").localeCompare(a.completed_date ?? ""))
-        .slice(0, 5),
-    [reviews],
-  );
+  const nameByUuid = useMemo(() => {
+    const m = new Map<string, string>();
+    reviews.forEach((r) => m.set(r.employee_uuid, r.employee_name));
+    return m;
+  }, [reviews]);
+
+  const activity = useMemo<ActivityEvent[]>(() => {
+    const events: ActivityEvent[] = [];
+
+    reviews.forEach((r) => {
+      if (r.completed_date)
+        events.push({
+          id: `${r.id}-completed`,
+          at: r.completed_date,
+          who: r.employee_name,
+          what: r.overall_rating
+            ? `Review completed — ${(ratingLabel as any)[r.overall_rating] ?? r.overall_rating}`
+            : "Review completed",
+          extra: formatCompDelta(r.comp_adjustment_amount, r.comp_adjustment_percent) || undefined,
+          to: `/reviews?focus=${r.id}`,
+        });
+      if (r.released_at)
+        events.push({
+          id: `${r.id}-released`,
+          at: r.released_at,
+          who: r.employee_name,
+          what: "Outcome shared with the employee",
+          to: `/reviews?focus=${r.id}`,
+        });
+      if (r.employee_ack_at)
+        events.push({
+          id: `${r.id}-ack`,
+          at: r.employee_ack_at,
+          who: r.employee_name,
+          what: "Employee confirmed they received the outcome",
+          to: `/reviews?focus=${r.id}`,
+        });
+      if (!["none", "resolved"].includes(r.pay_pushback_status ?? "none"))
+        events.push({
+          id: `${r.id}-pushback`,
+          at: r.completed_date ?? r.scheduled_date,
+          who: r.employee_name,
+          what: "Raised a concern about the pay amount",
+          to: `/reviews?focus=${r.id}`,
+        });
+    });
+
+    attempts.forEach((a) => {
+      const at = a.submitted_at ?? a.taken_at;
+      if (!at) return;
+      events.push({
+        id: `att-${a.id}`,
+        at,
+        who: nameByUuid.get(a.employee_uuid) ?? "Assessment",
+        what: a.tier ? `Assessment recorded — ${a.tier}` : "Assessment recorded",
+        extra: a.disc_primary ? `DISC ${a.disc_primary}` : undefined,
+      });
+    });
+
+    audit.forEach((row) => {
+      const label = auditLabel(row);
+      if (!label) return;
+      events.push({ id: `aud-${row.id}`, at: row.created_at, who: row.actor_email ?? "System", what: label });
+    });
+
+    return events
+      .filter((e) => !!e.at)
+      .sort((a, b) => (b.at > a.at ? 1 : b.at < a.at ? -1 : 0))
+      .slice(0, 8);
+  }, [reviews, attempts, audit, nameByUuid]);
 
   return (
     <div className="space-y-6">
