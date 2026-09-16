@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Lock } from "lucide-react";
 
@@ -13,6 +14,9 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const [blocked, setBlocked] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [resetMode, setResetMode] = useState(false);
 
   /**
    * Accounts are invite-only: the person must already exist in the Datapath
