@@ -479,8 +479,8 @@ export default function Playbook() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">The Annual Pay Review</CardTitle>
-            <CardDescription>Pay, merit and bonus · <Link className="underline" to="/apr">open the APR</Link></CardDescription>
+            <CardTitle className="text-base">The pay review cycle</CardTitle>
+            <CardDescription>Pay, merit and bonus · <Link className="underline" to="/apr">open the pay review</Link></CardDescription>
           </CardHeader>
           <CardContent className="text-sm space-y-2">
             {APR_STAGES.map((s, i) => (

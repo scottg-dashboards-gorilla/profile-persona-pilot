@@ -36,7 +36,7 @@ export const areaLabels: Record<PermissionArea, string> = {
   audit: "Audit log",
   company: "Company performance",
   pdr: "Development reviews (PDR)",
-  apr: "Annual Pay Review",
+  apr: "Pay review cycle",
 };
 
 export function rolesForArea(area: PermissionArea) {

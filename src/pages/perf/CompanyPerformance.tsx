@@ -577,7 +577,7 @@ export default function CompanyPerformance() {
           <CardContent className="space-y-3">
             <p className="text-xs text-muted-foreground">
               Forecast from this year's actuals. Lock the year and the base pool becomes the budget in
-              the Annual Pay Review planner each January.
+              the pay review cycle planner, sizing awards as each anniversary comes round.
             </p>
             <div className="grid gap-2 sm:grid-cols-3">
               {scenarios.map((s) => (
