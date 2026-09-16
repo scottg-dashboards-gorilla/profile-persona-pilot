@@ -129,6 +129,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [managerComments, setManagerComments] = useState("");
   const [midyear, setMidyear] = useState("");
   const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
   const [newCategory, setNewCategory] = useState<PdrCategory>("faster");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -181,12 +182,13 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   }
 
   async function addObjective() {
-    if (!form || !newTitle.trim()) return;
+    if (!form || !newTitle.trim() || !newDescription.trim()) return;
     setBusy("add");
     const { error } = await supabase.from("pdr_objectives").insert({
       form_id: form.id,
       category: newCategory,
       title: newTitle.trim(),
+      description: newDescription.trim(),
       sort_order: objectives.length,
     });
     setBusy(null);
@@ -195,6 +197,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       return;
     }
     setNewTitle("");
+    setNewDescription("");
     await load();
   }
 
@@ -215,12 +218,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   }
 
   async function saveEdit() {
-    if (!editingId || !editTitle.trim()) return;
+    if (!editingId || !editTitle.trim() || !editDescription.trim()) return;
     setBusy("edit");
     await updateObjective(editingId, {
       title: editTitle.trim(),
       category: editCategory,
-      description: editDescription.trim() || null,
+      description: editDescription.trim(),
     });
     setBusy(null);
     setEditingId(null);
