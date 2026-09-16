@@ -16,7 +16,7 @@ import {
 const primary = [
   { title: "Overview", url: "/", icon: LayoutDashboard },
   { title: "Development reviews", url: "/pdr", icon: Workflow },
-  { title: "Annual Pay Review", url: "/apr", icon: Wallet },
+  { title: "Pay review cycle", url: "/apr", icon: Wallet },
   { title: "Reviews", url: "/reviews", icon: ClipboardCheck },
   { title: "People", url: "/people", icon: Users },
   { title: "Cycles", url: "/cycles", icon: CalendarRange },

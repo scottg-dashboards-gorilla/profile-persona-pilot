@@ -119,7 +119,7 @@ export default function PDR() {
           <h1 className="text-2xl font-semibold tracking-tight">Development reviews (PDR)</h1>
           <p className="text-sm text-muted-foreground">
             The annual PMP cycle: objectives in Jan–Feb, mid-year check-in around Jun–Jul, year-end input
-            and score in Dec–Jan. The score feeds the Annual Pay Review.
+            and score in Dec–Jan. The score feeds the person's pay review cycle.
           </p>
         </div>
         <div className="flex items-center gap-2">
