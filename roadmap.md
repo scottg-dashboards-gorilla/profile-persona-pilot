@@ -7,5 +7,9 @@
 - [x] Hard guard: an outcome cannot be shared with the employee until a proposed pay change is approved (enforce_comp_approved_before_release_trg)
 - [x] Point 3 (reopen after sharing): saving a completed review that was already shared now requires a written reason, pulls the outcome back from the employee, clears their acknowledgement, and resets HR pay approval (reopened_at/reopened_reason columns + CompleteReviewDialog/flow dialog/timeline updates)
 - [x] Point 4 (pay review close): APR flow simplified to manager entry -> HR approval -> shared with the employee. The separate COO/Finance + one-click payroll stage is gone; HR approval stamps the pay approval and releases the outcome to the employee in one guarded step.
+- [x] HR pay-changes export: "Export pay changes" on the Annual Pay Review downloads a spreadsheet per year (rating, merit, differentiated award, new pay, increase %, bonus, shares, effective date, HR approval, shared/confirmed status).
+- [ ] Audit point 5: no named reviewer on reviews — 4 people have no manager, so their reviews are invisible to everyone but HR.
+- [ ] Audit point 6: employee sign-in — no employees linked to logins yet, so nobody can see their own review or raise a pay concern.
+- [ ] Audit points 7–13: development reviews unlinked, empty goals, orphan reviews (no cycle), escalation send-back detail, pay-concern DB enforcement, rating-distribution check before pay close, funding-curve access.
 - [ ] Point 2 (reminder emails): share email-domain setup with Scott — he must complete the setup form for mydatapath.com (sender HR@mydatapath.com). Only the domain connection remains; queueing, daily cron, and the send edge function are done.
 - [x] Housekeeping: demo employees, their reviews and the 6 stale queued reminders removed. Team list is 66 real people.
