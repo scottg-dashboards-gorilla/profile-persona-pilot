@@ -198,6 +198,14 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     Employee drafts; manager cascades from their own PDR and validates each one maps to a
                     category — control C1.
                   </p>
+                  <dl className="mt-1 grid gap-0.5 text-[11px] text-muted-foreground">
+                    {PDR_CATEGORIES.map((c) => (
+                      <div key={c.id} className="flex gap-1.5">
+                        <dt className="font-medium text-foreground shrink-0">{c.label}:</dt>
+                        <dd>{c.blurb}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
                 <Badge className={c1 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}>
                   {c1 ? "C1 passed" : "C1 pending"}
@@ -268,15 +276,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           <p className="text-xs text-muted-foreground">{o.description}</p>
                         )}
                         <div className="flex items-end gap-2 flex-wrap">
-                          <div className="grid gap-1">
-                            <Label className="text-[10px] uppercase text-muted-foreground">Weight %</Label>
-                            <Input
-                              className="h-8 w-20"
-                              type="number"
-                              defaultValue={o.weight}
-                              onBlur={(e) => updateObjective(o.id, { weight: Number(e.target.value) || 0 })}
-                            />
-                          </div>
                           <div className="grid gap-1">
                             <Label className="text-[10px] uppercase text-muted-foreground">Progress %</Label>
                             <Input
