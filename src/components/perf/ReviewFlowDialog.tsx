@@ -90,6 +90,7 @@ export function ReviewFlowDialog({
   const [approvalNote, setApprovalNote] = useState("");
   const [pushbackNote, setPushbackNote] = useState("");
   const [hrNote, setHrNote] = useState("");
+  const [connectNote, setConnectNote] = useState("");
 
   const load = useCallback(async () => {
     if (!reviewId) return;
