@@ -151,7 +151,17 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     ]);
     const rec = (f as PdrForm) ?? null;
     setForm(rec);
-    setObjectives((objs ?? []) as PdrObjective[]);
+    const objList = (objs ?? []) as PdrObjective[];
+    setObjectives(objList);
+    setMidObj(
+      Object.fromEntries(
+        objList.map((o) => [
+          o.id,
+          { progress: String(o.progress_percent ?? 0), comment: o.midyear_employee_comment ?? "" },
+        ]),
+      ),
+    );
+    setMidMgr(Object.fromEntries(objList.map((o) => [o.id, o.midyear_manager_comment ?? ""])));
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
