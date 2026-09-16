@@ -6,4 +6,4 @@
 - [x] Pay pushback trail: employee raises a pay concern on their review, manager logs "I'll speak to HR" with detail, HR closes with outcome (raise_pay_concern RPC + pay_pushback_* fields)
 - [x] Hard guard: an outcome cannot be shared with the employee until a proposed pay change is approved (enforce_comp_approved_before_release_trg)
 - [ ] Point 2 (reminder emails): share email-domain setup with Scott — he must complete the setup form for mydatapath.com (sender HR@mydatapath.com). Only the domain connection remains; queueing, daily cron, and the send edge function are done.
-- [ ] Housekeeping: 6 queued reminders belong to demo people with no email on file — decide whether to clear demo people + their reviews/reminders once real data is confirmed.
+- [x] Housekeeping: demo employees, their reviews and the 6 stale queued reminders removed. Team list is 66 real people.
