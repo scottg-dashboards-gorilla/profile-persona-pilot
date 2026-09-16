@@ -26,7 +26,14 @@ import { ReviewTimeline } from "@/components/perf/ReviewTimeline";
 import { PdrDialog } from "@/components/perf/PdrDialog";
 import { usePermissions } from "@/hooks/usePermissions";
 
-type Emp = { uuid: string; first_name: string; last_name: string; department: string | null };
+type Emp = {
+  uuid: string;
+  first_name: string;
+  last_name: string;
+  department: string | null;
+  manager_uuid: string | null;
+  user_id: string | null;
+};
 
 const thisYear = new Date().getFullYear();
 
