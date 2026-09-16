@@ -285,6 +285,19 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
             {queueing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <BellRing className="h-3.5 w-3.5 mr-1" />}
             Queue reminders now
           </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={queueAnniversaries}
+            disabled={queueingAnniv || loading}
+          >
+            {queueingAnniv ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+            ) : (
+              <CalendarClock className="h-3.5 w-3.5 mr-1" />
+            )}
+            Queue anniversary milestones
+          </Button>
           <Button size="sm" onClick={sendQueued} disabled={sending || loading || queued === 0}>
             {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Send className="h-3.5 w-3.5 mr-1" />}
             Send queued reminders
