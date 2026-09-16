@@ -33,7 +33,9 @@ const thisYear = new Date().getFullYear();
 export default function PDR() {
   const { toast } = useToast();
   const { has, unconfigured } = usePermissions();
-  const canManage = unconfigured || has("admin") || has("hr") || has("manager");
+  const isAdminHr = unconfigured || has("admin") || has("hr");
+  const isManager = has("manager");
+  const canManage = isAdminHr || isManager;
 
   const [year, setYear] = useState(thisYear);
   const [forms, setForms] = useState<PdrForm[]>([]);
