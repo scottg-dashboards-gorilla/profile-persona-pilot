@@ -147,7 +147,7 @@ export default function PDR() {
           <h1 className="text-2xl font-semibold tracking-tight">Development reviews (PDR)</h1>
           <p className="text-sm text-muted-foreground">
             Three reviews a year — objective setting, mid-year and year-end — each with employee input
-            and score in Dec–Jan. The score feeds the person's pay review cycle.
+            and manager input. The year-end score feeds the person's pay review cycle.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {isAdminHr
@@ -260,7 +260,7 @@ export default function PDR() {
                               { key: "kickoff", label: "Objectives submitted", short: "1", at: f.objectives_submitted_at },
                               { key: "self", label: "Objectives aligned (C1)", short: "2", at: f.objectives_approved_at },
                               { key: "360", label: "Mid-year self input", short: "3", at: f.midyear_self_submitted_at },
-                              { key: "midmgr", label: "Mid-year manager feedback", short: "4", at: f.midyear_manager_submitted_at ?? f.midyear_checkin_at },
+                              { key: "ack", label: "Mid-year manager feedback", short: "4", at: f.midyear_manager_submitted_at ?? f.midyear_checkin_at },
                               { key: "completion", label: "Year-end self input", short: "5", at: f.self_input_submitted_at },
                               { key: "comp", label: "Year-end manager input", short: "6", at: f.comments_finalized_at },
                               { key: "release", label: "Score recorded", short: "7", at: f.score_recorded_at },
