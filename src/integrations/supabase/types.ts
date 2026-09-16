@@ -261,6 +261,134 @@ export type Database = {
         }
         Relationships: []
       }
+      comp_increase_scenarios: {
+        Row: {
+          boy_cost: number
+          created_at: string
+          fiscal_year: number
+          headcount: number
+          id: string
+          impact_month: number
+          impact_year: number
+          month_label: string
+          people_needing_increase: number | null
+          scenario_percent: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          boy_cost?: number
+          created_at?: string
+          fiscal_year: number
+          headcount?: number
+          id?: string
+          impact_month?: number
+          impact_year?: number
+          month_label: string
+          people_needing_increase?: number | null
+          scenario_percent: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          boy_cost?: number
+          created_at?: string
+          fiscal_year?: number
+          headcount?: number
+          id?: string
+          impact_month?: number
+          impact_year?: number
+          month_label?: string
+          people_needing_increase?: number | null
+          scenario_percent?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      comp_salary_history: {
+        Row: {
+          created_at: string
+          date_2023: string | null
+          date_2024: string | null
+          date_2025: string | null
+          date_2026: string | null
+          employee_uuid: string | null
+          employment_type: string | null
+          function_name: string | null
+          id: string
+          increment_2024: number | null
+          increment_2025: number | null
+          increment_2026: number | null
+          line_manager_name: string | null
+          salary_2023: number | null
+          salary_2024: number | null
+          salary_2025: number | null
+          salary_2026: number | null
+          source_name: string
+          sub_function: string | null
+          title: string | null
+          updated_at: string
+          work_state: string | null
+        }
+        Insert: {
+          created_at?: string
+          date_2023?: string | null
+          date_2024?: string | null
+          date_2025?: string | null
+          date_2026?: string | null
+          employee_uuid?: string | null
+          employment_type?: string | null
+          function_name?: string | null
+          id?: string
+          increment_2024?: number | null
+          increment_2025?: number | null
+          increment_2026?: number | null
+          line_manager_name?: string | null
+          salary_2023?: number | null
+          salary_2024?: number | null
+          salary_2025?: number | null
+          salary_2026?: number | null
+          source_name: string
+          sub_function?: string | null
+          title?: string | null
+          updated_at?: string
+          work_state?: string | null
+        }
+        Update: {
+          created_at?: string
+          date_2023?: string | null
+          date_2024?: string | null
+          date_2025?: string | null
+          date_2026?: string | null
+          employee_uuid?: string | null
+          employment_type?: string | null
+          function_name?: string | null
+          id?: string
+          increment_2024?: number | null
+          increment_2025?: number | null
+          increment_2026?: number | null
+          line_manager_name?: string | null
+          salary_2023?: number | null
+          salary_2024?: number | null
+          salary_2025?: number | null
+          salary_2026?: number | null
+          source_name?: string
+          sub_function?: string | null
+          title?: string | null
+          updated_at?: string
+          work_state?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comp_salary_history_employee_uuid_fkey"
+            columns: ["employee_uuid"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       company_kpis: {
         Row: {
           actual_value: number | null
