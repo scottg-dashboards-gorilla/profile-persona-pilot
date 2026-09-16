@@ -49,13 +49,31 @@ export default function PDR() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: f }, { data: emps }] = await Promise.all([
+    const [{ data: f }, { data: emps }, { data: auth }] = await Promise.all([
       supabase.from("pdr_forms").select("*").eq("fiscal_year", year).order("employee_name"),
-      supabase.from("employees").select("uuid,first_name,last_name,department").eq("terminated", false).order("first_name"),
+      supabase
+        .from("employees")
+        .select("uuid,first_name,last_name,department,manager_uuid,user_id")
+        .eq("terminated", false)
+        .order("first_name"),
+      supabase.auth.getUser(),
     ]);
     const list = (f ?? []) as PdrForm[];
     setForms(list);
-    setEmployees((emps ?? []) as Emp[]);
+
+    // Who can this person start a PDR for? Admin/HR: anyone. Manager: their own
+    // team (direct reports and one level below). Employee: nobody.
+    const all = (emps ?? []) as Emp[];
+    const meUuid = all.find((e) => e.user_id && e.user_id === auth?.user?.id)?.uuid ?? null;
+    if (isAdminHr) {
+      setEmployees(all);
+    } else if (isManager && meUuid) {
+      const direct = all.filter((e) => e.manager_uuid === meUuid).map((e) => e.uuid);
+      const team = new Set([...direct, ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid)]);
+      setEmployees(all.filter((e) => team.has(e.uuid)));
+    } else {
+      setEmployees([]);
+    }
     if (list.length > 0) {
       const { data: objs } = await supabase
         .from("pdr_objectives")
