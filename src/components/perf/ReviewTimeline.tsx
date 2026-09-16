@@ -33,6 +33,8 @@ export type ReviewStageInput = {
   comp_approval_status?: string | null;
   comp_approved_at?: string | null;
   released_at?: string | null;
+  reopened_at?: string | null;
+  reopened_reason?: string | null;
   employee_ack_at?: string | null;
   selfSubmittedAt?: string | null;
   contributorsTotal?: number;
@@ -107,7 +109,11 @@ export function buildReviewStages(r: ReviewStageInput): TimelineStage[] {
       label: "Shared with employee",
       short: "6",
       at: r.released_at ?? null,
-      note: r.released_at ? undefined : "Outcome not shared yet",
+      note: r.released_at
+        ? undefined
+        : r.reopened_at
+          ? "Outcome revised — reason logged, awaiting re-approval and re-share"
+          : "Outcome not shared yet",
     },
     {
       key: "ack",
