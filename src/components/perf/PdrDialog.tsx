@@ -107,15 +107,6 @@ function CategoryPicker({
   );
 }
 
-type PayReviewLink = {
-  id: string;
-  review_cycle: string;
-  overall_rating: string | null;
-  rating_score: number | null;
-  apr_stage: string;
-  status: string;
-};
-
 const now = () => new Date().toISOString();
 
 export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props) {
@@ -140,7 +131,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] = useState<PdrCategory>("faster");
   const [editDescription, setEditDescription] = useState("");
-  const [payReview, setPayReview] = useState<PayReviewLink | null>(null);
 
   const load = useCallback(async () => {
     if (!formId) return;
@@ -159,16 +149,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
     setMidyearSelf(rec?.midyear_self_input ?? "");
-    if (rec?.review_id) {
-      const { data: rev } = await supabase
-        .from("performance_reviews")
-        .select("id,review_cycle,overall_rating,rating_score,apr_stage,status")
-        .eq("id", rec.review_id)
-        .maybeSingle();
-      setPayReview((rev as PayReviewLink) ?? null);
-    } else {
-      setPayReview(null);
-    }
     setLoading(false);
   }, [formId]);
 
