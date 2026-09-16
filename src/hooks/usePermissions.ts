@@ -69,11 +69,14 @@ export function usePermissions() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      const [mine, any] = await Promise.all([
+      const [mine, configured] = await Promise.all([
         user
           ? supabase.from("user_roles").select("role").eq("user_id", user.id)
           : Promise.resolve({ data: [] as { role: AppRole }[] }),
-        supabase.from("user_roles").select("id").limit(1),
+        // Asks the database directly — a signed-in person without a role cannot
+        // see other people's role rows, so counting them client-side wrongly
+        // looked like "nobody has roles yet" and opened up every page.
+        supabase.rpc("roles_configured"),
       ]);
 
       if (!active) return;
@@ -81,7 +84,7 @@ export function usePermissions() {
         loading: false,
         userId: user?.id ?? null,
         roles: ((mine.data ?? []) as { role: AppRole }[]).map((r) => r.role),
-        unconfigured: ((any.data ?? []) as unknown[]).length === 0,
+        unconfigured: configured.data === false,
       });
     })();
     return () => {
