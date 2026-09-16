@@ -21,7 +21,7 @@ import {
 import { Loader2, Plus, Search, Workflow } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PDR_STAGES, pdrProgress, type PdrForm, type PdrObjective, type PdrStage } from "@/lib/pmp";
+import { PDR_STAGES, pdrProgress, pdrStageLabel, type PdrForm, type PdrObjective, type PdrStage } from "@/lib/pmp";
 import { ReviewTimeline } from "@/components/perf/ReviewTimeline";
 import { PdrDialog } from "@/components/perf/PdrDialog";
 import { usePermissions } from "@/hooks/usePermissions";
