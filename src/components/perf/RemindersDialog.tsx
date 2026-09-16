@@ -180,6 +180,23 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
     load();
   }
 
+  async function sendQueued() {
+    setSending(true);
+    const { data, error } = await supabase.functions.invoke("send-review-reminders");
+    setSending(false);
+    if (error) {
+      const msg = (data as { error?: string } | null)?.error ?? error.message;
+      toast({ title: "Couldn't send reminders", description: msg, variant: "destructive" });
+      return;
+    }
+    const res = (data ?? {}) as { sent?: number; failed?: number; skipped?: number };
+    toast({
+      title: `${res.sent ?? 0} reminder${res.sent === 1 ? "" : "s"} sent`,
+      description: `${res.failed ?? 0} failed · ${res.skipped ?? 0} had no email address on file.`,
+    });
+    load();
+  }
+
   async function copyLink(row: Outstanding) {
     try {
       const token = await createReviewToken(
