@@ -26,6 +26,7 @@ const AREA_ROLES: Record<PermissionArea, AppRole[]> = {
   company: ["admin", "hr"],
   pdr: ["admin", "hr", "manager"],
   apr: ["admin", "hr", "manager"],
+  overview: ["admin"],
 };
 
 export const areaLabels: Record<PermissionArea, string> = {
@@ -38,6 +39,7 @@ export const areaLabels: Record<PermissionArea, string> = {
   company: "Company performance",
   pdr: "Development reviews (PDR)",
   apr: "Pay review cycle",
+  overview: "Overview",
 };
 
 export function rolesForArea(area: PermissionArea) {
