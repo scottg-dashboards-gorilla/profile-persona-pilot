@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
         .eq("id", r.review_id)
         .maybeSingle();
 
-      const url = `${APP_URL}/review-form?token=${token}`;
+      const url = `${APP_URL}/review-form/${token}`;
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
