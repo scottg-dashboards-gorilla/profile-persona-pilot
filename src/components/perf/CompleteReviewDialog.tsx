@@ -161,6 +161,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
 
   if (!review) return null;
 
+  const wasShared = !!review.released_at;
+
   const baseComp = Number(review.current_annual_comp ?? 0);
   const amountNum = compAmount === "" ? null : Number(compAmount);
   const pct = amountNum != null && baseComp > 0 ? (amountNum / baseComp) * 100 : null;
@@ -188,7 +190,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
       });
       return;
     }
-    const wasShared = !!review.released_at;
     if (wasShared && !reopenReason.trim()) {
       toast({
         title: "Reason required",
