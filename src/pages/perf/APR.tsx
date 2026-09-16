@@ -109,7 +109,7 @@ function csvCell(v: unknown) {
 
 function buildPayChangeCsv(rows: ExportRow[], year: number) {
   const lines = [
-    `Datapath Annual Pay Review — FY${year} pay changes,Generated ${new Date().toISOString().slice(0, 10)}`,
+    `Datapath pay review cycle — FY${year} pay changes,Generated ${new Date().toISOString().slice(0, 10)}`,
     "",
     EXPORT_COLUMNS.map((c) => csvCell(c.label)).join(","),
   ];
@@ -234,10 +234,11 @@ export default function APR() {
     <div className="space-y-5">
       <header className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Annual Pay Review (APR)</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Pay review cycle</h1>
           <p className="text-sm text-muted-foreground">
-            The manager enters the rating and pay, HR approves it, then it is shared with the
-            employee. Over-budget entries route to an exception first.
+            Each person's pay review runs on their own start-date anniversary. The manager enters the
+            rating and pay, HR approves it, then it is shared with the employee before the
+            anniversary. Over-budget entries route to an exception first.
           </p>
         </div>
         <div className="flex items-center gap-2">
