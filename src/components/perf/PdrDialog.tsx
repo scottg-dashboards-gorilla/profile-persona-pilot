@@ -12,14 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Check, Loader2, Pencil, Plus, ShieldCheck, Trash2, Undo2, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown, Info, Loader2, Pencil, Plus, ShieldCheck, Trash2, Undo2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
@@ -198,14 +192,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     Employee drafts; manager cascades from their own PDR and validates each one maps to a
                     category — control C1.
                   </p>
-                  <dl className="mt-1 grid gap-0.5 text-[11px] text-muted-foreground">
-                    {PDR_CATEGORIES.map((c) => (
-                      <div key={c.id} className="flex gap-1.5">
-                        <dt className="font-medium text-foreground shrink-0">{c.label}:</dt>
-                        <dd>{c.blurb}</dd>
-                      </div>
-                    ))}
-                  </dl>
                 </div>
                 <Badge className={c1 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}>
                   {c1 ? "C1 passed" : "C1 pending"}
@@ -220,17 +206,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         <div className="flex items-end gap-2 flex-wrap">
                           <div className="grid gap-1">
                             <Label className="text-[10px] uppercase text-muted-foreground">Category</Label>
-                            <Select value={editCategory} onValueChange={(v) => setEditCategory(v as PdrCategory)}>
-                              <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                {PDR_CATEGORIES.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>
-                            <span className="font-medium">{c.label}</span>
-                            <span className="block text-[11px] text-muted-foreground whitespace-normal">{c.blurb}</span>
-                          </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <CategoryPicker value={editCategory} onChange={(v) => setEditCategory(v)} />
                           </div>
                           <div className="grid gap-1 flex-1 min-w-[200px]">
                             <Label className="text-[10px] uppercase text-muted-foreground">Objective</Label>
@@ -321,17 +297,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
               <div className="flex items-end gap-2 flex-wrap">
                 <div className="grid gap-1">
                   <Label className="text-[10px] uppercase text-muted-foreground">Category</Label>
-                  <Select value={newCategory} onValueChange={(v) => setNewCategory(v as PdrCategory)}>
-                    <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {PDR_CATEGORIES.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                            <span className="font-medium">{c.label}</span>
-                            <span className="block text-[11px] text-muted-foreground whitespace-normal">{c.blurb}</span>
-                          </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <CategoryPicker value={newCategory} onChange={(v) => setNewCategory(v)} />
                 </div>
                 <div className="grid gap-1 flex-1 min-w-[200px]">
                   <Label className="text-[10px] uppercase text-muted-foreground">New objective</Label>
