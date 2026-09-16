@@ -63,6 +63,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [midyear, setMidyear] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState<PdrCategory>("faster");
+  const [payReview, setPayReview] = useState<PayReviewLink | null>(null);
 
   const load = useCallback(async () => {
     if (!formId) return;
