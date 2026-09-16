@@ -24,7 +24,6 @@ import {
   BadgeCheck,
   CheckCircle2,
   Loader2,
-  Lock,
   ShieldCheck,
   Wallet,
 } from "lucide-react";

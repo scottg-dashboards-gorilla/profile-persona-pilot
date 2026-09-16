@@ -1,7 +1,7 @@
 /**
  * Shared rules for the two annual Datapath processes:
  *  - PMP  : PDR objectives -> mid-year check-in -> year-end self input -> manager comments -> score
- *  - APR  : rating (1-5) -> merit / bonus / I-C / exec pay-out -> budget gate -> HR -> COO & Finance -> payroll
+ *  - APR  : rating (1-5) -> merit / bonus / I-C / exec pay-out -> budget gate -> HR approval -> shared with the employee
  */
 
 import type { Rating } from "@/lib/compensation";
