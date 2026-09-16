@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useViewMode, type ViewMode } from "@/hooks/useViewMode";
 
 export type AppRole = "admin" | "hr" | "manager";
 
@@ -98,15 +99,49 @@ export function usePermissions() {
     };
   }, []);
 
-  const has = (role: AppRole) => state.roles.includes(role);
+  const { mode, setMode } = useViewMode();
+
+  const granted = state.roles;
+  const isAdmin = granted.includes("admin") || granted.includes("hr");
+  const isManager = granted.includes("manager");
+
+  /** Views this person is allowed to switch between. Everyone can act as an employee. */
+  const availableModes: ViewMode[] = [
+    "employee",
+    ...(isManager || isAdmin ? (["manager"] as ViewMode[]) : []),
+    ...(isAdmin ? (["admin"] as ViewMode[]) : []),
+  ];
+
+  const viewMode: ViewMode =
+    mode && availableModes.includes(mode) ? mode : availableModes[availableModes.length - 1];
+
+  /** Roles that count in the view currently chosen — the views never mix. */
+  const roles: AppRole[] =
+    viewMode === "admin"
+      ? granted
+      : viewMode === "manager"
+        ? // Admins/HR acting as a manager only get manager reach, over their own team.
+          (["manager"] as AppRole[])
+        : [];
+
+  const has = (role: AppRole) => roles.includes(role);
 
   const can = (area: PermissionArea) => {
-    if (state.unconfigured) return true;
+    if (state.unconfigured && viewMode === "admin") return true;
     // Development reviews are open to every signed-in person: employees reach
     // their own PDR, managers their team's, admins/HR everyone's (enforced in the database).
     if (OPEN_AREAS.includes(area)) return !!state.userId;
-    return AREA_ROLES[area].some((r) => state.roles.includes(r));
+    return AREA_ROLES[area].some((r) => roles.includes(r));
   };
 
-  return { ...state, has, can };
+  return {
+    ...state,
+    roles,
+    grantedRoles: granted,
+    viewMode,
+    availableModes,
+    setViewMode: setMode,
+    has,
+    can,
+  };
 }

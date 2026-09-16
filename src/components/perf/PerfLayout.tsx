@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { ViewModeProvider } from "@/hooks/useViewMode";
+import { ViewModeBadge, ViewModeMenuSection } from "./ViewModeSwitcher";
 
 const pageTitles: Record<string, string> = {
   "/": "Overview",
@@ -82,6 +84,7 @@ export default function PerfLayout() {
 
   return (
     <div className="perf-theme">
+      <ViewModeProvider>
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background text-foreground">
           <PerfSidebar />
@@ -90,6 +93,7 @@ export default function PerfLayout() {
               <SidebarTrigger />
               <h1 className="text-base font-semibold tracking-tight">{title}</h1>
               <div className="ml-auto flex items-center gap-3">
+                <ViewModeBadge />
                 <div className="relative hidden md:block">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input placeholder="Search people, reviews…" className="pl-8 w-72 h-9" />
@@ -120,6 +124,8 @@ export default function PerfLayout() {
                       )}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <ViewModeMenuSection />
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link to="/me" className="flex items-center gap-2">
                         <UserSquare2 className="h-4 w-4" /> My review
@@ -138,6 +144,7 @@ export default function PerfLayout() {
           </div>
         </div>
       </SidebarProvider>
+      </ViewModeProvider>
     </div>
   );
 }
