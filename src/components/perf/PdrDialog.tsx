@@ -566,7 +566,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
             <section className="rounded-md border p-3 space-y-3">
               <header className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
-                  <div className="text-sm font-medium">4 · Manager input</div>
+                  <div className="text-sm font-medium">3 · Year-end review — manager input</div>
                   <p className="text-xs text-muted-foreground">
                     Written by the manager after reading the employee input. Comments per objective are
                     optional; the overall summary is required. Dec 02 – Jan 06.
