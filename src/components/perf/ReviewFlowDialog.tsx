@@ -255,17 +255,18 @@ export function ReviewFlowDialog({
         {
           key: "comp",
           owner: "HR",
-          title: "HR approves the pay change",
-          detail: !compProposed
-            ? "No pay change proposed — nothing to approve."
-            : compApproved
-              ? `Approved ${review.comp_approved_at ? format(parseISO(review.comp_approved_at), "MMM d") : ""}.`
-              : compRejected
-                ? "Sent back to the manager."
-                : "Waiting on HR sign-off before the outcome is shared.",
-          done: !compProposed || compApproved,
+          title: "HR approves the pay outcome",
+          detail: compApproved
+            ? `Approved ${review.comp_approved_at ? format(parseISO(review.comp_approved_at), "MMM d") : ""}.`
+            : compRejected
+              ? "Sent back to the manager."
+              : compProposed
+                ? "Waiting on HR sign-off before the outcome is shared."
+                : "No pay change proposed, but HR still has to sign off before the outcome is shared.",
+          done: compApproved,
+          blocked: !compApproved && review.status === "completed",
           action:
-            compProposed && !compApproved ? (
+            !compApproved ? (
               <div className="flex flex-col items-end gap-2 w-full">
                 <Textarea
                   rows={2}
