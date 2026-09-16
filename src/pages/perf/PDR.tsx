@@ -54,6 +54,8 @@ export default function PDR() {
   const [creating, setCreating] = useState(false);
   const [newEmp, setNewEmp] = useState("");
 
+  const [visibleUuids, setVisibleUuids] = useState<string[] | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     const [{ data: f }, { data: emps }, { data: auth }] = await Promise.all([
