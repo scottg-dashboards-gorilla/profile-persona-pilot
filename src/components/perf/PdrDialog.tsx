@@ -207,58 +207,108 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
               <div className="space-y-2">
                 {objectives.map((o) => (
                   <div key={o.id} className="rounded-md border p-2 space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="uppercase text-[10px]">
-                        {PDR_CATEGORIES.find((c) => c.id === o.category)?.label ?? o.category}
-                      </Badge>
-                      <span className="text-sm font-medium flex-1 min-w-[180px]">{o.title}</span>
-                      {o.cascaded_from_manager && (
-                        <Badge variant="secondary" className="text-[10px]">Cascaded</Badge>
-                      )}
-                      <Badge
-                        className={cn(
-                          "text-[10px]",
-                          o.manager_validated ? "bg-emerald-100 text-emerald-800" : "bg-muted text-muted-foreground",
+                    {editingId === o.id ? (
+                      <div className="space-y-2">
+                        <div className="flex items-end gap-2 flex-wrap">
+                          <div className="grid gap-1">
+                            <Label className="text-[10px] uppercase text-muted-foreground">Category</Label>
+                            <Select value={editCategory} onValueChange={(v) => setEditCategory(v as PdrCategory)}>
+                              <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {PDR_CATEGORIES.map((c) => (
+                                  <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid gap-1 flex-1 min-w-[200px]">
+                            <Label className="text-[10px] uppercase text-muted-foreground">Objective</Label>
+                            <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} autoFocus />
+                          </div>
+                        </div>
+                        <div className="grid gap-1">
+                          <Label className="text-[10px] uppercase text-muted-foreground">Detail (optional)</Label>
+                          <Textarea
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            rows={2}
+                            placeholder="How will it be measured?"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
+                            <X className="h-3.5 w-3.5 mr-1" /> Cancel
+                          </Button>
+                          <Button size="sm" disabled={busy === "edit" || !editTitle.trim()} onClick={saveEdit}>
+                            {busy === "edit" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="uppercase text-[10px]">
+                            {PDR_CATEGORIES.find((c) => c.id === o.category)?.label ?? o.category}
+                          </Badge>
+                          <span className="text-sm font-medium flex-1 min-w-[180px]">{o.title}</span>
+                          {o.cascaded_from_manager && (
+                            <Badge variant="secondary" className="text-[10px]">Cascaded</Badge>
+                          )}
+                          <Badge
+                            className={cn(
+                              "text-[10px]",
+                              o.manager_validated ? "bg-emerald-100 text-emerald-800" : "bg-muted text-muted-foreground",
+                            )}
+                          >
+                            {o.manager_validated ? "Aligned" : "Not aligned"}
+                          </Badge>
+                        </div>
+                        {o.description && (
+                          <p className="text-xs text-muted-foreground">{o.description}</p>
                         )}
-                      >
-                        {o.manager_validated ? "Aligned" : "Not aligned"}
-                      </Badge>
-                    </div>
-                    <div className="flex items-end gap-2 flex-wrap">
-                      <div className="grid gap-1">
-                        <Label className="text-[10px] uppercase text-muted-foreground">Weight %</Label>
-                        <Input
-                          className="h-8 w-20"
-                          type="number"
-                          defaultValue={o.weight}
-                          onBlur={(e) => updateObjective(o.id, { weight: Number(e.target.value) || 0 })}
-                        />
-                      </div>
-                      <div className="grid gap-1">
-                        <Label className="text-[10px] uppercase text-muted-foreground">Progress %</Label>
-                        <Input
-                          className="h-8 w-24"
-                          type="number"
-                          defaultValue={o.progress_percent}
-                          onBlur={(e) => updateObjective(o.id, { progress_percent: Number(e.target.value) || 0 })}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-[120px]">
-                        <Progress value={Math.min(100, o.progress_percent)} className="h-2" />
-                      </div>
-                      {canManage && (
-                        <Button
-                          size="sm"
-                          variant={o.manager_validated ? "outline" : "default"}
-                          onClick={() => updateObjective(o.id, { manager_validated: !o.manager_validated })}
-                        >
-                          {o.manager_validated ? <Undo2 className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" onClick={() => removeObjective(o.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                        <div className="flex items-end gap-2 flex-wrap">
+                          <div className="grid gap-1">
+                            <Label className="text-[10px] uppercase text-muted-foreground">Weight %</Label>
+                            <Input
+                              className="h-8 w-20"
+                              type="number"
+                              defaultValue={o.weight}
+                              onBlur={(e) => updateObjective(o.id, { weight: Number(e.target.value) || 0 })}
+                            />
+                          </div>
+                          <div className="grid gap-1">
+                            <Label className="text-[10px] uppercase text-muted-foreground">Progress %</Label>
+                            <Input
+                              className="h-8 w-24"
+                              type="number"
+                              defaultValue={o.progress_percent}
+                              onBlur={(e) => updateObjective(o.id, { progress_percent: Number(e.target.value) || 0 })}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-[120px]">
+                            <Progress value={Math.min(100, o.progress_percent)} className="h-2" />
+                          </div>
+                          {canManage && (
+                            <Button
+                              size="sm"
+                              variant={o.manager_validated ? "outline" : "default"}
+                              onClick={() => updateObjective(o.id, { manager_validated: !o.manager_validated })}
+                            >
+                              {o.manager_validated ? <Undo2 className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
+                            </Button>
+                          )}
+                          {!form.objectives_submitted_at && (
+                            <Button size="sm" variant="ghost" title="Edit objective" onClick={() => startEdit(o)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          <Button size="sm" variant="ghost" onClick={() => removeObjective(o.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
                 {objectives.length === 0 && (
