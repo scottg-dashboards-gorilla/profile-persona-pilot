@@ -234,6 +234,7 @@ export type PdrObjective = {
   sort_order: number;
   /** Manager's year-end comment for this objective category (optional). */
   manager_comment: string | null;
+  setting_manager_comment: string | null;
   midyear_employee_comment: string | null;
   midyear_manager_comment: string | null;
 };
