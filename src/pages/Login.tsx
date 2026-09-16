@@ -130,13 +130,60 @@ const Login = () => {
             </div>
             <h1 className="text-xl font-bold font-display text-foreground">Sign in</h1>
             <p className="text-sm text-muted-foreground">
-              Use your Datapath Microsoft 365 account to see your own review
+              Use your Datapath Microsoft 365 account, or your work email and password
             </p>
           </div>
 
-          <Button type="button" className="w-full" onClick={handleMicrosoft} disabled={loading}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleMicrosoft}
+            disabled={loading}
+          >
             {loading ? "Please wait…" : "Continue with Microsoft"}
           </Button>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <form onSubmit={handlePassword} className="space-y-3">
+            <Input
+              type="email"
+              autoComplete="username"
+              placeholder="Work email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            {!resetMode && (
+              <Input
+                type="password"
+                autoComplete="current-password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            )}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading
+                ? "Please wait…"
+                : resetMode
+                  ? "Send reset link"
+                  : "Sign in with email"}
+            </Button>
+            <button
+              type="button"
+              className="w-full text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setResetMode((v) => !v)}
+            >
+              {resetMode ? "Back to sign in" : "Forgot your password?"}
+            </button>
+          </form>
 
           {blocked && (
             <p className="text-xs text-center text-destructive">{blocked}</p>
