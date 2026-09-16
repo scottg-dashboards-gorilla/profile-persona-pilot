@@ -16,7 +16,7 @@ import Reviews from "./pages/perf/Reviews";
 import People from "./pages/perf/People";
 import EmployeeDetail from "./pages/perf/EmployeeDetail";
 import Cycles from "./pages/perf/Cycles";
-import Goals from "./pages/perf/Goals";
+import TaskTracker from "./pages/perf/TaskTracker";
 import Compensation from "./pages/perf/Compensation";
 import Calibration from "./pages/perf/Calibration";
 import OrgRollups from "./pages/perf/OrgRollups";
@@ -51,7 +51,7 @@ const App = () => (
             <Route path="/me" element={<MyReview />} />
             <Route path="/playbook" element={<Playbook />} />
             <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
-            <Route path="/goals" element={<Goals />} />
+            <Route path="/tasks" element={<TaskTracker />} />
             <Route path="/company" element={<RequireArea area="company"><CompanyPerformance /></RequireArea>} />
             <Route path="/compensation" element={<RequireArea area="compensation"><Compensation /></RequireArea>} />
             <Route path="/salary-history" element={<RequireArea area="salary"><SalaryHistory /></RequireArea>} />
