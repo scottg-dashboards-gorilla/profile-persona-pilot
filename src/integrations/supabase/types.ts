@@ -983,6 +983,8 @@ export type Database = {
           id: string
           manager_comment: string | null
           manager_validated: boolean
+          midyear_employee_comment: string | null
+          midyear_manager_comment: string | null
           progress_percent: number
           sort_order: number
           status: string
@@ -999,6 +1001,8 @@ export type Database = {
           id?: string
           manager_comment?: string | null
           manager_validated?: boolean
+          midyear_employee_comment?: string | null
+          midyear_manager_comment?: string | null
           progress_percent?: number
           sort_order?: number
           status?: string
@@ -1015,6 +1019,8 @@ export type Database = {
           id?: string
           manager_comment?: string | null
           manager_validated?: boolean
+          midyear_employee_comment?: string | null
+          midyear_manager_comment?: string | null
           progress_percent?: number
           sort_order?: number
           status?: string
