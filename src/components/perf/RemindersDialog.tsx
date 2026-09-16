@@ -326,7 +326,8 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
                     </Badge>
                     <span className="font-medium">{l.recipient_name ?? "—"}</span>
                     <span className="text-muted-foreground">
-                      {l.kind === "self" ? "self-assessment" : "360 feedback"} · due{" "}
+                      {KIND_LABEL[l.kind] ?? l.kind}
+                      {l.employee_name ? ` · ${l.employee_name}` : ""} · due{" "}
                       {format(parseISO(l.due_date), "MMM d")} · queued{" "}
                       {format(parseISO(l.created_at), "MMM d, h:mma")}
                     </span>
