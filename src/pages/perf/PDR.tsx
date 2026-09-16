@@ -109,7 +109,8 @@ export default function PDR() {
   const stageCounts = useMemo(() => {
     const counts: Record<PdrStage, number> = { objectives: 0, midyear: 0, year_end: 0, closed: 0 };
     forms.forEach((f) => {
-      counts[f.stage] = (counts[f.stage] ?? 0) + 1;
+      const key = f.stage === "closed" ? "year_end" : f.stage;
+      counts[key] = (counts[key] ?? 0) + 1;
     });
     return counts;
   }, [forms]);
