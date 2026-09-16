@@ -74,7 +74,7 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
       supabase
         .from("review_reminders")
         .select(
-          "id, review_id, contributor_id, kind, recipient_name, recipient_email, due_date, status, sent_at, created_at",
+          "id, review_id, contributor_id, kind, employee_name, recipient_name, recipient_email, due_date, status, sent_at, created_at",
         )
         .order("created_at", { ascending: false })
         .limit(100),
