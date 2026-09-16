@@ -128,6 +128,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [selfInput, setSelfInput] = useState("");
   const [managerComments, setManagerComments] = useState("");
   const [midyear, setMidyear] = useState("");
+  const [midyearSelf, setMidyearSelf] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCategory, setNewCategory] = useState<PdrCategory>("faster");
@@ -150,6 +151,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
+    setMidyearSelf(rec?.midyear_self_input ?? "");
     if (rec?.review_id) {
       const { data: rev } = await supabase
         .from("performance_reviews")
@@ -263,10 +265,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
             <section className="rounded-md border p-3 space-y-3">
               <header className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
-                  <div className="text-sm font-medium">1 · Objectives (Faster / Stronger / Better / L&D)</div>
+                  <div className="text-sm font-medium">1 · Objective setting (Faster / Stronger / Better / L&D)</div>
                   <p className="text-xs text-muted-foreground">
-                    Employee drafts; manager cascades from their own PDR and validates each one maps to a
-                    category — control C1.
+                    Employee input: draft and submit the objectives. Manager input: cascade from their own
+                    PDR and validate each one maps to a category — control C1.
                   </p>
                 </div>
                 <Badge className={c1 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}>
@@ -440,32 +442,89 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
               </div>
             </section>
 
-            {/* Stage 2 — mid-year */}
-            <section className="rounded-md border p-3 space-y-2">
-              <div className="text-sm font-medium">2 · Mid-year check-in</div>
-              <p className="text-xs text-muted-foreground">
-                Manager gives feedback and the employee charts progress. Target Jun–Jul.
-              </p>
-              <Textarea rows={3} value={midyear} onChange={(e) => setMidyear(e.target.value)}
-                placeholder="Mid-year feedback…" />
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground flex-1">
-                  {form.midyear_checkin_at
-                    ? `Checked in ${format(parseISO(form.midyear_checkin_at), "MMM d, yyyy")}`
-                    : "Not held yet"}
-                </span>
-                <Button size="sm" variant="outline" disabled={busy === "mid"}
-                  onClick={() => patch({ midyear_manager_feedback: midyear || null, midyear_checkin_at: form.midyear_checkin_at ?? now(), stage: form.stage === "objectives" ? form.stage : "midyear" }, "mid", "Mid-year saved")}>
-                  Save check-in
-                </Button>
+            {/* Stage 2 — mid-year review */}
+            <section className="rounded-md border p-3 space-y-4">
+              <header className="flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <div className="text-sm font-medium">2 · Mid-year review</div>
+                  <p className="text-xs text-muted-foreground">
+                    Employee gives their own mid-year update first, then the manager responds. Target Jun–Jul.
+                  </p>
+                </div>
+                <Badge
+                  className={
+                    form.midyear_manager_submitted_at
+                      ? "bg-emerald-100 text-emerald-800"
+                      : form.midyear_self_submitted_at
+                        ? "bg-amber-100 text-amber-900"
+                        : "bg-muted text-muted-foreground"
+                  }
+                >
+                  {form.midyear_manager_submitted_at
+                    ? "Complete"
+                    : form.midyear_self_submitted_at
+                      ? "Awaiting manager"
+                      : "Awaiting employee"}
+                </Badge>
+              </header>
+
+              <div className="grid gap-2">
+                <Label className="text-xs">Employee input — progress so far</Label>
+                <Textarea
+                  rows={4}
+                  value={midyearSelf}
+                  onChange={(e) => setMidyearSelf(e.target.value)}
+                  placeholder="Where are you against each objective, and what support do you need?"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground flex-1">
+                    {form.midyear_self_submitted_at
+                      ? `Submitted ${format(parseISO(form.midyear_self_submitted_at), "MMM d, yyyy")}`
+                      : "Not submitted yet"}
+                  </span>
+                  <Button size="sm" variant="outline" disabled={busy === "midself" || !midyearSelf.trim()}
+                    onClick={() => patch({ midyear_self_input: midyearSelf || null, midyear_self_submitted_at: now(), stage: form.stage === "objectives" ? "midyear" : form.stage }, "midself", "Mid-year input submitted")}>
+                    Submit mid-year input
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-2 border-t pt-3">
+                <Label className="text-xs">Manager input — mid-year feedback</Label>
+                {!form.midyear_self_submitted_at && (
+                  <p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">
+                    The employee hasn't given their mid-year update yet — read it first where possible.
+                  </p>
+                )}
+                {form.midyear_self_submitted_at && form.midyear_self_input && (
+                  <div className="rounded-md bg-muted/60 p-2">
+                    <div className="text-[10px] uppercase text-muted-foreground">Employee said</div>
+                    <p className="text-xs whitespace-pre-wrap">{form.midyear_self_input}</p>
+                  </div>
+                )}
+                <Textarea rows={3} disabled={!canManage} value={midyear} onChange={(e) => setMidyear(e.target.value)}
+                  placeholder="Mid-year feedback…" />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground flex-1">
+                    {form.midyear_checkin_at
+                      ? `Checked in ${format(parseISO(form.midyear_checkin_at), "MMM d, yyyy")}`
+                      : "Not held yet"}
+                  </span>
+                  {canManage && (
+                    <Button size="sm" variant="outline" disabled={busy === "mid" || !midyear.trim()}
+                      onClick={() => patch({ midyear_manager_feedback: midyear || null, midyear_checkin_at: form.midyear_checkin_at ?? now(), midyear_manager_submitted_at: now(), stage: form.stage === "objectives" ? form.stage : "midyear" }, "mid", "Mid-year feedback saved")}>
+                      Submit feedback
+                    </Button>
+                  )}
+                </div>
               </div>
             </section>
 
-            {/* Stage 3a — employee input */}
+            {/* Stage 3 — year-end review · employee input */}
             <section className="rounded-md border p-3 space-y-3">
               <header className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
-                  <div className="text-sm font-medium">3 · Employee input</div>
+                  <div className="text-sm font-medium">3 · Year-end review — employee input</div>
                   <p className="text-xs text-muted-foreground">
                     Written by the employee. Accomplishments against the objectives and Datapath core
                     values. Due Dec 01–15.
@@ -503,11 +562,11 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
               </div>
             </section>
 
-            {/* Stage 3b — manager input */}
+            {/* Stage 3 — year-end review · manager input */}
             <section className="rounded-md border p-3 space-y-3">
               <header className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
-                  <div className="text-sm font-medium">4 · Manager input</div>
+                  <div className="text-sm font-medium">3 · Year-end review — manager input</div>
                   <p className="text-xs text-muted-foreground">
                     Written by the manager after reading the employee input. Comments per objective are
                     optional; the overall summary is required. Dec 02 – Jan 06.
@@ -594,7 +653,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
 
             {/* Stage 4 — score */}
             <section className="rounded-md border p-3 space-y-2">
-              <div className="text-sm font-medium">5 · Year-end PDR score</div>
+              <div className="text-sm font-medium">Year-end PDR score</div>
               <p className="text-xs text-muted-foreground">
                 Suggested from average objective progress: <strong>{suggested ?? "—"}</strong> / 5. HR
                 cross-checks before the year is closed.

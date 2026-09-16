@@ -21,7 +21,7 @@ import {
 import { Loader2, Plus, Search, Workflow } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PDR_STAGES, pdrProgress, type PdrForm, type PdrObjective, type PdrStage } from "@/lib/pmp";
+import { PDR_STAGES, pdrProgress, pdrStageLabel, type PdrForm, type PdrObjective, type PdrStage } from "@/lib/pmp";
 import { ReviewTimeline } from "@/components/perf/ReviewTimeline";
 import { PdrDialog } from "@/components/perf/PdrDialog";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -109,7 +109,8 @@ export default function PDR() {
   const stageCounts = useMemo(() => {
     const counts: Record<PdrStage, number> = { objectives: 0, midyear: 0, year_end: 0, closed: 0 };
     forms.forEach((f) => {
-      counts[f.stage] = (counts[f.stage] ?? 0) + 1;
+      const key = f.stage === "closed" ? "year_end" : f.stage;
+      counts[key] = (counts[key] ?? 0) + 1;
     });
     return counts;
   }, [forms]);
@@ -145,8 +146,8 @@ export default function PDR() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Development reviews (PDR)</h1>
           <p className="text-sm text-muted-foreground">
-            The annual PMP cycle: objectives in Jan–Feb, mid-year check-in around Jun–Jul, year-end input
-            and score in Dec–Jan. The score feeds the person's pay review cycle.
+            Three reviews a year — objective setting, mid-year and year-end — each with employee input
+            and manager input. The year-end score feeds the person's pay review cycle.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {isAdminHr
@@ -168,7 +169,7 @@ export default function PDR() {
         </div>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {PDR_STAGES.map((s, i) => (
           <Card key={s.id}>
             <CardHeader className="pb-2">
@@ -246,7 +247,7 @@ export default function PDR() {
                       <TableCell className="font-medium">{f.employee_name}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-[11px]">
-                          {PDR_STAGES.find((s) => s.id === f.stage)?.label ?? f.stage}
+                          {pdrStageLabel(f.stage)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
@@ -258,10 +259,11 @@ export default function PDR() {
                             stages={[
                               { key: "kickoff", label: "Objectives submitted", short: "1", at: f.objectives_submitted_at },
                               { key: "self", label: "Objectives aligned (C1)", short: "2", at: f.objectives_approved_at },
-                              { key: "360", label: "Mid-year check-in", short: "3", at: f.midyear_checkin_at },
-                              { key: "completion", label: "Year-end self input", short: "4", at: f.self_input_submitted_at },
-                              { key: "comp", label: "Manager comments", short: "5", at: f.comments_finalized_at },
-                              { key: "release", label: "Score recorded", short: "6", at: f.score_recorded_at },
+                              { key: "360", label: "Mid-year self input", short: "3", at: f.midyear_self_submitted_at },
+                              { key: "ack", label: "Mid-year manager feedback", short: "4", at: f.midyear_manager_submitted_at ?? f.midyear_checkin_at },
+                              { key: "completion", label: "Year-end self input", short: "5", at: f.self_input_submitted_at },
+                              { key: "comp", label: "Year-end manager input", short: "6", at: f.comments_finalized_at },
+                              { key: "release", label: "Score recorded", short: "7", at: f.score_recorded_at },
                             ]}
                           />
                           <span className="text-xs text-muted-foreground">{p.done}/{p.total}</span>

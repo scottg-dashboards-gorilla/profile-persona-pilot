@@ -184,12 +184,16 @@ export const PDR_CATEGORIES: { id: PdrCategory; label: string; blurb: string }[]
 
 export type PdrStage = "objectives" | "midyear" | "year_end" | "closed";
 
-export const PDR_STAGES: { id: PdrStage; label: string; owner: "Employee" | "Manager" | "HR"; sla: string }[] = [
-  { id: "objectives", label: "Objectives drafted & aligned", owner: "Employee", sla: "SLA: Jan & Feb" },
-  { id: "midyear", label: "Mid-year check-in", owner: "Manager", sla: "Target: by Jun & Jul" },
-  { id: "year_end", label: "Year-end self input & manager comments", owner: "Employee", sla: "Self input Dec 01–15 · comments Dec 02 – Jan 06" },
-  { id: "closed", label: "Year-end PDR score recorded", owner: "HR", sla: "Year closed · conversations Feb 01–15" },
+export const PDR_STAGES: { id: PdrStage; label: string; owner: "Employee & Manager"; sla: string }[] = [
+  { id: "objectives", label: "Objective setting", owner: "Employee & Manager", sla: "Self input, then manager alignment · Jan–Feb" },
+  { id: "midyear", label: "Mid-year review", owner: "Employee & Manager", sla: "Self input, then manager feedback · Jun–Jul" },
+  { id: "year_end", label: "Year-end review", owner: "Employee & Manager", sla: "Self input Dec 01–15 · manager input Dec 02 – Jan 06" },
 ];
+
+export function pdrStageLabel(stage: string | null | undefined) {
+  if (stage === "closed") return "Year-end review · closed";
+  return PDR_STAGES.find((s) => s.id === stage)?.label ?? String(stage ?? "—");
+}
 
 export type PdrForm = {
   id: string;
@@ -204,6 +208,9 @@ export type PdrForm = {
   aspiration_conversation_at: string | null;
   midyear_checkin_at: string | null;
   midyear_manager_feedback: string | null;
+  midyear_self_input: string | null;
+  midyear_self_submitted_at: string | null;
+  midyear_manager_submitted_at: string | null;
   employee_self_input: string | null;
   self_input_submitted_at: string | null;
   manager_comments: string | null;
