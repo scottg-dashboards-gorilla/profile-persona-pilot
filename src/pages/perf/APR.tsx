@@ -734,6 +734,16 @@ function AnniversaryPanel({
                               ? "Today"
                               : `in ${d.daysUntil} days`}
                         </div>
+                        {(() => {
+                          const s = payReviewSchedule(d.date);
+                          return (
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              Entry {format(s.managerEntryOpens, "d MMM")} · HR by{" "}
+                              {format(s.hrSignOffBy, "d MMM")} · connect &amp; share{" "}
+                              {format(s.connectAndShareBy, "d MMM")}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-sm">{d.years}</TableCell>
                       <TableCell>
