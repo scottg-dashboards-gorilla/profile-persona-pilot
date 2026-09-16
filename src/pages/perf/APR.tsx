@@ -415,13 +415,30 @@ export default function APR() {
                                     comp_approval_status: "approved",
                                     comp_approved_at: now,
                                     status: "completed",
-                                    released_at: now,
-                                  }, "Approved by HR and shared with the employee");
+                                  }, "Signed off by HR — the manager can hold the connect now");
                                 }}>
-                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> HR approve &amp; share
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> HR sign-off
                               </Button>
                             )}
-                            {r.apr_stage === "closed" && (
+                            {r.apr_stage === "closed" && !r.connect_held_at && (
+                              <Button size="sm" variant="secondary" disabled={busy === r.id}
+                                onClick={() =>
+                                  advance(r, "closed", { connect_held_at: new Date().toISOString() },
+                                    "Connect logged — you can share the outcome now")
+                                }>
+                                <Handshake className="h-3.5 w-3.5 mr-1" /> Log connect
+                              </Button>
+                            )}
+                            {r.apr_stage === "closed" && r.connect_held_at && !r.released_at && (
+                              <Button size="sm" disabled={busy === r.id}
+                                onClick={() =>
+                                  advance(r, "closed", { released_at: new Date().toISOString() },
+                                    "Outcome shared with the employee")
+                                }>
+                                <ArrowRight className="h-3.5 w-3.5 mr-1" /> Share outcome
+                              </Button>
+                            )}
+                            {r.apr_stage === "closed" && r.released_at && (
                               <span className="text-xs text-emerald-700">Shared with the employee</span>
                             )}
                           </div>
