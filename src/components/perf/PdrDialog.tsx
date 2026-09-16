@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, Loader2, Plus, ShieldCheck, Trash2, Undo2 } from "lucide-react";
+import { Check, Loader2, Pencil, Plus, ShieldCheck, Trash2, Undo2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
@@ -63,6 +63,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [midyear, setMidyear] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState<PdrCategory>("faster");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCategory, setEditCategory] = useState<PdrCategory>("faster");
+  const [editDescription, setEditDescription] = useState("");
   const [payReview, setPayReview] = useState<PayReviewLink | null>(null);
 
   const load = useCallback(async () => {
