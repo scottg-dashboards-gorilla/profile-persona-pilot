@@ -55,6 +55,8 @@ type ReviewState = {
   assessment_attempt_id: string | null;
   kickoff_at: string | null;
   completed_date: string | null;
+  reopened_at: string | null;
+  reopened_reason: string | null;
   pay_pushback_status: string;
   pay_pushback_raised_at: string | null;
   pay_pushback_employee_note: string | null;
@@ -94,7 +96,7 @@ export function ReviewFlowDialog({
       supabase
         .from("performance_reviews")
         .select(
-          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at",
+          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date, reopened_at, reopened_reason, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at",
         )
         .eq("id", reviewId)
         .maybeSingle(),
@@ -242,7 +244,7 @@ export function ReviewFlowDialog({
           title: "Manager completes the review",
           detail:
             review.status === "completed"
-              ? `Rated "${review.overall_rating ?? "—"}". Comp and action items recorded.`
+              ? `Rated "${review.overall_rating ?? "—"}". Comp and action items recorded.${review.reopened_reason ? ` Reopened ${review.reopened_at ? format(parseISO(review.reopened_at), "MMM d") : ""}: "${review.reopened_reason}"` : ""}`
               : "Set the rating, comp proposal, promotion and follow-up action items.",
           done: review.status === "completed",
           action: (
@@ -318,7 +320,9 @@ export function ReviewFlowDialog({
           title: "Share the outcome with the employee",
           detail: review.released_at
             ? `Shared ${format(parseISO(review.released_at), "MMM d, h:mma")} — they can see it on their review page.`
-            : "Until you share it, the employee sees nothing of the rating or pay change.",
+            : review.reopened_at
+              ? `Outcome was pulled back ${format(parseISO(review.reopened_at), "MMM d")} — reason logged. HR must re-approve, then share again.`
+              : "Until you share it, the employee sees nothing of the rating or pay change.",
           done: !!review.released_at,
           action: review.released_at ? null : (
             <Button
