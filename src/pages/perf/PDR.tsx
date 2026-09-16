@@ -148,6 +148,13 @@ export default function PDR() {
             The annual PMP cycle: objectives in Jan–Feb, mid-year check-in around Jun–Jul, year-end input
             and score in Dec–Jan. The score feeds the person's pay review cycle.
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isAdminHr
+              ? "You can see every employee's development review."
+              : isManager
+                ? "You can see your own development review and those of the people you manage."
+                : "You can see your own development review only."}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
