@@ -224,7 +224,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                               <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 {PDR_CATEGORIES.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                                  <SelectItem key={c.id} value={c.id}>
+                            <span className="font-medium">{c.label}</span>
+                            <span className="block text-[11px] text-muted-foreground whitespace-normal">{c.blurb}</span>
+                          </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -322,7 +325,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {PDR_CATEGORIES.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                        <SelectItem key={c.id} value={c.id}>
+                            <span className="font-medium">{c.label}</span>
+                            <span className="block text-[11px] text-muted-foreground whitespace-normal">{c.blurb}</span>
+                          </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -523,7 +529,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
             <section className="rounded-md border p-3 space-y-2">
               <div className="text-sm font-medium">5 · Year-end PDR score</div>
               <p className="text-xs text-muted-foreground">
-                Suggested from weighted objective progress: <strong>{suggested ?? "—"}</strong> / 5. HR
+                Suggested from average objective progress: <strong>{suggested ?? "—"}</strong> / 5. HR
                 cross-checks before the year is closed.
               </p>
 
