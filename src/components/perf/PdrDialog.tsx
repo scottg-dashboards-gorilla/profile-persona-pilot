@@ -129,6 +129,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [managerComments, setManagerComments] = useState("");
   const [midyear, setMidyear] = useState("");
   const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
   const [newCategory, setNewCategory] = useState<PdrCategory>("faster");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -181,12 +182,13 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   }
 
   async function addObjective() {
-    if (!form || !newTitle.trim()) return;
+    if (!form || !newTitle.trim() || !newDescription.trim()) return;
     setBusy("add");
     const { error } = await supabase.from("pdr_objectives").insert({
       form_id: form.id,
       category: newCategory,
       title: newTitle.trim(),
+      description: newDescription.trim(),
       sort_order: objectives.length,
     });
     setBusy(null);
@@ -195,6 +197,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       return;
     }
     setNewTitle("");
+    setNewDescription("");
     await load();
   }
 
@@ -215,12 +218,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   }
 
   async function saveEdit() {
-    if (!editingId || !editTitle.trim()) return;
+    if (!editingId || !editTitle.trim() || !editDescription.trim()) return;
     setBusy("edit");
     await updateObjective(editingId, {
       title: editTitle.trim(),
       category: editCategory,
-      description: editDescription.trim() || null,
+      description: editDescription.trim(),
     });
     setBusy(null);
     setEditingId(null);
@@ -287,7 +290,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           </div>
                         </div>
                         <div className="grid gap-1">
-                          <Label className="text-[10px] uppercase text-muted-foreground">Detail (optional)</Label>
+                          <Label className="text-[10px] uppercase text-muted-foreground">Description *</Label>
                           <Textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
@@ -299,7 +302,11 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
                             <X className="h-3.5 w-3.5 mr-1" /> Cancel
                           </Button>
-                          <Button size="sm" disabled={busy === "edit" || !editTitle.trim()} onClick={saveEdit}>
+                          <Button
+                            size="sm"
+                            disabled={busy === "edit" || !editTitle.trim() || !editDescription.trim()}
+                            onClick={saveEdit}
+                          >
                             {busy === "edit" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Check className="h-3.5 w-3.5 mr-1" />}
                             Save
                           </Button>
@@ -373,12 +380,21 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     <CategoryPicker value={newCategory} onChange={(v) => setNewCategory(v)} />
                 </div>
                 <div className="grid gap-1 flex-1 min-w-[200px]">
-                  <Label className="text-[10px] uppercase text-muted-foreground">New objective</Label>
+                  <Label className="text-[10px] uppercase text-muted-foreground">Objective name *</Label>
                   <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="What will they deliver?" />
                 </div>
-                <Button onClick={addObjective} disabled={busy === "add" || !newTitle.trim()}>
+                <Button onClick={addObjective} disabled={busy === "add" || !newTitle.trim() || !newDescription.trim()}>
                   <Plus className="h-4 w-4 mr-1" /> Add
                 </Button>
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-[10px] uppercase text-muted-foreground">Description *</Label>
+                <Textarea
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  rows={2}
+                  placeholder="How will it be measured?"
+                />
               </div>
 
               <div className="flex items-center gap-2 flex-wrap pt-1 border-t">
@@ -391,7 +407,19 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     : ""}
                 </span>
                 {!form?.objectives_submitted_at && (
-                  <Button size="sm" variant="outline" disabled={busy === "sub" || objectives.length === 0}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={
+                      busy === "sub" ||
+                      objectives.length === 0 ||
+                      objectives.some((o) => !o.title.trim() || !o.description?.trim())
+                    }
+                    title={
+                      objectives.some((o) => !o.description?.trim())
+                        ? "Every objective needs a name and a description first"
+                        : undefined
+                    }
                     onClick={() => patch({ objectives_submitted_at: now() }, "sub", "Objectives submitted")}>
                     Submit objectives
                   </Button>
