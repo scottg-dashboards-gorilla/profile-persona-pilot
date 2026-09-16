@@ -373,13 +373,21 @@ export function ReviewFlowDialog({
           action: review.released_at ? null : (
             <Button
               size="sm"
-              disabled={busy === "release" || review.status !== "completed" || (compProposed && !compApproved)}
+              disabled={
+                busy === "release" ||
+                review.status !== "completed" ||
+                (compProposed && !compApproved) ||
+                !review.connect_held_at ||
+                !review.connect_note
+              }
               title={
                 review.status !== "completed"
                   ? "Complete the review first"
                   : compProposed && !compApproved
                     ? "HR needs to approve the pay change first"
-                    : undefined
+                    : !review.connect_held_at || !review.connect_note
+                      ? "Log the connect conversation and note first"
+                      : undefined
               }
               onClick={() => patch({ released_at: new Date().toISOString() }, "release", "Outcome shared")}
             >
