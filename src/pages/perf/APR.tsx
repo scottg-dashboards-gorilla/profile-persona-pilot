@@ -123,6 +123,27 @@ export default function APR() {
     await load();
   }
 
+  async function exportPayChanges() {
+    setExporting(true);
+    const { data, error } = await supabase
+      .from("performance_reviews")
+      .select(EXPORT_SELECT)
+      .eq("fiscal_year", year)
+      .order("employee_name");
+    setExporting(false);
+    if (error) {
+      toast({ title: "Couldn't build the file", description: error.message, variant: "destructive" });
+      return;
+    }
+    const list = (data ?? []) as unknown as ExportRow[];
+    if (list.length === 0) {
+      toast({ title: "Nothing to export", description: `No pay entries dated in FY${year}.` });
+      return;
+    }
+    downloadCsv(`datapath-pay-changes-FY${year}.csv`, buildPayChangeCsv(list, year));
+    toast({ title: "Pay change file downloaded", description: `${list.length} people · FY${year}` });
+  }
+
   return (
     <div className="space-y-5">
       <header className="flex items-start justify-between gap-3 flex-wrap">
@@ -133,15 +154,28 @@ export default function APR() {
             employee. Over-budget entries route to an exception first.
           </p>
         </div>
-        <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {[thisYear + 1, thisYear, thisYear - 1, thisYear - 2].map((y) => (
-              <SelectItem key={y} value={String(y)}>FY{y}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          {isHr && (
+            <Button variant="outline" size="sm" disabled={exporting} onClick={exportPayChanges}>
+              {exporting ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-1" />
+              )}
+              Export pay changes
+            </Button>
+          )}
+          <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {[thisYear + 1, thisYear, thisYear - 1, thisYear - 2].map((y) => (
+                <SelectItem key={y} value={String(y)}>FY{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </header>
+
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Merit planned" value={formatMoney(totals.merit)} icon={Wallet} />
