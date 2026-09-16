@@ -53,6 +53,18 @@ type Reminder = {
   created_at: string;
 };
 
+type SendLogRow = {
+  id: string;
+  employee_name: string | null;
+  kind: string;
+  recipient_name: string | null;
+  recipient_email: string | null;
+  due_date: string | null;
+  status: string;
+  error: string | null;
+  attempted_at: string;
+};
+
 const KIND_LABEL: Record<string, string> = {
   self: "self-assessment",
   contributor: "360 feedback",
