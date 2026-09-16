@@ -407,7 +407,19 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     : ""}
                 </span>
                 {!form?.objectives_submitted_at && (
-                  <Button size="sm" variant="outline" disabled={busy === "sub" || objectives.length === 0}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={
+                      busy === "sub" ||
+                      objectives.length === 0 ||
+                      objectives.some((o) => !o.title.trim() || !o.description?.trim())
+                    }
+                    title={
+                      objectives.some((o) => !o.description?.trim())
+                        ? "Every objective needs a name and a description first"
+                        : undefined
+                    }
                     onClick={() => patch({ objectives_submitted_at: now() }, "sub", "Objectives submitted")}>
                     Submit objectives
                   </Button>
