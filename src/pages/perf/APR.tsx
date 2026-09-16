@@ -167,6 +167,8 @@ export default function APR() {
   const [busy, setBusy] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [open, setOpen] = useState<AprReview | null>(null);
+  const [connectRow, setConnectRow] = useState<Row | null>(null);
+  const [connectNote, setConnectNote] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
