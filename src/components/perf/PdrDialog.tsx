@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronsUpDown, Info, Loader2, Pencil, Plus, ShieldCheck, Trash2, Undo2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,8 +129,8 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [managerComments, setManagerComments] = useState("");
   const [midyear, setMidyear] = useState("");
   const [midyearSelf, setMidyearSelf] = useState("");
-  /** Mid-year employee progress + comment, keyed by objective id. */
-  const [midObj, setMidObj] = useState<Record<string, { progress: string; comment: string }>>({});
+  /** Mid-year employee comment, keyed by objective id. */
+  const [midObj, setMidObj] = useState<Record<string, string>>({});
   /** Mid-year manager comment, keyed by objective id. */
   const [midMgr, setMidMgr] = useState<Record<string, string>>({});
   const [newTitle, setNewTitle] = useState("");
@@ -153,14 +153,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setForm(rec);
     const objList = (objs ?? []) as PdrObjective[];
     setObjectives(objList);
-    setMidObj(
-      Object.fromEntries(
-        objList.map((o) => [
-          o.id,
-          { progress: String(o.progress_percent ?? 0), comment: o.midyear_employee_comment ?? "" },
-        ]),
-      ),
-    );
+    setMidObj(Object.fromEntries(objList.map((o) => [o.id, o.midyear_employee_comment ?? ""])));
     setMidMgr(Object.fromEntries(objList.map((o) => [o.id, o.midyear_manager_comment ?? ""])));
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
@@ -226,17 +219,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     await load();
   }
 
-  /** Saves each objective's mid-year progress and comment, then the overall employee input. */
+  /** Saves each objective's mid-year comment, then the overall employee input. */
   async function submitMidyearSelf() {
     if (!form) return;
     setBusy("midself");
     for (const o of objectives) {
-      const row = midObj[o.id];
-      if (!row) continue;
-      const pct = Math.max(0, Math.min(100, Number(row.progress) || 0));
+      const comment = midObj[o.id];
+      if (comment == null) continue;
       const { error } = await supabase
         .from("pdr_objectives")
-        .update({ progress_percent: pct, midyear_employee_comment: row.comment.trim() || null })
+        .update({ midyear_employee_comment: comment.trim() || null })
         .eq("id", o.id);
       if (error) {
         setBusy(null);
@@ -410,19 +402,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         {o.description && (
                           <p className="text-xs text-muted-foreground">{o.description}</p>
                         )}
-                        <div className="flex items-end gap-2 flex-wrap">
-                          <div className="grid gap-1">
-                            <Label className="text-[10px] uppercase text-muted-foreground">Progress %</Label>
-                            <Input
-                              className="h-8 w-24"
-                              type="number"
-                              defaultValue={o.progress_percent}
-                              onBlur={(e) => updateObjective(o.id, { progress_percent: Number(e.target.value) || 0 })}
-                            />
-                          </div>
-                          <div className="flex-1 min-w-[120px]">
-                            <Progress value={Math.min(100, o.progress_percent)} className="h-2" />
-                          </div>
+                        <div className="flex items-center gap-2 flex-wrap">
                           {canManage && (
                             <Button
                               size="sm"
@@ -554,38 +534,20 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                   <div className="space-y-2">
                     {objectives.map((o) => {
                       const cat = PDR_CATEGORIES.find((c) => c.id === o.category);
-                      const row = midObj[o.id] ?? {
-                        progress: String(o.progress_percent ?? 0),
-                        comment: o.midyear_employee_comment ?? "",
-                      };
+                      const comment = midObj[o.id] ?? o.midyear_employee_comment ?? "";
                       return (
                         <div key={o.id} className="rounded-md border p-2 space-y-2">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <div className="text-xs font-medium">{o.title}</div>
-                              <div className="text-[10px] uppercase text-muted-foreground">
-                                {cat?.label ?? o.category}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Input
-                                className="h-7 w-16 text-xs"
-                                type="number"
-                                min={0}
-                                max={100}
-                                value={row.progress}
-                                onChange={(e) =>
-                                  setMidObj((m) => ({ ...m, [o.id]: { ...row, progress: e.target.value } }))
-                                }
-                              />
-                              <span className="text-xs text-muted-foreground">%</span>
+                          <div>
+                            <div className="text-xs font-medium">{o.title}</div>
+                            <div className="text-[10px] uppercase text-muted-foreground">
+                              {cat?.label ?? o.category}
                             </div>
                           </div>
                           <Textarea
                             rows={2}
-                            value={row.comment}
+                            value={comment}
                             onChange={(e) =>
-                              setMidObj((m) => ({ ...m, [o.id]: { ...row, comment: e.target.value } }))
+                              setMidObj((m) => ({ ...m, [o.id]: e.target.value }))
                             }
                             placeholder="Progress made, what's working, what's in the way…"
                           />
@@ -640,7 +602,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           <div className="flex items-center justify-between gap-2">
                             <div className="text-xs font-medium">{o.title}</div>
                             <Badge variant="secondary" className="text-[10px]">
-                              {cat?.label ?? o.category} · {o.progress_percent ?? 0}%
+                              {cat?.label ?? o.category}
                             </Badge>
                           </div>
                           {o.midyear_employee_comment && (
