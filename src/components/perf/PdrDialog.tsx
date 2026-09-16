@@ -151,6 +151,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
+    setMidyearSelf(rec?.midyear_self_input ?? "");
     if (rec?.review_id) {
       const { data: rev } = await supabase
         .from("performance_reviews")
