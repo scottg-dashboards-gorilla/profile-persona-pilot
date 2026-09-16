@@ -298,7 +298,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                               {o.manager_validated ? <Undo2 className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
                             </Button>
                           )}
-                          {!form.objectives_submitted_at && (
+                          {!form?.objectives_submitted_at && (
                             <Button size="sm" variant="ghost" title="Edit objective" onClick={() => startEdit(o)}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
@@ -346,7 +346,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     ? ` · aligned ${format(parseISO(form.objectives_approved_at), "MMM d, yyyy")}`
                     : ""}
                 </span>
-                {!form.objectives_submitted_at && (
+                {!form?.objectives_submitted_at && (
                   <Button size="sm" variant="outline" disabled={busy === "sub" || objectives.length === 0}
                     onClick={() => patch({ objectives_submitted_at: now() }, "sub", "Objectives submitted")}>
                     Submit objectives
