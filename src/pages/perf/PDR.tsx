@@ -95,7 +95,7 @@ export default function PDR() {
       setObjectives({});
     }
     setLoading(false);
-  }, [year]);
+  }, [year, isAdminHr, isManager]);
 
   useEffect(() => {
     load();
