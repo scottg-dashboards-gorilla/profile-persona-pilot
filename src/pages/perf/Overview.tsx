@@ -50,6 +50,14 @@ type CycleRow = {
   review_types: string[] | null;
 };
 
+type PayYear = {
+  year: string;
+  avgSalary: number | null;
+  avgIncreasePct: number | null;
+  peopleWithIncrease: number;
+  peoplePaid: number;
+};
+
 type Attention = {
   key: string;
   count: number;
