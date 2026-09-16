@@ -64,6 +64,9 @@ export type ReviewRow = {
   manager_review_sent_at: string | null;
   aggregation_method?: string | null;
   assessment_attempt_id?: string | null;
+  released_at?: string | null;
+  reopened_at?: string | null;
+  reopened_reason?: string | null;
 };
 
 type ContribRow = {
@@ -104,6 +107,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [promotion, setPromotion] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [reopenReason, setReopenReason] = useState("");
 
   const scoreValue = scoreOverride ?? scoreFromLegacy(rating) ?? 3;
 
@@ -118,6 +122,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     setPromotion(review.promotion ?? false);
     setNewTitle(review.new_title ?? "");
     setNotes(review.notes ?? "");
+    setReopenReason(review.reopened_reason ?? "");
   }, [review]);
 
   useEffect(() => {
@@ -183,6 +188,15 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
       });
       return;
     }
+    const wasShared = !!review.released_at;
+    if (wasShared && !reopenReason.trim()) {
+      toast({
+        title: "Reason required",
+        description: `${review.employee_name} has already seen the shared outcome. Explain what changed before saving.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setSaving(true);
     const selected_contributor_versions = contribs.reduce<Record<string, string>>((acc, c) => {
       if (c.current_version_id) acc[c.id] = c.current_version_id;
@@ -204,6 +218,19 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         aggregation_method: method,
         selected_contributor_versions,
         assessment_attempt_id: currentAttempt.id,
+        ...(wasShared
+          ? {
+              // Outcome was already visible to the employee — pull it back,
+              // clear their acknowledgement, and force fresh HR sign-off.
+              released_at: null,
+              employee_ack_at: null,
+              employee_ack_comment: null,
+              comp_approval_status: "not_required",
+              comp_approved_at: null,
+              reopened_at: new Date().toISOString(),
+              reopened_reason: reopenReason.trim(),
+            }
+          : {}),
       })
       .eq("id", review.id);
     setSaving(false);
@@ -369,17 +396,45 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
               placeholder="Summary, themes, next-cycle focus areas…"
             />
           </div>
+          {wasShared && (
+            <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                <div className="grid gap-2 w-full">
+                  <p className="text-amber-900">
+                    This outcome was already shared with {review.employee_name} on{" "}
+                    {format(parseISO(review.released_at!), "MMM d, yyyy")}. Saving will pull it back
+                    from their page, clear their acknowledgement, and send the new numbers back to HR
+                    for fresh sign-off before it can be shared again. The reason is recorded on the
+                    review's history.
+                  </p>
+                  <Textarea
+                    rows={3}
+                    value={reopenReason}
+                    onChange={(e) => setReopenReason(e.target.value)}
+                    placeholder="Why is the outcome changing? (required — e.g. corrected rating after calibration)"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
           <Button
             onClick={handleSave}
-            disabled={saving || !currentAttempt}
-            title={!currentAttempt ? "An assessment attempt is required for this review" : undefined}
+            disabled={saving || !currentAttempt || (wasShared && !reopenReason.trim())}
+            title={
+              !currentAttempt
+                ? "An assessment attempt is required for this review"
+                : wasShared && !reopenReason.trim()
+                  ? "Explain why the shared outcome is changing"
+                  : undefined
+            }
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-            Mark complete
+            {wasShared ? "Save & pull back outcome" : "Mark complete"}
           </Button>
         </DialogFooter>
       </DialogContent>
