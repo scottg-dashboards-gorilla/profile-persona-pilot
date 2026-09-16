@@ -93,7 +93,7 @@ export default function Overview() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
-  const [empNames, setEmpNames] = useState<Record<string, string>>({});
+  
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [cycles, setCycles] = useState<CycleRow[]>([]);
   const [headcount, setHeadcount] = useState(0);
@@ -110,15 +110,6 @@ export default function Overview() {
         )
         .order("taken_at", { ascending: false });
       setAttempts((a ?? []) as AttemptRow[]);
-      const ids = Array.from(new Set((a ?? []).map((x: any) => x.employee_uuid)));
-      if (ids.length) {
-        const { data: emps } = await supabase.from("employees").select("uuid,first_name,last_name").in("uuid", ids);
-        const m: Record<string, string> = {};
-        (emps ?? []).forEach((e: any) => {
-          m[e.uuid] = `${e.first_name ?? ""} ${e.last_name ?? ""}`.trim() || e.uuid;
-        });
-        setEmpNames(m);
-      }
     })();
   }, []);
 
