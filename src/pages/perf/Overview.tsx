@@ -8,7 +8,15 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { format, differenceInDays, parseISO, isAfter, subMonths, startOfYear } from "date-fns";
+import {
+  format,
+  differenceInDays,
+  parseISO,
+  isAfter,
+  subMonths,
+  startOfYear,
+  formatDistanceToNow,
+} from "date-fns";
 import { formatCompDelta, ratingLabel } from "@/data/mockEmployees";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { cn } from "@/lib/utils";
