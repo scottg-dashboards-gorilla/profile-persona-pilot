@@ -493,6 +493,12 @@ export default function Playbook() {
                 </div>
               </div>
             ))}
+            <p className="text-xs text-muted-foreground border-t pt-2">
+              Timing is per person, worked back from their start-date anniversary: manager entry
+              3 weeks before, HR sign-off by 2 weeks before, then the manager's connect conversation
+              and the outcome shared 1 week before. The change takes effect on the anniversary, and
+              nothing is shared with the employee until the connect has been held and logged.
+            </p>
           </CardContent>
         </Card>
       </div>

@@ -24,6 +24,7 @@ import {
   BadgeCheck,
   CheckCircle2,
   Download,
+  Handshake,
   Loader2,
   ShieldCheck,
   Wallet,
@@ -37,6 +38,7 @@ import {
   PAY_REVIEW_STATUS_LABEL,
   icAverage,
   payReviewDue,
+  payReviewSchedule,
   ratingMeta,
   type AprStage,
 } from "@/lib/pmp";
@@ -49,12 +51,15 @@ import { cn } from "@/lib/utils";
 const thisYear = new Date().getFullYear();
 
 const SELECT =
-  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at";
+  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, released_at";
 
 type Row = AprReview & {
   hr_finalized_at: string | null;
   coo_finance_approved_at: string | null;
   payroll_submitted_at: string | null;
+  comp_approval_status: string | null;
+  connect_held_at: string | null;
+  released_at: string | null;
 };
 
 const EXPORT_SELECT =
@@ -412,13 +417,30 @@ export default function APR() {
                                     comp_approval_status: "approved",
                                     comp_approved_at: now,
                                     status: "completed",
-                                    released_at: now,
-                                  }, "Approved by HR and shared with the employee");
+                                  }, "Signed off by HR — the manager can hold the connect now");
                                 }}>
-                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> HR approve &amp; share
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> HR sign-off
                               </Button>
                             )}
-                            {r.apr_stage === "closed" && (
+                            {r.apr_stage === "closed" && !r.connect_held_at && (
+                              <Button size="sm" variant="secondary" disabled={busy === r.id}
+                                onClick={() =>
+                                  advance(r, "closed", { connect_held_at: new Date().toISOString() },
+                                    "Connect logged — you can share the outcome now")
+                                }>
+                                <Handshake className="h-3.5 w-3.5 mr-1" /> Log connect
+                              </Button>
+                            )}
+                            {r.apr_stage === "closed" && r.connect_held_at && !r.released_at && (
+                              <Button size="sm" disabled={busy === r.id}
+                                onClick={() =>
+                                  advance(r, "closed", { released_at: new Date().toISOString() },
+                                    "Outcome shared with the employee")
+                                }>
+                                <ArrowRight className="h-3.5 w-3.5 mr-1" /> Share outcome
+                              </Button>
+                            )}
+                            {r.apr_stage === "closed" && r.released_at && (
                               <span className="text-xs text-emerald-700">Shared with the employee</span>
                             )}
                           </div>
@@ -713,6 +735,16 @@ function AnniversaryPanel({
                               ? "Today"
                               : `in ${d.daysUntil} days`}
                         </div>
+                        {(() => {
+                          const s = payReviewSchedule(d.date);
+                          return (
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              Entry {format(s.managerEntryOpens, "d MMM")} · HR by{" "}
+                              {format(s.hrSignOffBy, "d MMM")} · connect &amp; share{" "}
+                              {format(s.connectAndShareBy, "d MMM")}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-sm">{d.years}</TableCell>
                       <TableCell>

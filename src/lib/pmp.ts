@@ -120,7 +120,7 @@ export const YEAR_END_STEPS: {
     label: "Manager input",
     window: "Dec 15 – Jan 10",
     owner: "Manager",
-    what: "Managers submit rating, merit and I/C in the pay review, and enter comments in their direct reports' PDRs (Dec 02 – Jan 06). Timelines can vary by team.",
+    what: "Managers enter comments in their direct reports' PDRs (Dec 02 – Jan 06). Rating, merit and I/C are entered in each person's own pay review, 3 weeks before their start-date anniversary.",
     href: "/apr",
   },
   {
@@ -255,39 +255,42 @@ export const APR_STAGES: {
     id: "manager_entry",
     label: "Manager entry",
     owner: "Manager",
-    window: "From 6 weeks before the anniversary",
+    window: "3 weeks before the anniversary",
     what: "Review self input, assign the 1–5 rating, then enter merit %, bonus, I/C score and any executive pay-out.",
   },
   {
     id: "escalated",
     label: "Over-budget exception",
     owner: "Manager",
-    window: "Before the anniversary",
+    window: "Within the 3-week entry window",
     what: "Entries above the team budget cannot be saved — they route to the next-level manager to approve or send back.",
   },
   {
     id: "hr_review",
-    label: "HR approval",
+    label: "HR sign-off",
     owner: "HR",
-    window: "At least 2 weeks before the anniversary",
-    what: "HR checks the rating, merit, bonus and I/C against budget and Datapath pay rules, then approves the pay outcome.",
+    window: "By 2 weeks before the anniversary",
+    what: "HR checks the rating, merit, bonus and I/C against budget and Datapath pay rules, then signs off the pay outcome. Nothing reaches the employee until this is done.",
   },
   {
     id: "closed",
-    label: "Shared with the employee",
-    owner: "Employee",
-    window: "On or before the anniversary",
-    what: "Approved outcome is visible on the employee's own review page for the pay conversation and their confirmation. Pay changes take effect from the anniversary date.",
+    label: "Connect, then shared",
+    owner: "Manager",
+    window: "1 week before the anniversary",
+    what: "The manager sits down with the employee for the connect conversation first, logs that it happened, and only then is the approved outcome shared on the employee's own review page. Pay changes take effect on the anniversary.",
   },
 ];
 
 /* --------------------- Anniversary-based pay review dates ------------------- */
 
 /** Manager entry opens this many days before someone's start-date anniversary. */
-export const PAY_REVIEW_LEAD_DAYS = 42;
+export const PAY_REVIEW_LEAD_DAYS = 21;
 
 /** HR sign-off should be in place this many days before the anniversary. */
 export const PAY_REVIEW_HR_DAYS = 14;
+
+/** The connect conversation and sharing happen this many days before the anniversary. */
+export const PAY_REVIEW_SHARE_DAYS = 7;
 
 function startOfDay(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -346,10 +349,22 @@ export function payReviewDue(
 
 export const PAY_REVIEW_STATUS_LABEL: Record<PayReviewDue["status"], string> = {
   overdue: "Anniversary passed",
-  due: "Due this week",
+  due: "Connect & share week",
   open: "Open for manager entry",
   upcoming: "Not open yet",
 };
+
+/** The three key dates of one person's pay review, worked back from their anniversary. */
+export function payReviewSchedule(anniversary: Date) {
+  const back = (days: number) =>
+    new Date(anniversary.getFullYear(), anniversary.getMonth(), anniversary.getDate() - days);
+  return {
+    managerEntryOpens: back(PAY_REVIEW_LEAD_DAYS),
+    hrSignOffBy: back(PAY_REVIEW_HR_DAYS),
+    connectAndShareBy: back(PAY_REVIEW_SHARE_DAYS),
+    effectiveOn: anniversary,
+  };
+}
 
 export function aprStageMeta(stage: string | null | undefined) {
   return APR_STAGES.find((s) => s.id === stage) ?? APR_STAGES[0];
