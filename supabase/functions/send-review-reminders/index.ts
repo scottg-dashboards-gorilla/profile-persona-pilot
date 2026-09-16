@@ -13,24 +13,44 @@ const APP_URL = Deno.env.get("APP_URL") ?? "https://profile-persona-pilot.lovabl
 
 type Reminder = {
   id: string;
-  review_id: string;
+  review_id: string | null;
   contributor_id: string | null;
   kind: string;
+  employee_uuid: string | null;
+  employee_name: string | null;
   recipient_name: string | null;
   recipient_email: string | null;
   due_date: string;
 };
 
-function body(name: string, kind: string, employee: string, due: string, url: string) {
-  const what =
-    kind === "self"
-      ? "your own review input"
-      : `your feedback on ${employee}`;
+const MILESTONES: Record<string, { subject: (who: string) => string; what: (who: string) => string; cta: string }> = {
+  manager_entry: {
+    subject: (who) => `Pay review open: ${who} — 3 weeks to their anniversary`,
+    what: (who) =>
+      `${who}'s work anniversary is in three weeks, so their pay review is now open for your rating, merit and I/C entry. HR needs it a week from now to sign off in time.`,
+    cta: "Open the pay review cycle",
+  },
+  hr_signoff: {
+    subject: (who) => `HR sign-off due: ${who} — 2 weeks to their anniversary`,
+    what: (who) =>
+      `${who}'s pay review needs HR sign-off now, two weeks ahead of their anniversary, so the manager can hold the connect and share the outcome a week before it takes effect.`,
+    cta: "Review and sign off",
+  },
+  connect_share: {
+    subject: (who) => `Connect and share: ${who} — 1 week to their anniversary`,
+    what: (who) =>
+      `${who}'s pay outcome is approved. Hold the connect conversation with them this week, log it, and then share the outcome so it lands before their anniversary.`,
+    cta: "Log the connect and share",
+  },
+};
+
+function body(name: string, what: string, due: string, url: string, cta: string) {
   return `<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;font-size:15px;color:#111">
   <p>Hi ${name || "there"},</p>
-  <p>This is a reminder that ${what} is still outstanding. It was due on <strong>${due}</strong>.</p>
-  <p><a href="${url}" style="display:inline-block;background:#00a366;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Open your form</a></p>
-  <p style="font-size:13px;color:#555">The link is private to you. If the button doesn't work, paste this into your browser:<br>${url}</p>
+  <p>${what}</p>
+  <p style="font-size:13px;color:#555">Milestone date: <strong>${due}</strong></p>
+  <p><a href="${url}" style="display:inline-block;background:#00a366;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">${cta}</a></p>
+  <p style="font-size:13px;color:#555">If the button doesn't work, paste this into your browser:<br>${url}</p>
   <p style="font-size:13px;color:#555">Datapath People team</p>
 </div>`;
 }
