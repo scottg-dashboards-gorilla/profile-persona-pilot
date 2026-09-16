@@ -34,10 +34,13 @@ import { formatMoney } from "@/lib/compensation";
 import {
   APR_STAGES,
   IC_TARGET,
+  PAY_REVIEW_STATUS_LABEL,
   icAverage,
+  payReviewDue,
   ratingMeta,
   type AprStage,
 } from "@/lib/pmp";
+import { format } from "date-fns";
 import { AprEntryDialog, type AprReview } from "@/components/perf/AprEntryDialog";
 import { RatingsGrid } from "@/components/perf/RatingsGrid";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -305,6 +308,8 @@ export default function APR() {
           ))}
         </CardContent>
       </Card>
+
+      <AnniversaryPanel year={year} rows={rows} onCreated={load} />
 
       <RatingsGrid year={year} />
 
