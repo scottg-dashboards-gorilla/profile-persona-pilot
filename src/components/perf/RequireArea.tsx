@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Lock } from "lucide-react";
@@ -10,9 +10,12 @@ const roleLabel: Record<string, string> = { admin: "Admin", hr: "HR", manager: "
 export default function RequireArea({
   area,
   children,
+  redirectTo,
 }: {
   area: PermissionArea;
   children: ReactNode;
+  /** Send people without access here instead of showing the locked notice. */
+  redirectTo?: string;
 }) {
   const { loading, can, roles } = usePermissions();
 
@@ -25,6 +28,8 @@ export default function RequireArea({
   }
 
   if (can(area)) return <>{children}</>;
+
+  if (redirectTo) return <Navigate to={redirectTo} replace />;
 
   return (
     <Card className="max-w-xl mx-auto mt-10">

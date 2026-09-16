@@ -41,7 +41,7 @@ const App = () => (
         <Routes>
           {/* Performance Reviews app shell */}
           <Route element={<PerfLayout />}>
-            <Route path="/" element={<Overview />} />
+            <Route path="/" element={<RequireArea area="overview" redirectTo="/me"><Overview /></RequireArea>} />
             <Route path="/reviews" element={<RequireArea area="reviews"><Reviews /></RequireArea>} />
             <Route path="/pdr" element={<RequireArea area="pdr"><PDR /></RequireArea>} />
             <Route path="/apr" element={<RequireArea area="apr"><APR /></RequireArea>} />
