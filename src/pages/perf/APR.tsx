@@ -23,6 +23,7 @@ import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
+  Download,
   Loader2,
   ShieldCheck,
   Wallet,
