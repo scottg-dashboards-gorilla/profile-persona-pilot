@@ -120,7 +120,7 @@ export const YEAR_END_STEPS: {
     label: "Manager input",
     window: "Dec 15 – Jan 10",
     owner: "Manager",
-    what: "Managers submit rating, merit and I/C in the pay review, and enter comments in their direct reports' PDRs (Dec 02 – Jan 06). Timelines can vary by team.",
+    what: "Managers enter comments in their direct reports' PDRs (Dec 02 – Jan 06). Rating, merit and I/C are entered in each person's own pay review, 3 weeks before their start-date anniversary.",
     href: "/apr",
   },
   {
