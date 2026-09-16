@@ -13,7 +13,8 @@ export type PermissionArea =
   | "audit"
   | "company"
   | "pdr"
-  | "apr";
+  | "apr"
+  | "overview";
 
 const AREA_ROLES: Record<PermissionArea, AppRole[]> = {
   reviews: ["admin", "hr", "manager"],
