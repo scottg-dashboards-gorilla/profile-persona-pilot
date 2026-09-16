@@ -157,13 +157,13 @@ export function scoreFromLegacy(rating: string | null | undefined): RatingScore 
 
 /* --------------------------------- PMP / PDR -------------------------------- */
 
-export type PdrCategory = "faster" | "stronger" | "better" | "tpw";
+export type PdrCategory = "faster" | "stronger" | "better" | "ld";
 
 export const PDR_CATEGORIES: { id: PdrCategory; label: string; blurb: string }[] = [
   { id: "faster", label: "Faster", blurb: "Speed, cycle time, responsiveness" },
   { id: "stronger", label: "Stronger", blurb: "Capability, resilience, growth" },
   { id: "better", label: "Better", blurb: "Quality, customer outcome, accuracy" },
-  { id: "tpw", label: "TPW", blurb: "The Datapath Way — core value behaviours" },
+  { id: "ld", label: "L&D", blurb: "Learning & Development — growth and skills goals" },
 ];
 
 export type PdrStage = "objectives" | "midyear" | "year_end" | "closed";
