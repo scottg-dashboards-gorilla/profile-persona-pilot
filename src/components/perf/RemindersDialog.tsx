@@ -407,6 +407,45 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
             </div>
           </>
         )}
+
+        {sendLog.length > 0 && (
+          <>
+            <Separator />
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Send log — every reminder that left the system
+              </div>
+              <div className="space-y-1">
+                {sendLog.map((s) => (
+                  <div key={s.id} className="text-xs">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge
+                        variant={
+                          s.status === "sent"
+                            ? "default"
+                            : s.status === "failed"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                        className="text-[10px]"
+                      >
+                        {s.status}
+                      </Badge>
+                      <span className="font-medium">{s.recipient_name ?? "—"}</span>
+                      <span className="text-muted-foreground">
+                        {s.recipient_email ?? "no email"} · {KIND_LABEL[s.kind] ?? s.kind}
+                        {s.employee_name ? ` · about ${s.employee_name}` : ""}
+                        {s.due_date ? ` · milestone ${format(parseISO(s.due_date), "MMM d")}` : ""} ·{" "}
+                        {format(parseISO(s.attempted_at), "MMM d, h:mma")}
+                      </span>
+                    </div>
+                    {s.error && <div className="text-[11px] text-amber-700 pl-1">{s.error}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
