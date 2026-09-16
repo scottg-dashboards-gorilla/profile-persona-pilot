@@ -189,6 +189,32 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
     load();
   }
 
+  async function queueAnniversaries() {
+    setQueueingAnniv(true);
+    const { data, error } = await supabase.rpc("queue_anniversary_reminders", {
+      _window_days: 3,
+      _max: 500,
+    });
+    setQueueingAnniv(false);
+    if (error) {
+      toast({
+        title: "Couldn't queue anniversary reminders",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    const n = Number(data ?? 0);
+    toast({
+      title: n === 0 ? "No milestones due" : `${n} anniversary reminder${n === 1 ? "" : "s"} queued`,
+      description:
+        n === 0
+          ? "Nobody hits the 3, 2 or 1 week mark right now, or they've already been nudged."
+          : "Managers are nudged at 3 and 1 week, HR at 2 weeks before each anniversary.",
+    });
+    load();
+  }
+
   async function sendQueued() {
     setSending(true);
     const { data, error } = await supabase.functions.invoke("send-review-reminders");
