@@ -95,7 +95,9 @@ Deno.serve(async (req) => {
 
   const { data: queued, error } = await admin
     .from("review_reminders")
-    .select("id, review_id, contributor_id, kind, recipient_name, recipient_email, due_date")
+    .select(
+      "id, review_id, contributor_id, kind, employee_uuid, employee_name, recipient_name, recipient_email, due_date",
+    )
     .eq("status", "queued")
     .limit(100);
 
