@@ -18,6 +18,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { AttemptRow } from "@/lib/assessmentDeltas";
 import { Link } from "react-router-dom";
 import { TestCycleWizard } from "@/components/perf/TestCycleWizard";
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 type ReviewRow = {
   id: string;
@@ -48,6 +59,14 @@ type CycleRow = {
   starts_at: string;
   ends_at: string;
   review_types: string[] | null;
+};
+
+type PayYear = {
+  year: string;
+  avgSalary: number | null;
+  avgIncreasePct: number | null;
+  peopleWithIncrease: number;
+  peoplePaid: number;
 };
 
 type Attention = {
@@ -100,6 +119,36 @@ export default function Overview() {
   const [activeGoals, setActiveGoals] = useState(0);
   const [queuedReminders, setQueuedReminders] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const [payTrend, setPayTrend] = useState<PayYear[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("comp_salary_history")
+        .select(
+          "salary_2023,salary_2024,salary_2025,salary_2026,increment_2024,increment_2025,increment_2026",
+        );
+      const rows = data ?? [];
+      const avg = (values: (number | null)[]) => {
+        const nums = values.filter((v): v is number => typeof v === "number" && v > 0);
+        return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
+      };
+      const years: PayYear[] = [2023, 2024, 2025, 2026].map((year) => {
+        const salaries = rows.map((r) => (r as Record<string, number | null>)[`salary_${year}`] ?? null);
+        const increases =
+          year === 2023 ? [] : rows.map((r) => (r as Record<string, number | null>)[`increment_${year}`] ?? null);
+        const paid = increases.filter((v): v is number => typeof v === "number" && v > 0);
+        return {
+          year: String(year),
+          avgSalary: avg(salaries),
+          avgIncreasePct: paid.length ? (paid.reduce((a, b) => a + b, 0) / paid.length) * 100 : null,
+          peopleWithIncrease: paid.length,
+          peoplePaid: salaries.filter((v) => typeof v === "number" && v > 0).length,
+        };
+      });
+      setPayTrend(years);
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -400,6 +449,106 @@ export default function Overview() {
           sub={activeGoals ? `${activeGoals} active goals` : "No goals set yet"}
         />
       </div>
+
+      {/* Pay trend year on year */}
+      {payTrend.some((y) => y.avgSalary || y.avgIncreasePct) && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Pay year on year</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Average salary paid each year and the average increase given to the people who received one.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={payTrend} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="year" tickLine={false} axisLine={false} className="text-xs" />
+                  <YAxis
+                    yAxisId="salary"
+                    tickLine={false}
+                    axisLine={false}
+                    className="text-xs"
+                    tickFormatter={(v: number) => `${Math.round(v / 1000)}k`}
+                  />
+                  <YAxis
+                    yAxisId="pct"
+                    orientation="right"
+                    tickLine={false}
+                    axisLine={false}
+                    className="text-xs"
+                    tickFormatter={(v: number) => `${v.toFixed(0)}%`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                      fontSize: 12,
+                      color: "hsl(var(--popover-foreground))",
+                    }}
+                    formatter={(value, name) =>
+                      value == null
+                        ? ["—", String(name)]
+                        : name === "Average increase"
+                          ? [`${Number(value).toFixed(1)}%`, String(name)]
+                          : [
+                              Number(value).toLocaleString(undefined, {
+                                style: "currency",
+                                currency: "USD",
+                                maximumFractionDigits: 0,
+                              }),
+                              String(name),
+                            ]
+                    }
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar
+                    yAxisId="salary"
+                    dataKey="avgSalary"
+                    name="Average salary"
+                    fill="hsl(var(--primary))"
+                    radius={[4, 4, 0, 0]}
+                    barSize={44}
+                  />
+                  <Line
+                    yAxisId="pct"
+                    type="monotone"
+                    dataKey="avgIncreasePct"
+                    name="Average increase"
+                    stroke="hsl(var(--chart-2, var(--accent-foreground)))"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    connectNulls
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+              {payTrend.map((y) => (
+                <div key={y.year} className="rounded-lg border p-3">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{y.year}</div>
+                  <div className="text-lg font-semibold mt-0.5">
+                    {y.avgSalary
+                      ? y.avgSalary.toLocaleString(undefined, {
+                          style: "currency",
+                          currency: "USD",
+                          maximumFractionDigits: 0,
+                        })
+                      : "—"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {y.avgIncreasePct
+                      ? `${y.avgIncreasePct.toFixed(1)}% average increase · ${y.peopleWithIncrease} people`
+                      : "No increases recorded"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Two-column tables */}
       <div className="grid lg:grid-cols-2 gap-5">
