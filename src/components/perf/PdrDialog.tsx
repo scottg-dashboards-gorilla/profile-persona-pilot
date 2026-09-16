@@ -423,9 +423,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
                           )}
-                          <Button size="sm" variant="ghost" onClick={() => removeObjective(o.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          {(canManage || (!o.manager_validated && !form?.objectives_approved_at)) && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="Delete objective"
+                              onClick={() => removeObjective(o.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                         </div>
                       </>
                     )}
