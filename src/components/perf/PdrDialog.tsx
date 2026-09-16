@@ -140,6 +140,25 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     await load();
   }
 
+  function startEdit(o: PdrObjective) {
+    setEditingId(o.id);
+    setEditTitle(o.title);
+    setEditCategory(o.category as PdrCategory);
+    setEditDescription(o.description ?? "");
+  }
+
+  async function saveEdit() {
+    if (!editingId || !editTitle.trim()) return;
+    setBusy("edit");
+    await updateObjective(editingId, {
+      title: editTitle.trim(),
+      category: editCategory,
+      description: editDescription.trim() || null,
+    });
+    setBusy(null);
+    setEditingId(null);
+  }
+
   async function removeObjective(id: string) {
     await supabase.from("pdr_objectives").delete().eq("id", id);
     await load();
