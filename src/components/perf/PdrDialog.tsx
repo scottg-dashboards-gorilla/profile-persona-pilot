@@ -107,15 +107,6 @@ function CategoryPicker({
   );
 }
 
-type PayReviewLink = {
-  id: string;
-  review_cycle: string;
-  overall_rating: string | null;
-  rating_score: number | null;
-  apr_stage: string;
-  status: string;
-};
-
 const now = () => new Date().toISOString();
 
 export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props) {
@@ -140,7 +131,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] = useState<PdrCategory>("faster");
   const [editDescription, setEditDescription] = useState("");
-  const [payReview, setPayReview] = useState<PayReviewLink | null>(null);
 
   const load = useCallback(async () => {
     if (!formId) return;
@@ -159,16 +149,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
     setMidyearSelf(rec?.midyear_self_input ?? "");
-    if (rec?.review_id) {
-      const { data: rev } = await supabase
-        .from("performance_reviews")
-        .select("id,review_cycle,overall_rating,rating_score,apr_stage,status")
-        .eq("id", rec.review_id)
-        .maybeSingle();
-      setPayReview((rev as PayReviewLink) ?? null);
-    } else {
-      setPayReview(null);
-    }
     setLoading(false);
   }, [formId]);
 
@@ -763,7 +743,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                   <span className="text-xs text-muted-foreground flex-1">
                     {form.comments_finalized_at
                       ? `Finalized ${format(parseISO(form.comments_finalized_at), "MMM d, yyyy")}`
-                      : "Control C2 — HR cross-checks the score before year-end close-out"}
+                      : "The year-end score now sits on the employee's own review page, tied to their anniversary."}
                   </span>
                   {canManage && (
                     <Button size="sm" variant="outline"
@@ -774,76 +754,6 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     </Button>
                   )}
                 </div>
-              </div>
-            </section>
-
-
-            {/* Stage 4 — score */}
-            <section className="rounded-md border p-3 space-y-2">
-              <div className="text-sm font-medium">Year-end PDR score</div>
-              <p className="text-xs text-muted-foreground">
-                HR cross-checks the score against the pay rating before the year is closed.
-              </p>
-
-              {/* Control C2 — development score vs the pay rating on the linked review */}
-              <div className="rounded-md border bg-muted/40 p-2 text-xs space-y-1">
-                {!payReview ? (
-                  <span className="text-muted-foreground">
-                    No pay review on file for {form.employee_name} in FY{form.fiscal_year} yet — the
-                    score will be cross-checked automatically as soon as one is created.
-                  </span>
-                ) : (
-                  <>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium">Control C2 · cross-check</span>
-                      <Badge variant="outline" className="text-[10px]">{payReview.review_cycle}</Badge>
-                      <span className="text-muted-foreground">
-                        Pay rating: <strong>{payReview.rating_score ?? "—"}</strong>
-                        {payReview.overall_rating ? ` · ${payReview.overall_rating}` : ""}
-                      </span>
-                      <span className="text-muted-foreground">
-                        Development score: <strong>{form.year_end_score ?? "—"}</strong>
-                      </span>
-                    </div>
-                    {form.year_end_score != null && payReview.rating_score != null && (
-                      Math.abs(form.year_end_score - payReview.rating_score) > 1 ? (
-                        <p className="text-amber-700">
-                          These two differ by more than one point — HR should confirm the reason before
-                          the year is closed.
-                        </p>
-                      ) : (
-                        <p className="text-emerald-700">The two scores are consistent.</p>
-                      )
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="flex items-end gap-2 flex-wrap">
-                <div className="grid gap-1">
-                  <Label className="text-[10px] uppercase text-muted-foreground">Score (1–5)</Label>
-                  <Input
-                    className="h-9 w-24"
-                    type="number"
-                    step="0.1"
-                    min={1}
-                    max={5}
-                    defaultValue={form.year_end_score ?? ""}
-                    onBlur={(e) => {
-                      const v = e.target.value === "" ? null : Number(e.target.value);
-                      if (v !== form.year_end_score) patch({ year_end_score: v }, "score", "Score saved");
-                    }}
-                  />
-                </div>
-                <Button size="sm" disabled={busy === "close" || form.year_end_score == null || !form.comments_finalized_at}
-                  title={!form.comments_finalized_at ? "Manager comments must be finalized first" : undefined}
-                  onClick={() => patch({ score_recorded_at: now(), stage: "closed" }, "close", "Year closed")}>
-                  Record & close year
-                </Button>
-                {form.score_recorded_at && (
-                  <span className="text-xs text-emerald-700">
-                    Recorded {format(parseISO(form.score_recorded_at), "MMM d, yyyy")} — feeds the pay review
-                  </span>
-                )}
               </div>
             </section>
           </div>
