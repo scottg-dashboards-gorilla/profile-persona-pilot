@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   ArrowRight,
-  CalendarRange,
   FlaskConical,
   CheckCircle2,
   AlertTriangle,
@@ -50,15 +48,6 @@ type ReviewRow = {
   reviewer_uuid: string | null;
   assessment_attempt_id: string | null;
   cycle_id: string | null;
-};
-
-type CycleRow = {
-  id: string;
-  name: string;
-  status: string;
-  starts_at: string;
-  ends_at: string;
-  review_types: string[] | null;
 };
 
 type PayYear = {
@@ -114,7 +103,6 @@ export default function Overview() {
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
-  const [cycles, setCycles] = useState<CycleRow[]>([]);
   const [headcount, setHeadcount] = useState(0);
   const [activeGoals, setActiveGoals] = useState(0);
   const [queuedReminders, setQueuedReminders] = useState(0);
@@ -164,24 +152,18 @@ export default function Overview() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: pr }, { data: cy }, { count: hc }, { count: gc }, { count: rc }] = await Promise.all([
+      const [{ data: pr }, { count: hc }, { count: gc }, { count: rc }] = await Promise.all([
         supabase
           .from("performance_reviews")
           .select(
             "id,employee_uuid,employee_name,department,scheduled_date,completed_date,status,overall_rating,comp_adjustment_amount,comp_adjustment_percent,promotion,comp_approval_status,released_at,employee_ack_at,pay_pushback_status,escalation_status,reviewer_uuid,assessment_attempt_id,cycle_id",
           )
           .order("scheduled_date", { ascending: true }),
-        supabase
-          .from("review_cycles")
-          .select("id,name,status,starts_at,ends_at,review_types")
-          .eq("status", "active")
-          .order("starts_at", { ascending: false }),
         supabase.from("employees").select("uuid", { count: "exact", head: true }).eq("terminated", false),
         supabase.from("goals").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("review_reminders").select("id", { count: "exact", head: true }).eq("status", "queued"),
       ]);
       setReviews((pr ?? []) as ReviewRow[]);
-      setCycles((cy ?? []) as CycleRow[]);
       setHeadcount(hc ?? 0);
       setActiveGoals(gc ?? 0);
       setQueuedReminders(rc ?? 0);
@@ -317,12 +299,6 @@ export default function Overview() {
     [reviews],
   );
 
-  const cycleStats = (cycleId: string) => {
-    const inCycle = reviews.filter((r) => r.cycle_id === cycleId);
-    const done = inCycle.filter((r) => r.status === "completed").length;
-    return { total: inCycle.length, done, pct: inCycle.length ? Math.round((done / inCycle.length) * 100) : 0 };
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -382,59 +358,6 @@ export default function Overview() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Active cycles */}
-      {cycles.map((c) => {
-        const s = cycleStats(c.id);
-        return (
-          <Card key={c.id}>
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center">
-                    <CalendarRange className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-                      Active cycle
-                    </div>
-                    <div className="text-lg font-semibold">{c.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {format(parseISO(c.starts_at), "MMM d")} – {format(parseISO(c.ends_at), "MMM d, yyyy")}
-                      {c.review_types?.length ? ` · ${c.review_types.join(", ")}` : ""}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-sm font-medium">
-                      {s.done} of {s.total} complete
-                    </div>
-                    <div className="text-xs text-muted-foreground">{s.pct}%</div>
-                  </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/cycles">Open cycle</Link>
-                  </Button>
-                </div>
-              </div>
-              <Progress value={s.pct} className="mt-4 h-2" />
-            </CardContent>
-          </Card>
-        );
-      })}
-      {loaded && cycles.length === 0 && (
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <div className="text-sm font-medium">No cycle is running</div>
-              <div className="text-sm text-muted-foreground">Start one to kick off reviews for the team.</div>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/cycles">Start a cycle</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Stat grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
