@@ -435,10 +435,10 @@ export default function APR() {
                             )}
                             {r.apr_stage === "closed" && !r.connect_held_at && (
                               <Button size="sm" variant="secondary" disabled={busy === r.id}
-                                onClick={() =>
-                                  advance(r, "closed", { connect_held_at: new Date().toISOString() },
-                                    "Connect logged — you can share the outcome now")
-                                }>
+                                onClick={() => {
+                                  setConnectRow(r);
+                                  setConnectNote("");
+                                }}>
                                 <Handshake className="h-3.5 w-3.5 mr-1" /> Log connect
                               </Button>
                             )}
