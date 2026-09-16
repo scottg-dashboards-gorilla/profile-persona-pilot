@@ -1615,6 +1615,18 @@ export type Database = {
       is_review_manager: { Args: { _review_id: string }; Returns: boolean }
       is_self_employee: { Args: { _employee_uuid: string }; Returns: boolean }
       mark_candidate_started: { Args: { _token: string }; Returns: undefined }
+      public_active_role_configs: {
+        Args: never
+        Returns: {
+          description: string
+          dimension_ids: Json
+          id: string
+          includes_technical: boolean
+          is_active: boolean
+          label: string
+          sort_order: number
+        }[]
+      }
       queue_anniversary_reminders: {
         Args: { _max?: number; _window_days?: number }
         Returns: number
@@ -1652,6 +1664,17 @@ export type Database = {
           _token: string
         }
         Returns: Json
+      }
+      submit_open_assessment: {
+        Args: {
+          _disc_profile?: Json
+          _elapsed_seconds: number
+          _employee_name: string
+          _role?: string
+          _scores: Json
+          _truthfulness?: Json
+        }
+        Returns: string
       }
       submit_self_assessment: {
         Args: {

@@ -32,14 +32,26 @@ const fallback: StoredRoleConfig[] = DEFAULT_ROLES.map((r, i) => ({
 
 export function useRoles(opts: { includeInactive?: boolean } = {}) {
   const query = useQuery({
-    queryKey: QUERY_KEY,
+    queryKey: [...QUERY_KEY, opts.includeInactive ?? false],
     queryFn: async (): Promise<StoredRoleConfig[]> => {
-      const { data, error } = await supabase
-        .from("role_configs")
-        .select("*")
-        .order("sort_order", { ascending: true });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      // Signed-in users (incl. admins managing inactive roles) read the table directly.
+      if (session) {
+        const { data, error } = await supabase
+          .from("role_configs")
+          .select("*")
+          .order("sort_order", { ascending: true });
+        if (error) throw error;
+        return (data ?? []).map(rowToConfig);
+      }
+
+      // Public assessment: only the active role choices, via a controlled lookup.
+      const { data, error } = await supabase.rpc("public_active_role_configs");
       if (error) throw error;
-      return (data ?? []).map(rowToConfig);
+      return ((data ?? []) as any[]).map(rowToConfig);
     },
     staleTime: 60_000,
     placeholderData: fallback,

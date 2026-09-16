@@ -60,13 +60,13 @@ const Index = () => {
     completeAssessment();
     setScreen("results");
 
-    const { error } = await supabase.from("employee_profiles").insert({
-      employee_name: employeeName,
-      role,
-      scores: scores as unknown as any,
-      elapsed_seconds: elapsed,
-      disc_profile: discProfile as unknown as any,
-      truthfulness: truthfulness as unknown as any,
+    const { error } = await supabase.rpc("submit_open_assessment", {
+      _employee_name: employeeName,
+      _role: role,
+      _scores: scores as unknown as any,
+      _elapsed_seconds: elapsed,
+      _disc_profile: discProfile as unknown as any,
+      _truthfulness: truthfulness as unknown as any,
     });
     if (error) {
       console.error("Failed to save profile:", error);

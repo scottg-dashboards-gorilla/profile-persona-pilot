@@ -3,34 +3,63 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowRight, CalendarRange, TrendingUp, TrendingDown, FlaskConical } from "lucide-react";
-import { format, differenceInDays, parseISO, isAfter, subMonths } from "date-fns";
 import {
-  mockReviews,
-  mockActiveCycle,
-  mockGoalsCount,
-  mockAssessedCount,
-  formatCompDelta,
-  ratingLabel,
-} from "@/data/mockEmployees";
+  ArrowRight,
+  CalendarRange,
+  TrendingUp,
+  TrendingDown,
+  FlaskConical,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
+import { format, differenceInDays, parseISO, isAfter, subMonths, startOfYear } from "date-fns";
+import { formatCompDelta, ratingLabel } from "@/data/mockEmployees";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  AttemptRow,
-  compositeImprovement,
-  readableTier,
-} from "@/lib/assessmentDeltas";
+import { AttemptRow, compositeImprovement, readableTier } from "@/lib/assessmentDeltas";
 import { Link } from "react-router-dom";
 import { TestCycleWizard } from "@/components/perf/TestCycleWizard";
 
-type ContextTab = "org" | "line" | "todos";
+type ReviewRow = {
+  id: string;
+  employee_uuid: string;
+  employee_name: string;
+  department: string | null;
+  scheduled_date: string;
+  completed_date: string | null;
+  status: string;
+  overall_rating: string | null;
+  comp_adjustment_amount: number | null;
+  comp_adjustment_percent: number | null;
+  promotion: boolean | null;
+  comp_approval_status: string;
+  released_at: string | null;
+  employee_ack_at: string | null;
+  pay_pushback_status: string;
+  escalation_status: string;
+  reviewer_uuid: string | null;
+  assessment_attempt_id: string | null;
+  cycle_id: string | null;
+};
 
-const tabs: { id: ContextTab; label: string }[] = [
-  { id: "org", label: "Your Organization" },
-  { id: "line", label: "Your Reporting Line" },
-  { id: "todos", label: "Your To-Dos" },
-];
+type CycleRow = {
+  id: string;
+  name: string;
+  status: string;
+  starts_at: string;
+  ends_at: string;
+  review_types: string[] | null;
+};
+
+type Attention = {
+  key: string;
+  count: number;
+  title: string;
+  detail: string;
+  to: string;
+  tone: "red" | "amber" | "blue";
+};
 
 function StatTile({
   label,
@@ -63,41 +92,29 @@ function StatTile({
 }
 
 export default function Overview() {
-  const [tab, setTab] = useState<ContextTab>("org");
   const [wizardOpen, setWizardOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   const [empNames, setEmpNames] = useState<Record<string, string>>({});
-  const [dbReviews, setDbReviews] = useState<
-    {
-      id: string;
-      employee_uuid: string;
-      employee_name: string;
-      department: string | null;
-      scheduled_date: string;
-      completed_date: string | null;
-      status: string;
-      overall_rating: string | null;
-      comp_adjustment_amount: number | null;
-      comp_adjustment_percent: number | null;
-      promotion: boolean | null;
-    }[]
-  >([]);
-  const [reviewsLoaded, setReviewsLoaded] = useState(false);
+  const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [cycles, setCycles] = useState<CycleRow[]>([]);
+  const [headcount, setHeadcount] = useState(0);
+  const [activeGoals, setActiveGoals] = useState(0);
+  const [queuedReminders, setQueuedReminders] = useState(0);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
       const { data: a } = await supabase
         .from("assessment_attempts")
-        .select("id,employee_uuid,review_id,cycle_id,taken_at,submitted_at,disc_scores,disc_primary,tier,technical_scores,truthfulness_score")
+        .select(
+          "id,employee_uuid,review_id,cycle_id,taken_at,submitted_at,disc_scores,disc_primary,tier,technical_scores,truthfulness_score",
+        )
         .order("taken_at", { ascending: false });
       setAttempts((a ?? []) as AttemptRow[]);
       const ids = Array.from(new Set((a ?? []).map((x: any) => x.employee_uuid)));
       if (ids.length) {
-        const { data: emps } = await supabase
-          .from("employees")
-          .select("uuid,first_name,last_name")
-          .in("uuid", ids);
+        const { data: emps } = await supabase.from("employees").select("uuid,first_name,last_name").in("uuid", ids);
         const m: Record<string, string> = {};
         (emps ?? []).forEach((e: any) => {
           m[e.uuid] = `${e.first_name ?? ""} ${e.last_name ?? ""}`.trim() || e.uuid;
@@ -107,39 +124,146 @@ export default function Overview() {
     })();
   }, []);
 
-  // Load real performance_reviews (joined with employees for name/department)
   useEffect(() => {
     (async () => {
-      const { data: pr } = await supabase
-        .from("performance_reviews")
-        .select(
-          "id,employee_uuid,scheduled_date,completed_date,status,overall_rating,comp_adjustment_amount,comp_adjustment_percent,promotion",
-        )
-        .order("scheduled_date", { ascending: true });
-      const ids = Array.from(new Set((pr ?? []).map((r: any) => r.employee_uuid)));
-      const empMap: Record<string, { name: string; department: string | null }> = {};
-      if (ids.length) {
-        const { data: emps } = await supabase
-          .from("employees")
-          .select("uuid,first_name,last_name,department")
-          .in("uuid", ids);
-        (emps ?? []).forEach((e: any) => {
-          empMap[e.uuid] = {
-            name: `${e.first_name ?? ""} ${e.last_name ?? ""}`.trim() || e.uuid,
-            department: e.department ?? null,
-          };
-        });
-      }
-      setDbReviews(
-        (pr ?? []).map((r: any) => ({
-          ...r,
-          employee_name: empMap[r.employee_uuid]?.name ?? r.employee_uuid,
-          department: empMap[r.employee_uuid]?.department ?? null,
-        })),
-      );
-      setReviewsLoaded(true);
+      const [{ data: pr }, { data: cy }, { count: hc }, { count: gc }, { count: rc }] = await Promise.all([
+        supabase
+          .from("performance_reviews")
+          .select(
+            "id,employee_uuid,employee_name,department,scheduled_date,completed_date,status,overall_rating,comp_adjustment_amount,comp_adjustment_percent,promotion,comp_approval_status,released_at,employee_ack_at,pay_pushback_status,escalation_status,reviewer_uuid,assessment_attempt_id,cycle_id",
+          )
+          .order("scheduled_date", { ascending: true }),
+        supabase
+          .from("review_cycles")
+          .select("id,name,status,starts_at,ends_at,review_types")
+          .eq("status", "active")
+          .order("starts_at", { ascending: false }),
+        supabase.from("employees").select("uuid", { count: "exact", head: true }).eq("terminated", false),
+        supabase.from("goals").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("review_reminders").select("id", { count: "exact", head: true }).eq("status", "queued"),
+      ]);
+      setReviews((pr ?? []) as ReviewRow[]);
+      setCycles((cy ?? []) as CycleRow[]);
+      setHeadcount(hc ?? 0);
+      setActiveGoals(gc ?? 0);
+      setQueuedReminders(rc ?? 0);
+      setLoaded(true);
     })();
   }, [reloadKey]);
+
+  const open = useMemo(
+    () => reviews.filter((r) => r.status !== "completed" && r.status !== "cancelled"),
+    [reviews],
+  );
+
+  const attention = useMemo<Attention[]>(() => {
+    const now = new Date();
+    const items: Attention[] = [
+      {
+        key: "pay-approval",
+        count: reviews.filter((r) => r.status === "completed" && r.comp_approval_status !== "approved").length,
+        title: "Pay outcomes waiting on HR sign-off",
+        detail: "The outcome can't be shared with the employee until the pay decision is approved.",
+        to: "/reviews",
+        tone: "red",
+      },
+      {
+        key: "escalation",
+        count: reviews.filter((r) => r.escalation_status === "pending").length,
+        title: "Over-budget proposals waiting on a decision",
+        detail: "A manager went past their budget and needs an answer before they can close out.",
+        to: "/apr",
+        tone: "red",
+      },
+      {
+        key: "pushback",
+        count: reviews.filter((r) => !["none", "resolved"].includes(r.pay_pushback_status ?? "none")).length,
+        title: "Pay concerns raised by employees",
+        detail: "Someone wasn't happy with their amount and is waiting on a reply.",
+        to: "/reviews",
+        tone: "red",
+      },
+      {
+        key: "release",
+        count: reviews.filter((r) => r.comp_approval_status === "approved" && !r.released_at).length,
+        title: "Approved outcomes ready to share",
+        detail: "The pay is signed off — the manager can now hold the conversation.",
+        to: "/reviews",
+        tone: "amber",
+      },
+      {
+        key: "ack",
+        count: reviews.filter((r) => r.released_at && !r.employee_ack_at).length,
+        title: "Waiting on employee confirmation",
+        detail: "The outcome has been shared but not yet confirmed as received.",
+        to: "/reviews",
+        tone: "amber",
+      },
+      {
+        key: "overdue",
+        count: open.filter((r) => differenceInDays(parseISO(r.scheduled_date), now) < 0).length,
+        title: "Reviews past their due date",
+        detail: "These were scheduled to be done already.",
+        to: "/reviews",
+        tone: "red",
+      },
+      {
+        key: "no-assessment",
+        count: open.filter((r) => !r.assessment_attempt_id).length,
+        title: "Reviews with no assessment on file",
+        detail: "A review can't be completed until the person's assessment is recorded.",
+        to: "/assessments",
+        tone: "amber",
+      },
+      {
+        key: "no-reviewer",
+        count: open.filter((r) => !r.reviewer_uuid).length,
+        title: "Reviews with nobody named to do them",
+        detail: "Without a named manager, nobody sees these in their own list.",
+        to: "/reviews",
+        tone: "blue",
+      },
+      {
+        key: "no-cycle",
+        count: reviews.filter((r) => !r.cycle_id).length,
+        title: "Reviews not attached to a cycle",
+        detail: "They won't show in cycle progress or calibration.",
+        to: "/cycles",
+        tone: "blue",
+      },
+      {
+        key: "reminders",
+        count: queuedReminders,
+        title: "Reminder emails waiting to go out",
+        detail: "Sending starts once the mydatapath.com sender address is connected.",
+        to: "/reviews",
+        tone: "blue",
+      },
+    ];
+    return items.filter((i) => i.count > 0).sort((a, b) => {
+      const rank = { red: 0, amber: 1, blue: 2 } as const;
+      return rank[a.tone] - rank[b.tone] || b.count - a.count;
+    });
+  }, [reviews, open, queuedReminders]);
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const overdue = open.filter((r) => differenceInDays(parseISO(r.scheduled_date), now) < 0).length;
+    const dueIn30 = open.filter((r) => {
+      const d = differenceInDays(parseISO(r.scheduled_date), now);
+      return d >= 0 && d <= 30;
+    }).length;
+    const inProgress = reviews.filter((r) => r.status === "in_progress").length;
+    const quarterAgo = subMonths(now, 3);
+    const completedQ = reviews.filter(
+      (r) => r.status === "completed" && r.completed_date && isAfter(parseISO(r.completed_date), quarterAgo),
+    ).length;
+    const yearStart = startOfYear(now);
+    const assessedThisYear = new Set(
+      attempts.filter((a) => isAfter(parseISO(a.taken_at), yearStart)).map((a) => a.employee_uuid),
+    ).size;
+    return { overdue, dueIn30, inProgress, completedQ, assessedThisYear };
+  }, [reviews, open, attempts]);
 
   const growth = useMemo(() => {
     const byEmp = new Map<string, AttemptRow[]>();
@@ -158,7 +282,14 @@ export default function Overview() {
       if (!current) return;
       if (previous) {
         withPrev += 1;
-        const tierMap: Record<string, number> = { "tier-1": 1, tier_1: 1, "tier-2": 2, tier_2: 2, "team-leader": 3, team_leader: 3 };
+        const tierMap: Record<string, number> = {
+          "tier-1": 1,
+          tier_1: 1,
+          "tier-2": 2,
+          tier_2: 2,
+          "team-leader": 3,
+          team_leader: 3,
+        };
         const from = tierMap[previous.tier ?? ""] ?? 0;
         const to = tierMap[current.tier ?? ""] ?? 0;
         tierShiftSum += to - from;
@@ -177,125 +308,150 @@ export default function Overview() {
     return { improvers, declining, avgTierShift, sampleSize: withPrev };
   }, [attempts, empNames]);
 
-  // Prefer real DB reviews; fall back to mock data only if the DB has none yet
-  const reviewSource = useMemo(
-    () => (dbReviews.length > 0 ? dbReviews : (mockReviews as any[])),
-    [dbReviews],
-  );
-  const usingMock = dbReviews.length === 0;
-
-  const stats = useMemo(() => {
-    const now = new Date();
-    const overdue = reviewSource.filter(
-      (r) => r.status !== "completed" && r.status !== "cancelled" && differenceInDays(parseISO(r.scheduled_date), now) < 0,
-    ).length;
-    const dueIn30 = reviewSource.filter((r) => {
-      if (r.status === "completed" || r.status === "cancelled") return false;
-      const d = differenceInDays(parseISO(r.scheduled_date), now);
-      return d >= 0 && d <= 30;
-    }).length;
-    const inProgress = reviewSource.filter((r) => r.status === "in_progress").length;
-    const quarterAgo = subMonths(now, 3);
-    const completedQ = reviewSource.filter(
-      (r) => r.status === "completed" && r.completed_date && isAfter(parseISO(r.completed_date), quarterAgo),
-    ).length;
-    return { overdue, dueIn30, inProgress, completedQ };
-  }, [reviewSource]);
-
   const upcoming = useMemo(
-    () =>
-      reviewSource
-        .filter((r) => r.status !== "completed" && r.status !== "cancelled")
-        .sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))
-        .slice(0, 5),
-    [reviewSource],
+    () => [...open].sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date)).slice(0, 5),
+    [open],
   );
 
   const recent = useMemo(
     () =>
-      reviewSource
+      reviews
         .filter((r) => r.status === "completed" && r.completed_date)
         .sort((a, b) => (b.completed_date ?? "").localeCompare(a.completed_date ?? ""))
         .slice(0, 5),
-    [reviewSource],
+    [reviews],
   );
 
-  const cycleProgress = Math.round((mockActiveCycle.completed / mockActiveCycle.total) * 100);
+  const cycleStats = (cycleId: string) => {
+    const inCycle = reviews.filter((r) => r.cycle_id === cycleId);
+    const done = inCycle.filter((r) => r.status === "completed").length;
+    return { total: inCycle.length, done, pct: inCycle.length ? Math.round((done / inCycle.length) * 100) : 0 };
+  };
 
   return (
     <div className="space-y-6">
-      {/* Context tabs */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "px-4 py-1.5 text-sm font-medium rounded-full transition-colors",
-                tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div>
+          <h1 className="text-xl font-semibold">Performance overview</h1>
+          <p className="text-sm text-muted-foreground">
+            Everything waiting on you, across {headcount} {headcount === 1 ? "person" : "people"}.
+          </p>
         </div>
         <Button size="sm" variant="outline" onClick={() => setWizardOpen(true)}>
           <FlaskConical className="h-4 w-4 mr-1.5" /> Test review cycle
         </Button>
       </div>
 
-      <TestCycleWizard
-        open={wizardOpen}
-        onOpenChange={setWizardOpen}
-        onCompleted={() => setReloadKey((k) => k + 1)}
-      />
+      <TestCycleWizard open={wizardOpen} onOpenChange={setWizardOpen} onCompleted={() => setReloadKey((k) => k + 1)} />
 
-      {/* Active cycle */}
+      {/* Needs your attention */}
       <Card>
-        <CardContent className="p-5">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center">
-                <CalendarRange className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Active cycle</div>
-                <div className="text-lg font-semibold">{mockActiveCycle.name}</div>
-                <div className="text-sm text-muted-foreground">
-                  {format(parseISO(mockActiveCycle.starts_at), "MMM d")} –{" "}
-                  {format(parseISO(mockActiveCycle.ends_at), "MMM d, yyyy")} ·{" "}
-                  {mockActiveCycle.review_types.join(", ")}
-                </div>
-              </div>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            Needs your attention
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {!loaded && <div className="text-sm text-muted-foreground py-2">Checking…</div>}
+          {loaded && attention.length === 0 && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              Nothing is waiting on you right now.
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="text-sm font-medium">
-                  {mockActiveCycle.completed} of {mockActiveCycle.total} complete
-                </div>
-                <div className="text-xs text-muted-foreground">{cycleProgress}%</div>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/cycles">Open cycle</Link>
-              </Button>
-            </div>
+          )}
+          <div className="divide-y divide-border">
+            {attention.map((a) => (
+              <Link
+                key={a.key}
+                to={a.to}
+                className="flex items-center gap-4 py-3 group hover:bg-muted/40 -mx-2 px-2 rounded"
+              >
+                <span
+                  className={cn(
+                    "h-9 min-w-9 px-2 rounded-lg flex items-center justify-center text-sm font-bold",
+                    a.tone === "red" && "bg-red-100 text-red-700",
+                    a.tone === "amber" && "bg-amber-100 text-amber-800",
+                    a.tone === "blue" && "bg-blue-100 text-blue-800",
+                  )}
+                >
+                  {a.count}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium truncate">{a.title}</span>
+                  <span className="block text-xs text-muted-foreground truncate">{a.detail}</span>
+                </span>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground shrink-0" />
+              </Link>
+            ))}
           </div>
-          <Progress value={cycleProgress} className="mt-4 h-2" />
         </CardContent>
       </Card>
 
+      {/* Active cycles */}
+      {cycles.map((c) => {
+        const s = cycleStats(c.id);
+        return (
+          <Card key={c.id}>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center">
+                    <CalendarRange className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+                      Active cycle
+                    </div>
+                    <div className="text-lg font-semibold">{c.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {format(parseISO(c.starts_at), "MMM d")} – {format(parseISO(c.ends_at), "MMM d, yyyy")}
+                      {c.review_types?.length ? ` · ${c.review_types.join(", ")}` : ""}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <div className="text-sm font-medium">
+                      {s.done} of {s.total} complete
+                    </div>
+                    <div className="text-xs text-muted-foreground">{s.pct}%</div>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/cycles">Open cycle</Link>
+                  </Button>
+                </div>
+              </div>
+              <Progress value={s.pct} className="mt-4 h-2" />
+            </CardContent>
+          </Card>
+        );
+      })}
+      {loaded && cycles.length === 0 && (
+        <Card>
+          <CardContent className="p-5 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <div className="text-sm font-medium">No cycle is running</div>
+              <div className="text-sm text-muted-foreground">Start one to kick off reviews for the team.</div>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/cycles">Start a cycle</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Stat grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <StatTile label="Team size" value={headcount} />
         <StatTile label="Overdue" value={stats.overdue} tone={stats.overdue ? "red" : "default"} />
         <StatTile label="Due in 30 days" value={stats.dueIn30} tone={stats.dueIn30 ? "amber" : "default"} />
         <StatTile label="In progress" value={stats.inProgress} tone="blue" />
         <StatTile label="Completed this quarter" value={stats.completedQ} tone="emerald" />
-        <StatTile label="Active goals" value={mockGoalsCount} />
         <StatTile
-          label="Assessed"
-          value={`${mockAssessedCount.assessed} / ${mockAssessedCount.total}`}
-          sub={`${Math.round((mockAssessedCount.assessed / mockAssessedCount.total) * 100)}% of team`}
+          label="Assessed this year"
+          value={headcount ? `${stats.assessedThisYear} / ${headcount}` : stats.assessedThisYear}
+          sub={activeGoals ? `${activeGoals} active goals` : "No goals set yet"}
         />
       </div>
 
@@ -328,9 +484,7 @@ export default function Overview() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5 text-sm">
-            {growth.improvers.length === 0 && (
-              <div className="text-muted-foreground">No data yet.</div>
-            )}
+            {growth.improvers.length === 0 && <div className="text-muted-foreground">No data yet.</div>}
             {growth.improvers.map((i) => (
               <Link
                 key={i.uuid}
@@ -338,9 +492,7 @@ export default function Overview() {
                 className="flex items-center justify-between hover:bg-muted/50 -mx-1 px-1 py-0.5 rounded"
               >
                 <span className="truncate">{i.name}</span>
-                <span className="text-emerald-700 font-medium text-xs">
-                  +{i.score.toFixed(1)}
-                </span>
+                <span className="text-emerald-700 font-medium text-xs">+{i.score.toFixed(1)}</span>
               </Link>
             ))}
           </CardContent>
@@ -348,7 +500,7 @@ export default function Overview() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-red-600" /> Needs attention
+              <TrendingDown className="h-4 w-4 text-red-600" /> Trending down
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5 text-sm">
@@ -378,14 +530,7 @@ export default function Overview() {
       <div className="grid lg:grid-cols-2 gap-5">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center justify-between gap-2">
-              <span>Up next</span>
-              {reviewsLoaded && usingMock && (
-                <span className="text-[10px] font-normal text-muted-foreground">
-                  Showing sample data — no reviews scheduled yet
-                </span>
-              )}
-            </CardTitle>
+            <CardTitle className="text-base">Up next</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -405,25 +550,18 @@ export default function Overview() {
                     <TableCell className="text-muted-foreground">{r.department}</TableCell>
                     <TableCell>{format(parseISO(r.scheduled_date), "MMM d, yyyy")}</TableCell>
                     <TableCell>
-                      <StatusPill tone={computeReviewTone(r.status, r.scheduled_date)} />
+                      <StatusPill tone={computeReviewTone(r.status as any, r.scheduled_date)} />
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <Link
-                          to={
-                            usingMock
-                              ? `/people/${r.employee_uuid}`
-                              : `/reviews?focus=${r.id}`
-                          }
-                          aria-label={`Open ${r.employee_name}`}
-                        >
+                        <Link to={`/reviews?focus=${r.id}`} aria-label={`Open ${r.employee_name}`}>
                           <ArrowRight className="h-4 w-4" />
                         </Link>
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
-                {reviewsLoaded && upcoming.length === 0 && (
+                {loaded && upcoming.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-6">
                       No upcoming reviews. Schedule one from{" "}
@@ -468,7 +606,7 @@ export default function Overview() {
                                 ? "overdue"
                                 : "in_progress"
                           }
-                          label={ratingLabel[r.overall_rating]}
+                          label={(ratingLabel as any)[r.overall_rating] ?? r.overall_rating}
                         />
                       )}
                     </TableCell>
@@ -484,6 +622,13 @@ export default function Overview() {
                     </TableCell>
                   </TableRow>
                 ))}
+                {loaded && recent.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-6">
+                      Nothing completed yet.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>
