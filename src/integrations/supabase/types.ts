@@ -1526,6 +1526,7 @@ export type Database = {
         Args: { _comment?: string; _review_id: string }
         Returns: Json
       }
+      claim_employee_link: { Args: never; Returns: Json }
       create_review_token: {
         Args: {
           _contributor_id?: string
