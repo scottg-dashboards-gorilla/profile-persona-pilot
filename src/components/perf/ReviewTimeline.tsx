@@ -92,15 +92,15 @@ export function buildReviewStages(r: ReviewStageInput): TimelineStage[] {
       key: "comp",
       label: "Pay approval",
       short: "5",
-      at: compProposed ? r.comp_approved_at ?? null : null,
-      na: !compProposed,
-      note: !compProposed
-        ? "No pay change proposed"
-        : r.comp_approval_status === "rejected"
+      at: r.comp_approval_status === "approved" ? r.comp_approved_at ?? null : null,
+      note:
+        r.comp_approval_status === "rejected"
           ? "Sent back to the manager"
-          : r.comp_approved_at
+          : r.comp_approval_status === "approved"
             ? undefined
-            : "Waiting on HR sign-off",
+            : compProposed
+              ? "Waiting on HR sign-off"
+              : "No pay change proposed — HR sign-off still needed",
     },
     {
       key: "release",
