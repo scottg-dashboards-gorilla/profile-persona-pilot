@@ -129,8 +129,8 @@ export default function APR() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Annual Pay Review (APR)</h1>
           <p className="text-sm text-muted-foreground">
-            Rating and pay entries from managers, over-budget exceptions, HR finalization, COO &amp;
-            Finance sign-off, then close to payroll.
+            The manager enters the rating and pay, HR approves it, then it is shared with the
+            employee. Over-budget entries route to an exception first.
           </p>
         </div>
         <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
@@ -171,7 +171,7 @@ export default function APR() {
         <CardHeader>
           <CardTitle className="text-base">Process stages</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-5">
+        <CardContent className="grid gap-3 md:grid-cols-4">
           {APR_STAGES.map((s, i) => (
             <div key={s.id} className="rounded-md border p-3">
               <div className="flex items-center justify-between">
@@ -276,25 +276,24 @@ export default function APR() {
                                 <ArrowRight className="h-3.5 w-3.5 mr-1" /> To HR
                               </Button>
                             )}
-                            {r.apr_stage === "hr_review" && (
+                            {(r.apr_stage === "hr_review" || r.apr_stage === "coo_finance") && (
                               <Button size="sm" disabled={busy === r.id || !isHr}
                                 title={isHr ? undefined : "HR or admin only"}
-                                onClick={() => advance(r, "coo_finance", { hr_finalized_at: new Date().toISOString() }, "Finalized by HR")}>
-                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> HR finalize
-                              </Button>
-                            )}
-                            {r.apr_stage === "coo_finance" && (
-                              <Button size="sm" disabled={busy === r.id || !isHr}
-                                onClick={() => advance(r, "closed", {
-                                  coo_finance_approved_at: new Date().toISOString(),
-                                  payroll_submitted_at: new Date().toISOString(),
-                                  status: "completed",
-                                }, "Approved and closed to payroll")}>
-                                <Lock className="h-3.5 w-3.5 mr-1" /> Approve &amp; close
+                                onClick={() => {
+                                  const now = new Date().toISOString();
+                                  advance(r, "closed", {
+                                    hr_finalized_at: r.hr_finalized_at ?? now,
+                                    comp_approval_status: "approved",
+                                    comp_approved_at: now,
+                                    status: "completed",
+                                    released_at: now,
+                                  }, "Approved by HR and shared with the employee");
+                                }}>
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> HR approve &amp; share
                               </Button>
                             )}
                             {r.apr_stage === "closed" && (
-                              <span className="text-xs text-emerald-700">Submitted to payroll</span>
+                              <span className="text-xs text-emerald-700">Shared with the employee</span>
                             )}
                           </div>
                         </TableCell>

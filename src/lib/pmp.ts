@@ -246,7 +246,7 @@ export type AprStage = "manager_entry" | "escalated" | "hr_review" | "coo_financ
 export const APR_STAGES: {
   id: AprStage;
   label: string;
-  owner: "Manager" | "HR" | "COO & Finance" | "System";
+  owner: "Manager" | "HR" | "Employee";
   window: string;
   what: string;
 }[] = [
@@ -266,24 +266,17 @@ export const APR_STAGES: {
   },
   {
     id: "hr_review",
-    label: "HR review",
+    label: "HR approval",
     owner: "HR",
     window: "Jan",
-    what: "Finalize, enter promotions and verify bonus-eligible teams.",
-  },
-  {
-    id: "coo_finance",
-    label: "COO & Finance review",
-    owner: "COO & Finance",
-    window: "Jan 2nd half – Feb 1st half",
-    what: "Pay equity check and final budget vs spend sign-off.",
+    what: "HR checks the rating, merit, bonus and I/C against budget and Datapath pay rules, then approves the pay outcome.",
   },
   {
     id: "closed",
-    label: "Closed to payroll",
-    owner: "System",
-    window: "By Feb 1st half",
-    what: "Ratings, merit and bonus locked; data submitted to payroll and comp summaries released.",
+    label: "Shared with the employee",
+    owner: "Employee",
+    window: "Feb 1st half",
+    what: "Approved outcome is visible on the employee's own review page for the pay conversation and their confirmation.",
   },
 ];
 
@@ -292,7 +285,7 @@ export function aprStageMeta(stage: string | null | undefined) {
 }
 
 export function nextAprStage(stage: AprStage): AprStage | null {
-  const order: AprStage[] = ["manager_entry", "hr_review", "coo_finance", "closed"];
+  const order: AprStage[] = ["manager_entry", "hr_review", "closed"];
   const i = order.indexOf(stage);
   if (i === -1 || i === order.length - 1) return null;
   return order[i + 1];
