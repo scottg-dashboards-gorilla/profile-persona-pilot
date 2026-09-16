@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  AlertTriangle,
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
@@ -60,7 +61,7 @@ import { cn } from "@/lib/utils";
 const thisYear = new Date().getFullYear();
 
 const SELECT =
-  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, released_at";
+  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at";
 
 type Row = AprReview & {
   hr_finalized_at: string | null;
@@ -68,6 +69,7 @@ type Row = AprReview & {
   payroll_submitted_at: string | null;
   comp_approval_status: string | null;
   connect_held_at: string | null;
+  connect_note: string | null;
   released_at: string | null;
 };
 
@@ -433,16 +435,22 @@ export default function APR() {
                                 <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> HR sign-off
                               </Button>
                             )}
-                            {r.apr_stage === "closed" && !r.connect_held_at && (
-                              <Button size="sm" variant="secondary" disabled={busy === r.id}
-                                onClick={() => {
-                                  setConnectRow(r);
-                                  setConnectNote("");
-                                }}>
-                                <Handshake className="h-3.5 w-3.5 mr-1" /> Log connect
-                              </Button>
+                            {r.apr_stage === "closed" && (!r.connect_held_at || !r.connect_note) && (
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Button size="sm" variant="secondary" disabled={busy === r.id}
+                                  onClick={() => {
+                                    setConnectRow(r);
+                                    setConnectNote("");
+                                  }}>
+                                  <Handshake className="h-3.5 w-3.5 mr-1" /> Log connect
+                                </Button>
+                                <span className="text-[11px] leading-snug text-amber-800 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 inline-flex items-center gap-1">
+                                  <AlertTriangle className="h-3 w-3 shrink-0" />
+                                  Sharing is locked — log the connect note first
+                                </span>
+                              </div>
                             )}
-                            {r.apr_stage === "closed" && r.connect_held_at && !r.released_at && (
+                            {r.apr_stage === "closed" && r.connect_held_at && r.connect_note && !r.released_at && (
                               <Button size="sm" disabled={busy === r.id}
                                 onClick={() =>
                                   advance(r, "closed", { released_at: new Date().toISOString() },

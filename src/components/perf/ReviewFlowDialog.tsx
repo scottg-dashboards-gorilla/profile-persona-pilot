@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Clock,
   Handshake,
+  AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -370,30 +371,37 @@ export function ReviewFlowDialog({
               ? `Outcome was pulled back ${format(parseISO(review.reopened_at), "MMM d")} — reason logged. HR must re-approve, then share again.`
               : "Until you share it, the employee sees nothing of the rating or pay change.",
           done: !!review.released_at,
-          action: review.released_at ? null : (
-            <Button
-              size="sm"
-              disabled={
-                busy === "release" ||
-                review.status !== "completed" ||
-                (compProposed && !compApproved) ||
-                !review.connect_held_at ||
-                !review.connect_note
-              }
-              title={
-                review.status !== "completed"
-                  ? "Complete the review first"
-                  : compProposed && !compApproved
-                    ? "HR needs to approve the pay change first"
-                    : !review.connect_held_at || !review.connect_note
-                      ? "Log the connect conversation and note first"
-                      : undefined
-              }
-              onClick={() => patch({ released_at: new Date().toISOString() }, "release", "Outcome shared")}
-            >
-              <Send className="h-3.5 w-3.5 mr-1" /> Share
-            </Button>
-          ),
+          blocked:
+            review.status === "completed" &&
+            (!review.connect_held_at || !review.connect_note),
+          action: review.released_at ? null : (() => {
+            const releaseBlock =
+              review.status !== "completed"
+                ? "Complete the review first."
+                : compProposed && !compApproved
+                  ? "HR needs to approve the pay change first."
+                  : !review.connect_held_at || !review.connect_note
+                    ? "Sharing is locked — log the connect conversation with a note above first."
+                    : null;
+            return (
+              <div className="space-y-1.5 w-full">
+                <Button
+                  size="sm"
+                  disabled={busy === "release" || !!releaseBlock}
+                  title={releaseBlock ?? undefined}
+                  onClick={() => patch({ released_at: new Date().toISOString() }, "release", "Outcome shared")}
+                >
+                  <Send className="h-3.5 w-3.5 mr-1" /> Share
+                </Button>
+                {releaseBlock && (
+                  <p className="text-[11px] leading-snug text-amber-800 bg-amber-50 border border-amber-200 rounded px-1.5 py-1 flex items-start gap-1">
+                    <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span>{releaseBlock}</span>
+                  </p>
+                )}
+              </div>
+            );
+          })(),
         },
         {
           key: "ack",
