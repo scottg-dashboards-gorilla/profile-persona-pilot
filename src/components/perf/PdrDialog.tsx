@@ -129,8 +129,8 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [managerComments, setManagerComments] = useState("");
   const [midyear, setMidyear] = useState("");
   const [midyearSelf, setMidyearSelf] = useState("");
-  /** Mid-year employee progress + comment, keyed by objective id. */
-  const [midObj, setMidObj] = useState<Record<string, { progress: string; comment: string }>>({});
+  /** Mid-year employee comment, keyed by objective id. */
+  const [midObj, setMidObj] = useState<Record<string, string>>({});
   /** Mid-year manager comment, keyed by objective id. */
   const [midMgr, setMidMgr] = useState<Record<string, string>>({});
   const [newTitle, setNewTitle] = useState("");
