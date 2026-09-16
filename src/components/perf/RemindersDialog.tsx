@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, BellRing, Link as LinkIcon, Loader2, MailWarning } from "lucide-react";
+import { AlertTriangle, BellRing, Link as LinkIcon, Loader2, MailWarning, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
