@@ -359,59 +359,6 @@ export default function Overview() {
         </CardContent>
       </Card>
 
-      {/* Active cycles */}
-      {cycles.map((c) => {
-        const s = cycleStats(c.id);
-        return (
-          <Card key={c.id}>
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center">
-                    <CalendarRange className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-                      Active cycle
-                    </div>
-                    <div className="text-lg font-semibold">{c.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {format(parseISO(c.starts_at), "MMM d")} – {format(parseISO(c.ends_at), "MMM d, yyyy")}
-                      {c.review_types?.length ? ` · ${c.review_types.join(", ")}` : ""}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-sm font-medium">
-                      {s.done} of {s.total} complete
-                    </div>
-                    <div className="text-xs text-muted-foreground">{s.pct}%</div>
-                  </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/cycles">Open cycle</Link>
-                  </Button>
-                </div>
-              </div>
-              <Progress value={s.pct} className="mt-4 h-2" />
-            </CardContent>
-          </Card>
-        );
-      })}
-      {loaded && cycles.length === 0 && (
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <div className="text-sm font-medium">No cycle is running</div>
-              <div className="text-sm text-muted-foreground">Start one to kick off reviews for the team.</div>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/cycles">Start a cycle</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Stat grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatTile label="Team size" value={headcount} />
