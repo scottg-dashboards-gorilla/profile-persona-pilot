@@ -169,7 +169,7 @@ export default function PDR() {
         </div>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {PDR_STAGES.map((s, i) => (
           <Card key={s.id}>
             <CardHeader className="pb-2">
@@ -247,7 +247,7 @@ export default function PDR() {
                       <TableCell className="font-medium">{f.employee_name}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-[11px]">
-                          {PDR_STAGES.find((s) => s.id === f.stage)?.label ?? f.stage}
+                          {pdrStageLabel(f.stage)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
@@ -259,10 +259,11 @@ export default function PDR() {
                             stages={[
                               { key: "kickoff", label: "Objectives submitted", short: "1", at: f.objectives_submitted_at },
                               { key: "self", label: "Objectives aligned (C1)", short: "2", at: f.objectives_approved_at },
-                              { key: "360", label: "Mid-year check-in", short: "3", at: f.midyear_checkin_at },
-                              { key: "completion", label: "Year-end self input", short: "4", at: f.self_input_submitted_at },
-                              { key: "comp", label: "Manager comments", short: "5", at: f.comments_finalized_at },
-                              { key: "release", label: "Score recorded", short: "6", at: f.score_recorded_at },
+                              { key: "360", label: "Mid-year self input", short: "3", at: f.midyear_self_submitted_at },
+                              { key: "midmgr", label: "Mid-year manager feedback", short: "4", at: f.midyear_manager_submitted_at ?? f.midyear_checkin_at },
+                              { key: "completion", label: "Year-end self input", short: "5", at: f.self_input_submitted_at },
+                              { key: "comp", label: "Year-end manager input", short: "6", at: f.comments_finalized_at },
+                              { key: "release", label: "Score recorded", short: "7", at: f.score_recorded_at },
                             ]}
                           />
                           <span className="text-xs text-muted-foreground">{p.done}/{p.total}</span>
