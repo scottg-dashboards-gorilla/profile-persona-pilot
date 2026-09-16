@@ -472,7 +472,7 @@ export default function Playbook() {
             ))}
             <p className="text-xs text-muted-foreground border-t pt-2">
               Control C1 — the manager validates every drafted objective maps to Faster / Stronger / Better /
-              TPW. Control C2 — the score is cross-checked before the year is closed.
+              L&D. Control C2 — the score is cross-checked before the year is closed.
             </p>
           </CardContent>
         </Card>
