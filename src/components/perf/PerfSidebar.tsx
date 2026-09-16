@@ -12,28 +12,39 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { usePermissions, type PermissionArea } from "@/hooks/usePermissions";
 
-const primary = [
+type Item = {
+  title: string;
+  url: string;
+  icon: typeof LayoutDashboard;
+  /** Only shown when the signed-in person can reach this area. */
+  area?: PermissionArea;
+  /** Only shown to HR or admin. */
+  adminOnly?: boolean;
+};
+
+const primary: Item[] = [
   { title: "Overview", url: "/", icon: LayoutDashboard },
-  { title: "Development reviews", url: "/pdr", icon: Workflow },
-  { title: "Pay review cycle", url: "/apr", icon: Wallet },
-  { title: "Reviews", url: "/reviews", icon: ClipboardCheck },
-  { title: "People", url: "/people", icon: Users },
-  { title: "Cycles", url: "/cycles", icon: CalendarRange },
+  { title: "Development reviews", url: "/pdr", icon: Workflow, area: "pdr" },
+  { title: "Pay review cycle", url: "/apr", icon: Wallet, area: "apr" },
+  { title: "Reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
+  { title: "People", url: "/people", icon: Users, area: "reviews" },
+  { title: "Cycles", url: "/cycles", icon: CalendarRange, area: "cycles" },
   { title: "Goals", url: "/goals", icon: Target },
-  { title: "Company performance", url: "/company", icon: Building2 },
-  { title: "Compensation", url: "/compensation", icon: DollarSign },
-  { title: "Calibration", url: "/calibration", icon: Scale },
-  { title: "Org rollups", url: "/org", icon: Network },
+  { title: "Company performance", url: "/company", icon: Building2, area: "company" },
+  { title: "Compensation", url: "/compensation", icon: DollarSign, area: "compensation" },
+  { title: "Calibration", url: "/calibration", icon: Scale, area: "calibration" },
+  { title: "Org rollups", url: "/org", icon: Network, area: "org" },
 ];
 
-const secondary = [
+const secondary: Item[] = [
   { title: "My review", url: "/me", icon: UserSquare2 },
   { title: "Playbook", url: "/playbook", icon: BookOpen },
-  { title: "Assessments", url: "/assessments", icon: FileSpreadsheet },
-  { title: "Role Configs", url: "/admin/roles", icon: Settings },
-  { title: "Access", url: "/admin/access", icon: ShieldCheck },
-  { title: "Audit log", url: "/admin/audit", icon: History },
+  { title: "Assessments", url: "/assessments", icon: FileSpreadsheet, adminOnly: true },
+  { title: "Role Configs", url: "/admin/roles", icon: Settings, adminOnly: true },
+  { title: "Access", url: "/admin/access", icon: ShieldCheck, adminOnly: true },
+  { title: "Audit log", url: "/admin/audit", icon: History, area: "audit" },
 ];
 
 
@@ -41,7 +52,18 @@ export function PerfSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
+  const { can, has, unconfigured, loading } = usePermissions();
   const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname.startsWith(url));
+
+  const visible = (item: Item) => {
+    if (loading || unconfigured) return true;
+    if (item.adminOnly && !(has("admin") || has("hr"))) return false;
+    if (item.area && !can(item.area)) return false;
+    return true;
+  };
+
+  const primaryItems = primary.filter(visible);
+  const secondaryItems = secondary.filter(visible);
 
   return (
     <Sidebar collapsible="icon">
@@ -66,7 +88,7 @@ export function PerfSidebar() {
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {primary.map((item) => (
+              {primaryItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
                     <NavLink to={item.url} end={item.url === "/"} className="flex items-center gap-2">
@@ -83,7 +105,7 @@ export function PerfSidebar() {
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {secondary.map((item) => (
+              {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
                     <NavLink to={item.url} className="flex items-center gap-2">
