@@ -24,6 +24,7 @@ import {
   BadgeCheck,
   CheckCircle2,
   Download,
+  Handshake,
   Loader2,
   ShieldCheck,
   Wallet,
