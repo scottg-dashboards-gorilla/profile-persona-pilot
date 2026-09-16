@@ -54,6 +54,91 @@ type Row = AprReview & {
   payroll_submitted_at: string | null;
 };
 
+const EXPORT_SELECT =
+  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
+
+type ExportRow = Record<string, string | number | boolean | null>;
+
+const EXPORT_COLUMNS: { key: string; label: string }[] = [
+  { key: "employee_uuid", label: "Employee ID" },
+  { key: "employee_name", label: "Employee" },
+  { key: "employee_email", label: "Email" },
+  { key: "department", label: "Department" },
+  { key: "title", label: "Job title" },
+  { key: "hire_date", label: "Start date" },
+  { key: "current_annual_comp", label: "Current annual pay" },
+  { key: "rating_score", label: "Rating (1-5)" },
+  { key: "rating_label", label: "Rating meaning" },
+  { key: "merit_percent", label: "Merit %" },
+  { key: "merit_amount", label: "Merit amount" },
+  { key: "merit_prorated_amount", label: "Merit amount (prorated)" },
+  { key: "dm_eligible", label: "Differentiated award eligible" },
+  { key: "dm_percent", label: "Differentiated award %" },
+  { key: "dm_amount", label: "Differentiated award amount" },
+  { key: "new_annual_comp", label: "New annual pay" },
+  { key: "increase_percent", label: "Total increase %" },
+  { key: "bonus_eligible", label: "Bonus eligible" },
+  { key: "bonus_amount", label: "Bonus amount" },
+  { key: "ic_score", label: "I/C score" },
+  { key: "is_executive", label: "Executive" },
+  { key: "exec_payout_amount", label: "Executive pay-out" },
+  { key: "equity_eligible", label: "Share award eligible" },
+  { key: "equity_percent", label: "Share award %" },
+  { key: "equity_value", label: "Share award value" },
+  { key: "equity_shares", label: "Shares" },
+  { key: "equity_price_per_share", label: "Price per share" },
+  { key: "comp_adjustment_amount", label: "Pay change amount" },
+  { key: "comp_adjustment_percent", label: "Pay change %" },
+  { key: "comp_effective_date", label: "Effective date" },
+  { key: "comp_approval_status", label: "HR approval" },
+  { key: "comp_approval_note", label: "HR approval note" },
+  { key: "apr_stage", label: "Stage" },
+  { key: "escalation_status", label: "Over-budget exception" },
+  { key: "hr_finalized_at", label: "HR approved on" },
+  { key: "released_at", label: "Shared with employee on" },
+  { key: "employee_ack_at", label: "Employee confirmed on" },
+  { key: "pay_pushback_status", label: "Pay concern" },
+];
+
+function csvCell(v: unknown) {
+  if (v == null) return "";
+  if (typeof v === "boolean") return v ? "Yes" : "No";
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function buildPayChangeCsv(rows: ExportRow[], year: number) {
+  const lines = [
+    `Datapath Annual Pay Review — FY${year} pay changes,Generated ${new Date().toISOString().slice(0, 10)}`,
+    "",
+    EXPORT_COLUMNS.map((c) => csvCell(c.label)).join(","),
+  ];
+  rows.forEach((r) => {
+    const base = Number(r.current_annual_comp ?? 0);
+    const merit = Number(r.merit_prorated_amount ?? r.merit_amount ?? 0);
+    const dm = Number(r.dm_amount ?? 0);
+    const increase = merit + dm;
+    const enriched: Record<string, unknown> = {
+      ...r,
+      rating_label: ratingMeta(r.rating_score as number | null)?.label ?? "",
+      new_annual_comp: base ? Math.round(base + increase) : "",
+      increase_percent: base ? Number(((increase / base) * 100).toFixed(2)) : "",
+    };
+    lines.push(EXPORT_COLUMNS.map((c) => csvCell(enriched[c.key])).join(","));
+  });
+  return lines.join("\n");
+}
+
+function downloadCsv(filename: string, csv: string) {
+  const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
 export default function APR() {
   const { toast } = useToast();
   const { has, unconfigured } = usePermissions();
