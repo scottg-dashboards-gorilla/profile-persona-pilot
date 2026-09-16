@@ -668,7 +668,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                   </div>
                 )}
                 <Textarea rows={3} disabled={!canManage} value={midyear} onChange={(e) => setMidyear(e.target.value)}
-                  placeholder="Overall mid-year feedback…" />
+                  placeholder="Overall mid-year feedback (optional)…" />
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground flex-1">
                     {form.midyear_checkin_at
@@ -676,7 +676,9 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                       : "Not held yet"}
                   </span>
                   {canManage && (
-                    <Button size="sm" variant="outline" disabled={busy === "mid" || !midyear.trim()}
+                    <Button size="sm" variant="outline"
+                      disabled={busy === "mid" || (!midyear.trim() && !objectives.some((o) => (midMgr[o.id] ?? o.midyear_manager_comment ?? "").trim()))}
+                      title="Comment on at least one objective, or leave overall feedback"
                       onClick={submitMidyearManager}>
                       Submit feedback
                     </Button>
@@ -786,12 +788,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
 
               <div className="grid gap-2 border-t pt-3">
                 <Label className="text-xs">
-                  Feedback summary for overall performance <span className="text-destructive">(required)</span>
+                  Feedback summary for overall performance (optional)
                 </Label>
                 <Textarea
                   rows={4}
                   disabled={!canManage}
-                  placeholder="Enter manager feedback summary comments here"
+                  placeholder="Anything across all objectives — per-objective comments above are usually enough"
                   value={managerComments}
                   onChange={(e) => setManagerComments(e.target.value)}
                 />
@@ -799,14 +801,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                   <span className="text-xs text-muted-foreground flex-1">
                     {form.comments_finalized_at
                       ? `Finalized ${format(parseISO(form.comments_finalized_at), "MMM d, yyyy")}`
-                      : managerComments.trim()
-                        ? "Control C2 — HR cross-checks the score before year-end close-out"
-                        : "A summary of overall performance is mandatory before comments can be finalized."}
+                      : "Control C2 — HR cross-checks the score before year-end close-out"}
                   </span>
                   {canManage && (
                     <Button size="sm" variant="outline"
-                      disabled={busy === "cmt" || !managerComments.trim()}
-                      title={managerComments.trim() ? undefined : "Enter a feedback summary first"}
+                      disabled={busy === "cmt" || (!managerComments.trim() && !objectives.some((o) => (o.manager_comment ?? "").trim()))}
+                      title="Comment on at least one objective, or write a summary"
                       onClick={() => patch({ manager_comments: managerComments || null, comments_finalized_at: now() }, "cmt", "Comments finalized")}>
                       Submit comments
                     </Button>
