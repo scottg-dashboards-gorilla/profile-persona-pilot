@@ -153,14 +153,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setForm(rec);
     const objList = (objs ?? []) as PdrObjective[];
     setObjectives(objList);
-    setMidObj(
-      Object.fromEntries(
-        objList.map((o) => [
-          o.id,
-          { progress: String(o.progress_percent ?? 0), comment: o.midyear_employee_comment ?? "" },
-        ]),
-      ),
-    );
+    setMidObj(Object.fromEntries(objList.map((o) => [o.id, o.midyear_employee_comment ?? ""])));
     setMidMgr(Object.fromEntries(objList.map((o) => [o.id, o.midyear_manager_comment ?? ""])));
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
@@ -226,17 +219,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     await load();
   }
 
-  /** Saves each objective's mid-year progress and comment, then the overall employee input. */
+  /** Saves each objective's mid-year comment, then the overall employee input. */
   async function submitMidyearSelf() {
     if (!form) return;
     setBusy("midself");
     for (const o of objectives) {
-      const row = midObj[o.id];
-      if (!row) continue;
-      const pct = Math.max(0, Math.min(100, Number(row.progress) || 0));
+      const comment = midObj[o.id];
+      if (comment == null) continue;
       const { error } = await supabase
         .from("pdr_objectives")
-        .update({ progress_percent: pct, midyear_employee_comment: row.comment.trim() || null })
+        .update({ midyear_employee_comment: comment.trim() || null })
         .eq("id", o.id);
       if (error) {
         setBusy(null);
