@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Lock } from "lucide-react";
 
@@ -13,6 +14,9 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const [blocked, setBlocked] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [resetMode, setResetMode] = useState(false);
 
   /**
    * Accounts are invite-only: the person must already exist in the Datapath
@@ -78,6 +82,44 @@ const Login = () => {
     setLoading(false);
   };
 
+  const handlePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setBlocked(null);
+
+    if (resetMode) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/login`,
+      });
+      setLoading(false);
+      toast({
+        title: error ? "Couldn't send the reset email" : "Check your inbox",
+        description: error
+          ? error.message
+          : "If that address is on the staff list, a password reset link is on its way.",
+        variant: error ? "destructive" : undefined,
+      });
+      if (!error) setResetMode(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) {
+      toast({
+        title: "Couldn't sign you in",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+    await admitOrTurnAway();
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in">
@@ -88,13 +130,60 @@ const Login = () => {
             </div>
             <h1 className="text-xl font-bold font-display text-foreground">Sign in</h1>
             <p className="text-sm text-muted-foreground">
-              Use your Datapath Microsoft 365 account to see your own review
+              Use your Datapath Microsoft 365 account, or your work email and password
             </p>
           </div>
 
-          <Button type="button" className="w-full" onClick={handleMicrosoft} disabled={loading}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleMicrosoft}
+            disabled={loading}
+          >
             {loading ? "Please wait…" : "Continue with Microsoft"}
           </Button>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <form onSubmit={handlePassword} className="space-y-3">
+            <Input
+              type="email"
+              autoComplete="username"
+              placeholder="Work email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            {!resetMode && (
+              <Input
+                type="password"
+                autoComplete="current-password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            )}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading
+                ? "Please wait…"
+                : resetMode
+                  ? "Send reset link"
+                  : "Sign in with email"}
+            </Button>
+            <button
+              type="button"
+              className="w-full text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setResetMode((v) => !v)}
+            >
+              {resetMode ? "Back to sign in" : "Forgot your password?"}
+            </button>
+          </form>
 
           {blocked && (
             <p className="text-xs text-center text-destructive">{blocked}</p>
