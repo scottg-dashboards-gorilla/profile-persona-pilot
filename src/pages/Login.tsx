@@ -41,7 +41,8 @@ const Login = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id);
-      if ((roles ?? []).length > 0) destination = "/";
+      // Only admins have the Overview dashboard; everyone else starts on their own review.
+      if ((roles ?? []).some((r) => r.role === "admin")) destination = "/";
     }
     navigate(destination, { replace: true });
   };
