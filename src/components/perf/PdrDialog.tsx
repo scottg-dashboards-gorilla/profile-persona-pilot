@@ -562,7 +562,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
               </div>
             </section>
 
-            {/* Stage 3b — manager input */}
+            {/* Stage 3 — year-end review · manager input */}
             <section className="rounded-md border p-3 space-y-3">
               <header className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
