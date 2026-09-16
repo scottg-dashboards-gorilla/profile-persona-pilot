@@ -160,10 +160,26 @@ export function scoreFromLegacy(rating: string | null | undefined): RatingScore 
 export type PdrCategory = "faster" | "stronger" | "better" | "ld";
 
 export const PDR_CATEGORIES: { id: PdrCategory; label: string; blurb: string }[] = [
-  { id: "faster", label: "Faster", blurb: "Speed, cycle time, responsiveness" },
-  { id: "stronger", label: "Stronger", blurb: "Capability, resilience, growth" },
-  { id: "better", label: "Better", blurb: "Quality, customer outcome, accuracy" },
-  { id: "ld", label: "L&D", blurb: "Learning & Development — growth and skills goals" },
+  {
+    id: "faster",
+    label: "Faster",
+    blurb: "Speed and responsiveness — delivering work quicker, shortening cycle times, and removing blockers that slow the team down.",
+  },
+  {
+    id: "stronger",
+    label: "Stronger",
+    blurb: "Capability and resilience — building deeper skills, stronger processes, and a team that can handle more without breaking.",
+  },
+  {
+    id: "better",
+    label: "Better",
+    blurb: "Quality and outcomes — raising the bar on accuracy, customer experience, and the standard of the work itself.",
+  },
+  {
+    id: "ld",
+    label: "L&D",
+    blurb: "Learning & Development — personal growth goals: new skills, certifications, mentoring, and career development.",
+  },
 ];
 
 export type PdrStage = "objectives" | "midyear" | "year_end" | "closed";
@@ -218,11 +234,10 @@ export function c1Passed(objectives: PdrObjective[]) {
   return objectives.length > 0 && objectives.every((o) => o.manager_validated);
 }
 
-/** Weighted year-end score on the 1-5 scale, derived from objective progress. */
+/** Year-end score on the 1-5 scale, derived from average objective progress (all objectives count equally). */
 export function derivedPdrScore(objectives: PdrObjective[]): number | null {
-  const totalWeight = objectives.reduce((s, o) => s + (o.weight || 0), 0);
-  if (!totalWeight) return null;
-  const weighted = objectives.reduce((s, o) => s + (o.progress_percent || 0) * (o.weight || 0), 0) / totalWeight;
+  if (objectives.length === 0) return null;
+  const weighted = objectives.reduce((s, o) => s + (o.progress_percent || 0), 0) / objectives.length;
   // 0% -> 1.0, 100% -> 4.0, above-plan progress can reach 5.
   const score = 1 + (Math.min(weighted, 133) / 100) * 3;
   return Math.round(Math.min(5, Math.max(1, score)) * 10) / 10;
