@@ -216,6 +216,66 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     await load();
   }
 
+  /** Saves each objective's mid-year progress and comment, then the overall employee input. */
+  async function submitMidyearSelf() {
+    if (!form) return;
+    setBusy("midself");
+    for (const o of objectives) {
+      const row = midObj[o.id];
+      if (!row) continue;
+      const pct = Math.max(0, Math.min(100, Number(row.progress) || 0));
+      const { error } = await supabase
+        .from("pdr_objectives")
+        .update({ progress_percent: pct, midyear_employee_comment: row.comment.trim() || null })
+        .eq("id", o.id);
+      if (error) {
+        setBusy(null);
+        toast({ title: "Didn't save", description: error.message, variant: "destructive" });
+        return;
+      }
+    }
+    setBusy(null);
+    await patch(
+      {
+        midyear_self_input: midyearSelf || null,
+        midyear_self_submitted_at: now(),
+        stage: form.stage === "objectives" ? "midyear" : form.stage,
+      },
+      "midself",
+      "Mid-year input submitted",
+    );
+  }
+
+  /** Saves the manager's per-objective comments, then the overall mid-year feedback. */
+  async function submitMidyearManager() {
+    if (!form) return;
+    setBusy("mid");
+    for (const [id, comment] of Object.entries(midMgr)) {
+      const { error } = await supabase
+        .from("pdr_objectives")
+        .update({ midyear_manager_comment: comment.trim() || null })
+        .eq("id", id);
+      if (error) {
+        setBusy(null);
+        toast({ title: "Didn't save", description: error.message, variant: "destructive" });
+        return;
+      }
+    }
+    setBusy(null);
+    await patch(
+      {
+        midyear_manager_feedback: midyear || null,
+        midyear_checkin_at: form.midyear_checkin_at ?? now(),
+        midyear_manager_submitted_at: now(),
+        stage: form.stage === "objectives" ? form.stage : "midyear",
+      },
+      "mid",
+      "Mid-year feedback saved",
+    );
+  }
+
+
+
   function startEdit(o: PdrObjective) {
     setEditingId(o.id);
     setEditTitle(o.title);
