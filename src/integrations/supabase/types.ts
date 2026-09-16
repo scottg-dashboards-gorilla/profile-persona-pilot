@@ -1120,6 +1120,54 @@ export type Database = {
           },
         ]
       }
+      reminder_send_log: {
+        Row: {
+          attempted_at: string
+          created_at: string
+          due_date: string | null
+          employee_name: string | null
+          employee_uuid: string | null
+          error: string | null
+          id: string
+          kind: string
+          recipient_email: string | null
+          recipient_name: string | null
+          reminder_id: string | null
+          review_id: string | null
+          status: string
+        }
+        Insert: {
+          attempted_at?: string
+          created_at?: string
+          due_date?: string | null
+          employee_name?: string | null
+          employee_uuid?: string | null
+          error?: string | null
+          id?: string
+          kind: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          reminder_id?: string | null
+          review_id?: string | null
+          status: string
+        }
+        Update: {
+          attempted_at?: string
+          created_at?: string
+          due_date?: string | null
+          employee_name?: string | null
+          employee_uuid?: string | null
+          error?: string | null
+          id?: string
+          kind?: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          reminder_id?: string | null
+          review_id?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       review_access_tokens: {
         Row: {
           contributor_id: string | null
