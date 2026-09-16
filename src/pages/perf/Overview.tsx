@@ -18,6 +18,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { AttemptRow } from "@/lib/assessmentDeltas";
 import { Link } from "react-router-dom";
 import { TestCycleWizard } from "@/components/perf/TestCycleWizard";
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 type ReviewRow = {
   id: string;
