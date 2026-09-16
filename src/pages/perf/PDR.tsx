@@ -144,17 +144,17 @@ export default function PDR() {
     <div className="space-y-5">
       <header className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Development reviews (PDR)</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Objective setting (PDR)</h1>
           <p className="text-sm text-muted-foreground">
             Three reviews a year — objective setting, mid-year and year-end — each with employee input
             and manager input. The year-end score feeds the person's pay review cycle.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {isAdminHr
-              ? "You can see every employee's development review."
+              ? "You can see every employee's objective setting."
               : isManager
-                ? "You can see your own development review and those of the people you manage."
-                : "You can see your own development review only."}
+                ? "You can see your own objective setting and those of the people you manage."
+                : "You can see your own objective setting only."}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -224,7 +224,7 @@ export default function PDR() {
             <p className="py-8 text-center text-sm text-muted-foreground">
               {canManage
                 ? `No PDRs for FY${year} yet — start one above.`
-                : `You don't have a FY${year} development review yet. Your manager or HR will start it.`}
+                : `You don't have a FY${year} objective setting yet. Your manager or HR will start it.`}
             </p>
           ) : (
             <Table>
