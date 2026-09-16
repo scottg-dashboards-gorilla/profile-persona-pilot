@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   ArrowRight,
-  CalendarRange,
   FlaskConical,
   CheckCircle2,
   AlertTriangle,
@@ -50,15 +47,6 @@ type ReviewRow = {
   reviewer_uuid: string | null;
   assessment_attempt_id: string | null;
   cycle_id: string | null;
-};
-
-type CycleRow = {
-  id: string;
-  name: string;
-  status: string;
-  starts_at: string;
-  ends_at: string;
-  review_types: string[] | null;
 };
 
 type PayYear = {
