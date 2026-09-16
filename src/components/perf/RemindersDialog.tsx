@@ -33,15 +33,24 @@ type Outstanding = {
 
 type Reminder = {
   id: string;
-  review_id: string;
+  review_id: string | null;
   contributor_id: string | null;
   kind: string;
+  employee_name?: string | null;
   recipient_name: string | null;
   recipient_email: string | null;
   due_date: string;
   status: string;
   sent_at: string | null;
   created_at: string;
+};
+
+const KIND_LABEL: Record<string, string> = {
+  self: "self-assessment",
+  contributor: "360 feedback",
+  manager_entry: "pay review opens — 3 weeks out",
+  hr_signoff: "HR sign-off — 2 weeks out",
+  connect_share: "connect & share — 1 week out",
 };
 
 export function RemindersDialog({ open, onOpenChange }: Props) {
