@@ -50,6 +50,43 @@ type ReviewRow = {
   cycle_id: string | null;
 };
 
+type AuditRow = {
+  id: string;
+  created_at: string;
+  actor_email: string | null;
+  table_name: string;
+  action: string;
+  summary: string | null;
+};
+
+type ActivityEvent = {
+  id: string;
+  at: string;
+  who: string;
+  what: string;
+  extra?: string;
+  to?: string;
+};
+
+function auditLabel(row: AuditRow): string | null {
+  if (row.summary) return row.summary;
+  const nouns: Record<string, string> = {
+    performance_reviews: "review",
+    review_cycles: "review cycle",
+    user_roles: "access role",
+    company_performance_years: "company performance year",
+    company_kpis: "company KPI",
+    funding_curve_points: "funding curve",
+    goals: "goal",
+    pdr_forms: "PDR",
+    manager_budgets: "manager budget",
+  };
+  const noun = nouns[row.table_name];
+  if (!noun) return null;
+  const verb = row.action === "insert" ? "Created" : row.action === "delete" ? "Removed" : "Updated";
+  return `${verb} a ${noun}`;
+}
+
 type PayYear = {
   year: string;
   avgSalary: number | null;
