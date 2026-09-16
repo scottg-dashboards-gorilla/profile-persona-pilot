@@ -265,10 +265,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
             <section className="rounded-md border p-3 space-y-3">
               <header className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
-                  <div className="text-sm font-medium">1 · Objectives (Faster / Stronger / Better / L&D)</div>
+                  <div className="text-sm font-medium">1 · Objective setting (Faster / Stronger / Better / L&D)</div>
                   <p className="text-xs text-muted-foreground">
-                    Employee drafts; manager cascades from their own PDR and validates each one maps to a
-                    category — control C1.
+                    Employee input: draft and submit the objectives. Manager input: cascade from their own
+                    PDR and validate each one maps to a category — control C1.
                   </p>
                 </div>
                 <Badge className={c1 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}>
