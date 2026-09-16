@@ -34,6 +34,79 @@ type Props = {
   canManage: boolean;
 };
 
+function CategoryPicker({
+  value,
+  onChange,
+}: {
+  value: PdrCategory;
+  onChange: (v: PdrCategory) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<PdrCategory | null>(null);
+  const current = PDR_CATEGORIES.find((c) => c.id === value);
+  const viewingCat = PDR_CATEGORIES.find((c) => c.id === viewing);
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setViewing(null);
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="h-9 w-[150px] justify-between font-normal">
+          <span className="truncate">{current?.label ?? "Choose…"}</span>
+          <ChevronsUpDown className="h-3.5 w-3.5 opacity-50 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-1" align="start">
+        {viewingCat ? (
+          <div className="p-2 space-y-2">
+            <p className="text-sm font-medium">{viewingCat.label}</p>
+            <p className="text-xs text-muted-foreground">{viewingCat.blurb}</p>
+            <div className="flex justify-end gap-1 pt-1">
+              <Button size="sm" variant="ghost" onClick={() => setViewing(null)}>
+                Back
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  onChange(viewingCat.id);
+                  setOpen(false);
+                  setViewing(null);
+                }}
+              >
+                <Check className="h-3.5 w-3.5 mr-1" /> Use this
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-0.5">
+            {PDR_CATEGORIES.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className={cn(
+                  "w-full flex items-center justify-between rounded-sm px-2 py-1.5 text-sm text-left hover:bg-accent hover:text-accent-foreground",
+                  c.id === value && "bg-accent/60",
+                )}
+                onClick={() => setViewing(c.id)}
+              >
+                <span className="flex items-center gap-1.5">
+                  {c.label}
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </span>
+                {c.id === value && <Check className="h-3.5 w-3.5" />}
+              </button>
+            ))}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 type PayReviewLink = {
   id: string;
   review_cycle: string;
