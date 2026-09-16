@@ -148,6 +148,7 @@ export default function APR() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [open, setOpen] = useState<AprReview | null>(null);
 
   const load = useCallback(async () => {
