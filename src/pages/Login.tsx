@@ -27,7 +27,7 @@ const Login = () => {
 
   /** Link the account to its staff record, then land on the right home page. */
   const afterSignIn = async () => {
-    await supabase.rpc("claim_employee_link").catch(() => undefined);
+    await supabase.rpc("claim_employee_link");
     if (from) {
       navigate(from, { replace: true });
       return;
