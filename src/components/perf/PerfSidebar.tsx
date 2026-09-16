@@ -31,7 +31,7 @@ const primary: Item[] = [
   { title: "Reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
   { title: "People", url: "/people", icon: Users, area: "reviews" },
   { title: "Cycles", url: "/cycles", icon: CalendarRange, area: "cycles" },
-  { title: "Goals", url: "/goals", icon: Target },
+  { title: "Task Tracker", url: "/tasks", icon: ListTodo },
   { title: "Company performance", url: "/company", icon: Building2, area: "company" },
   { title: "Compensation", url: "/compensation", icon: DollarSign, area: "compensation" },
   { title: "Salary history", url: "/salary-history", icon: Lock, area: "salary" },
