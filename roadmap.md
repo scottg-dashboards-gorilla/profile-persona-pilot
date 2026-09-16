@@ -14,3 +14,4 @@
 - [ ] Point 2 (reminder emails): share email-domain setup with Scott — he must complete the setup form for mydatapath.com (sender HR@mydatapath.com). Only the domain connection remains; queueing, daily cron, and the send edge function are done.
 - [x] Housekeeping: demo employees, their reviews and the 6 stale queued reminders removed. Team list is 66 real people.
 - [x] Audit point 6: employees self-link on sign-in via claim_employee_link() (email match) + auto manager role for people with direct reports; Access & Roles shows linked/not-signed-in/no-email counts.
+- [x] Audit point 7: development reviews auto-link to the matching pay review (same person + year, both directions) with C2 score cross-check shown in the PDR dialog.
