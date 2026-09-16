@@ -20,7 +20,7 @@ import { format, parseISO } from "date-fns";
 import {
   PDR_CATEGORIES,
   c1Passed,
-  derivedPdrScore,
+  
   type PdrCategory,
   type PdrForm,
   type PdrObjective,
@@ -305,7 +305,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   if (!formId) return null;
 
   const c1 = c1Passed(objectives);
-  const suggested = derivedPdrScore(objectives);
+  
 
   return (
     <Dialog open={!!formId} onOpenChange={onOpenChange}>
@@ -782,8 +782,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
             <section className="rounded-md border p-3 space-y-2">
               <div className="text-sm font-medium">Year-end PDR score</div>
               <p className="text-xs text-muted-foreground">
-                Suggested from average objective progress: <strong>{suggested ?? "—"}</strong> / 5. HR
-                cross-checks before the year is closed.
+                HR cross-checks the score against the pay rating before the year is closed.
               </p>
 
               {/* Control C2 — development score vs the pay rating on the linked review */}
@@ -828,7 +827,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     step="0.1"
                     min={1}
                     max={5}
-                    defaultValue={form.year_end_score ?? suggested ?? ""}
+                    defaultValue={form.year_end_score ?? ""}
                     onBlur={(e) => {
                       const v = e.target.value === "" ? null : Number(e.target.value);
                       if (v !== form.year_end_score) patch({ year_end_score: v }, "score", "Score saved");
