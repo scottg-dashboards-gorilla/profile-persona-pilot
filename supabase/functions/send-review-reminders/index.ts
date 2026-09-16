@@ -197,16 +197,16 @@ Deno.serve(async (req) => {
         .from("review_reminders")
         .update({ status: "sent", sent_at: new Date().toISOString(), last_error: null })
         .eq("id", r.id);
+      await logAttempt(r, "sent", null);
       sent++;
     } catch (e) {
       failed++;
+      const msg = String((e as Error).message ?? e).slice(0, 500);
       await admin
         .from("review_reminders")
-        .update({
-          status: "failed",
-          last_error: String((e as Error).message ?? e).slice(0, 500),
-        })
+        .update({ status: "failed", last_error: msg })
         .eq("id", r.id);
+      await logAttempt(r, "failed", msg);
     }
   }
 
