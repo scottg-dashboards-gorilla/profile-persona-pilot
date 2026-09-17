@@ -42,6 +42,8 @@ const Index = () => {
   const [linkedUuid, setLinkedUuid] = useState<string | null>(null);
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null);
   const [suggestedRoleId, setSuggestedRoleId] = useState<string | null>(null);
+  /** The person's last assessment, so this one can be shown against it. */
+  const [previous, setPrevious] = useState<PreviousAttempt | null>(null);
 
   // Signed in through the performance tool? Identify the person automatically:
   // link their login to their staff record, prefill their name, and suggest a
