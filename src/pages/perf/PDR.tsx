@@ -77,17 +77,16 @@ export default function PDR() {
       return [...set].sort((a, b) => b - a);
     });
     // Who can this person start a PDR for? Admin/HR: anyone. Manager: their own
-    // team (direct reports and one level below). Employee: nobody.
+    // direct reports only (never themselves, never other managers' teams).
     const all = (emps ?? []) as Emp[];
     const meUuid = all.find((e) => e.user_id && e.user_id === auth?.user?.id)?.uuid ?? null;
     let visible: string[] | null = null;
     if (isAdminHr) {
       setEmployees(all);
     } else if (isManager && meUuid) {
-      const direct = all.filter((e) => e.manager_uuid === meUuid).map((e) => e.uuid);
-      const team = new Set([...direct, ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid)]);
-      setEmployees(all.filter((e) => team.has(e.uuid)));
-      visible = [...team];
+      const direct = all.filter((e) => e.manager_uuid === meUuid && e.uuid !== meUuid);
+      setEmployees(direct);
+      visible = direct.map((e) => e.uuid);
     } else {
       setEmployees([]);
       visible = meUuid ? [meUuid] : [];
