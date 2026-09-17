@@ -11,6 +11,8 @@ import { questions as allQuestions } from "@/data/questions";
 
 interface IntroScreenProps {
   onBegin: (name: string, role: string) => void;
+  lockedName?: string | null;
+  lockedEmail?: string | null;
   onResume: (saved: SavedProgress) => void;
 }
 
@@ -37,7 +39,7 @@ const competencyAreas = [
   },
 ];
 
-const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
+const IntroScreen = ({ onBegin, onResume, lockedName, lockedEmail }: IntroScreenProps) => {
   const [name, setName] = useState("");
   const { roles } = useRoles();
   const [role, setRole] = useState<string>(DEFAULT_ROLE);
@@ -198,14 +200,25 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
             <label htmlFor="employee-name" className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
               Resource Name
             </label>
-            <Input
-              id="employee-name"
-              placeholder="Enter the candidate's full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-11"
-              maxLength={100}
-            />
+            {lockedName ? (
+              <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3">
+                <p className="font-medium text-foreground">{lockedName}</p>
+                {lockedEmail && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Signed in as {lockedEmail} — your result is saved to your record automatically.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <Input
+                id="employee-name"
+                placeholder="Enter the candidate's full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-11"
+                maxLength={100}
+              />
+            )}
           </div>
 
           {/* Role selector */}
@@ -247,8 +260,8 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
 
           {/* CTA */}
           <Button
-            onClick={() => onBegin(name.trim(), role)}
-            disabled={!name.trim()}
+            onClick={() => onBegin((lockedName ?? name).trim(), role)}
+            disabled={!(lockedName ?? name).trim()}
             className="w-full h-12 text-base font-semibold gap-2"
             size="lg"
           >
