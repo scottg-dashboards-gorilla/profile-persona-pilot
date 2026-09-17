@@ -343,6 +343,7 @@ export function RatingsGrid({ year }: { year: number }) {
                 <TableHeader>
                   <TableRow>
                     <TableHead rowSpan={2} className="align-bottom">Employee</TableHead>
+                    <TableHead rowSpan={2} className="align-bottom w-[140px]">Goal progress</TableHead>
                     <TableHead rowSpan={2} className="align-bottom w-[150px] bg-primary/10">
                       Performance Rating
                     </TableHead>
