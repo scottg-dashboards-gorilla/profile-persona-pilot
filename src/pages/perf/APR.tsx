@@ -74,7 +74,7 @@ type Row = AprReview & {
 };
 
 const EXPORT_SELECT =
-  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, ic_score, is_executive, exec_payout_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
+  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, ic_score, is_executive, exec_payout_amount, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
 
 type ExportRow = Record<string, string | number | boolean | null>;
 
@@ -99,11 +99,6 @@ const EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "ic_score", label: "I/C score" },
   { key: "is_executive", label: "Executive" },
   { key: "exec_payout_amount", label: "Executive pay-out" },
-  { key: "equity_eligible", label: "Share award eligible" },
-  { key: "equity_percent", label: "Share award %" },
-  { key: "equity_value", label: "Share award value" },
-  { key: "equity_shares", label: "Shares" },
-  { key: "equity_price_per_share", label: "Price per share" },
   { key: "comp_adjustment_amount", label: "Pay change amount" },
   { key: "comp_adjustment_percent", label: "Pay change %" },
   { key: "comp_effective_date", label: "Effective date" },
@@ -542,7 +537,7 @@ type Mgr = { uuid: string; name: string; reports: number };
 function ManagerBudgets({ year }: { year: number }) {
   const { toast } = useToast();
   const [mgrs, setMgrs] = useState<Mgr[]>([]);
-  const [budgets, setBudgets] = useState<Record<string, { merit: string; equity: string }>>({});
+  const [budgets, setBudgets] = useState<Record<string, { merit: string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -562,11 +557,10 @@ function ManagerBudgets({ year }: { year: number }) {
       })
       .sort((a, b2) => b2.reports - a.reports);
     setMgrs(managers);
-    const map: Record<string, { merit: string; equity: string }> = {};
-    ((b ?? []) as { manager_uuid: string; merit_budget_amount: number; equity_budget_amount: number | null }[]).forEach((row) => {
+    const map: Record<string, { merit: string }> = {};
+    ((b ?? []) as { manager_uuid: string; merit_budget_amount: number }[]).forEach((row) => {
       map[row.manager_uuid] = {
         merit: String(row.merit_budget_amount ?? 0),
-        equity: String(row.equity_budget_amount ?? 0),
       };
     });
     setBudgets(map);
@@ -577,15 +571,13 @@ function ManagerBudgets({ year }: { year: number }) {
   }, [load]);
 
   async function save(m: Mgr) {
-    const v = budgets[m.uuid] ?? { merit: "0", equity: "0" };
+    const v = budgets[m.uuid] ?? { merit: "0" };
     setSaving(m.uuid);
     const { error } = await supabase.from("manager_budgets").upsert(
       {
         manager_uuid: m.uuid,
         fiscal_year: year,
         merit_budget_amount: Number(v.merit) || 0,
-        
-        equity_budget_amount: Number(v.equity) || 0,
       },
       { onConflict: "manager_uuid,fiscal_year" },
     );
@@ -603,14 +595,14 @@ function ManagerBudgets({ year }: { year: number }) {
       <CardHeader>
         <CardTitle className="text-base">Manager budgets · FY{year}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Merit and share pots. Managers with 5 or more reports are hard-blocked from saving
+          Merit pots. Managers with 5 or more reports are hard-blocked from saving
           entries above these amounts — exceptions route to the next-level manager.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         {mgrs.length === 0 && <p className="text-sm text-muted-foreground">No managers with reports yet.</p>}
         {mgrs.map((m) => {
-          const v = budgets[m.uuid] ?? { merit: "", equity: "" };
+          const v = budgets[m.uuid] ?? { merit: "" };
           return (
             <div key={m.uuid} className="flex items-end gap-3 flex-wrap border-b pb-3 last:border-0">
               <div className="min-w-[160px]">
@@ -627,15 +619,6 @@ function ManagerBudgets({ year }: { year: number }) {
                   type="number"
                   value={v.merit}
                   onChange={(e) => setBudgets((p) => ({ ...p, [m.uuid]: { ...v, merit: e.target.value } }))}
-                />
-              </div>
-              <div className="grid gap-1">
-                <Label className="text-[10px] uppercase text-muted-foreground">Share budget</Label>
-                <Input
-                  className="h-9 w-32"
-                  type="number"
-                  value={v.equity}
-                  onChange={(e) => setBudgets((p) => ({ ...p, [m.uuid]: { ...v, equity: e.target.value } }))}
                 />
               </div>
 
