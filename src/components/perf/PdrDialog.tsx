@@ -744,6 +744,48 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                               {cat?.label ?? o.category}
                             </div>
                           </div>
+                          {o.target_value != null && (
+                            <div className="flex items-end gap-2 flex-wrap">
+                              <div className="grid gap-1">
+                                <Label className="text-[10px] uppercase text-muted-foreground">
+                                  {o.measure_type === "milestone" ? "Is it done?" : "Where are you now?"}
+                                </Label>
+                                {o.measure_type === "milestone" ? (
+                                  <Select
+                                    value={midVal[o.id] === "100" ? "100" : "0"}
+                                    onValueChange={(v) => setMidVal((m) => ({ ...m, [o.id]: v }))}
+                                  >
+                                    <SelectTrigger className="h-9 w-[140px]">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="0">Not done yet</SelectItem>
+                                      <SelectItem value="100">Done</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                ) : (
+                                  <Input
+                                    type="number"
+                                    className="w-[120px]"
+                                    value={midVal[o.id] ?? ""}
+                                    onChange={(e) => setMidVal((m) => ({ ...m, [o.id]: e.target.value }))}
+                                    placeholder="0"
+                                  />
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground pb-2">
+                                Target {formatGoalValue(o.target_value, o.measure_type, o.unit)}
+                                {midVal[o.id]?.trim()
+                                  ? ` · ${goalAchievementPercent({
+                                      measure_type: o.measure_type,
+                                      start_value: Number(o.start_value ?? 0),
+                                      target_value: o.target_value,
+                                      current_value: Number(midVal[o.id]),
+                                    })}% achieved`
+                                  : ""}
+                              </p>
+                            </div>
+                          )}
                           <Textarea
                             rows={2}
                             value={comment}
