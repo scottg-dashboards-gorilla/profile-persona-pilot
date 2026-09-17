@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { ViewModeProvider } from "@/hooks/useViewMode";
+import { ViewModeProvider, useViewMode } from "@/hooks/useViewMode";
 import { ViewModeBadge, ViewModeMenuSection } from "./ViewModeSwitcher";
 
 const pageTitles: Record<string, string> = {
