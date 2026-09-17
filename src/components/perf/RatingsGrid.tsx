@@ -237,7 +237,7 @@ export function RatingsGrid({ year }: { year: number }) {
       return;
     }
     setSaving(true);
-    for (const c of computed) {
+    for (const c of changed) {
       const { error } = await supabase
         .from("performance_reviews")
         .update({
