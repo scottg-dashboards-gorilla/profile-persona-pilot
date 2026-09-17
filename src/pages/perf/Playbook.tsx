@@ -521,6 +521,7 @@ export default function Playbook() {
           </CardContent>
         </Card>
 
+        {!forEmployee && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">The pay review cycle</CardTitle>
