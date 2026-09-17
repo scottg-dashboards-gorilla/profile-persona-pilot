@@ -388,15 +388,28 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setEditTitle(o.title);
     setEditCategory(o.category as PdrCategory);
     setEditDescription(o.description ?? "");
+    setEditMeasure(o.measure_type ?? "percentage");
+    setEditStart(String(o.start_value ?? 0));
+    setEditTarget(o.target_value == null ? "" : String(o.target_value));
+    setEditUnit(o.unit ?? "");
   }
 
   async function saveEdit() {
     if (!editingId || !editTitle.trim() || !editDescription.trim()) return;
+    const isMilestone = editMeasure === "milestone";
+    if (!isMilestone && !editTarget.trim()) {
+      toast({ title: "Target needed", description: "Set the target you're aiming for.", variant: "destructive" });
+      return;
+    }
     setBusy("edit");
     await updateObjective(editingId, {
       title: editTitle.trim(),
       category: editCategory,
       description: editDescription.trim(),
+      measure_type: editMeasure,
+      start_value: isMilestone ? 0 : Number(editStart || 0),
+      target_value: isMilestone ? 100 : Number(editTarget),
+      unit: editMeasure === "number" && editUnit.trim() ? editUnit.trim() : null,
     });
     setBusy(null);
     setEditingId(null);
