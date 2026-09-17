@@ -25,6 +25,20 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useSearchParams } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+/** The review's year: the fiscal year it belongs to, else the year it was scheduled in. */
+function reviewYear(r: ReviewRow): number | null {
+  const fy = (r as any).fiscal_year as number | null | undefined;
+  if (fy) return fy;
+  return r.scheduled_date ? Number(r.scheduled_date.slice(0, 4)) : null;
+}
 
 
 
@@ -49,6 +63,7 @@ export default function Reviews() {
   const [contributorsFor, setContributorsFor] = useState<ReviewRow | null>(null);
   const [flowFor, setFlowFor] = useState<ReviewRow | null>(null);
   const [remindersOpen, setRemindersOpen] = useState(false);
+  const [year, setYear] = useState<string>(String(new Date().getFullYear()));
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [attemptByReview, setAttemptByReview] = useState<Record<string, string | null>>({});
