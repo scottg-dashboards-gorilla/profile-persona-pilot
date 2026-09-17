@@ -25,6 +25,20 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useSearchParams } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+/** The review's year: the fiscal year it belongs to, else the year it was scheduled in. */
+function reviewYear(r: ReviewRow): number | null {
+  const fy = (r as any).fiscal_year as number | null | undefined;
+  if (fy) return fy;
+  return r.scheduled_date ? Number(r.scheduled_date.slice(0, 4)) : null;
+}
 
 
 
@@ -49,6 +63,7 @@ export default function Reviews() {
   const [contributorsFor, setContributorsFor] = useState<ReviewRow | null>(null);
   const [flowFor, setFlowFor] = useState<ReviewRow | null>(null);
   const [remindersOpen, setRemindersOpen] = useState(false);
+  const [year, setYear] = useState<string>(String(new Date().getFullYear()));
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [attemptByReview, setAttemptByReview] = useState<Record<string, string | null>>({});
@@ -171,25 +186,41 @@ export default function Reviews() {
 
   const cycleFilter = searchParams.get("cycle");
 
+  // Every year that has reviews on file, newest first, so history stays reachable.
+  const years = useMemo(() => {
+    const set = new Set<number>();
+    rows.forEach((r) => {
+      const y = reviewYear(r);
+      if (y) set.add(y);
+    });
+    set.add(new Date().getFullYear());
+    return [...set].sort((a, b) => b - a);
+  }, [rows]);
+
+  const inYear = (r: ReviewRow) => year === "all" || String(reviewYear(r) ?? "") === year;
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((r) => {
+      if (!inYear(r)) return false;
       if (cycleFilter && (r as any).cycle_id !== cycleFilter) return false;
       if (q && !`${r.employee_name} ${r.department ?? ""}`.toLowerCase().includes(q)) return false;
       if (tab === "upcoming") return r.status === "scheduled";
       if (tab === "in_progress") return r.status === "in_progress";
       return r.status === "completed";
     });
-  }, [rows, query, tab, cycleFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, query, tab, cycleFilter, year]);
 
-  const counts = useMemo(
-    () => ({
-      upcoming: rows.filter((r) => r.status === "scheduled").length,
-      in_progress: rows.filter((r) => r.status === "in_progress").length,
-      completed: rows.filter((r) => r.status === "completed").length,
-    }),
-    [rows],
-  );
+  const counts = useMemo(() => {
+    const scoped = rows.filter(inYear);
+    return {
+      upcoming: scoped.filter((r) => r.status === "scheduled").length,
+      in_progress: scoped.filter((r) => r.status === "in_progress").length,
+      completed: scoped.filter((r) => r.status === "completed").length,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, year]);
 
   async function patchRow(id: string, patch: Partial<ReviewRow>) {
     setBusyId(id);
@@ -226,6 +257,19 @@ export default function Reviews() {
             className="pl-8 w-80 h-9"
           />
         </div>
+        <Select value={year} onValueChange={setYear}>
+          <SelectTrigger className="w-[140px] h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All years</SelectItem>
+            {years.map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button variant="outline" size="sm" className="ml-auto" onClick={() => setRemindersOpen(true)}>
           <BellRing className="h-4 w-4 mr-1" /> Reminders
         </Button>
