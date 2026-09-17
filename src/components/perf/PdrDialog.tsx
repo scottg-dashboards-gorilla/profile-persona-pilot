@@ -546,10 +546,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           />
                         </div>
                         <GoalTargetFields
+                          kind={editKind}
+                          startDate={editStartDate}
+                          endDate={editEndDate}
                           measure={editMeasure}
                           start={editStart}
                           target={editTarget}
                           unit={editUnit}
+                          onKind={setEditKind}
+                          onStartDate={setEditStartDate}
+                          onEndDate={setEditEndDate}
                           onMeasure={setEditMeasure}
                           onStart={setEditStart}
                           onTarget={setEditTarget}
