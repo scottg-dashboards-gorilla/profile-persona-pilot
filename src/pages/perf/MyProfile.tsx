@@ -102,7 +102,18 @@ export default function MyProfile() {
     );
   }
 
-  const fields = [
+  const fields: {
+    icon: typeof Briefcase;
+    label: string;
+    value: string;
+    sub?: string;
+  }[] = [
+    {
+      icon: Users,
+      label: "Line manager / Supervisor",
+      value: manager ? `${manager.first_name} ${manager.last_name}` : "—",
+      sub: manager?.title ?? undefined,
+    },
     { icon: Briefcase, label: "Job title", value: me.title ?? "—" },
     { icon: Building2, label: "Department", value: me.department ?? "—" },
     { icon: Mail, label: "Work email", value: me.email ?? "—" },
@@ -136,50 +147,12 @@ export default function MyProfile() {
                   {f.label}
                 </div>
                 <div className="text-sm font-medium">{f.value}</div>
+                {f.sub && (
+                  <div className="text-xs text-muted-foreground">{f.sub}</div>
+                )}
               </div>
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Line manager / Supervisor</CardTitle>
-          <CardDescription>The person you report to</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {manager ? (
-            <>
-              <div>
-                <div className="text-sm font-medium">
-                  {manager.first_name} {manager.last_name}
-                </div>
-                <div className="text-xs text-muted-foreground">{manager.title ?? "—"}</div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Mail className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Work email
-                  </div>
-                  <div className="text-sm font-medium">{manager.email ?? "—"}</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Building2 className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Department
-                  </div>
-                  <div className="text-sm font-medium">{manager.department ?? "—"}</div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No line manager is set on your record yet — HR can add one.
-            </p>
-          )}
         </CardContent>
       </Card>
       <p className="text-xs text-muted-foreground">
