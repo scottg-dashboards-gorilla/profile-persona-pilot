@@ -704,13 +704,36 @@ function AnniversaryPanel({
   }, [isAdminHr]);
 
   const existing = useMemo(() => new Set(rows.map((r) => r.employee_uuid)), [rows]);
+  const [openBucket, setOpenBucket] = useState<string | null>(null);
 
-  const due = useMemo(() => {
-    return people
+  const buckets = useMemo(() => {
+    const dated = people
       .map((p) => ({ p, due: payReviewDue(p.hire_date) }))
       .filter((x): x is { p: Person; due: NonNullable<ReturnType<typeof payReviewDue>> } => !!x.due)
-      .filter((x) => x.due.daysUntil <= 90)
       .sort((a, b) => a.due.daysUntil - b.due.daysUntil);
+    return [
+      {
+        id: "passed",
+        title: "Anniversary passed",
+        hint: "Their anniversary date has already gone by",
+        list: dated.filter((x) => x.due.daysUntil < 0),
+        tone: "border-red-200 bg-red-50/60 text-red-900",
+      },
+      {
+        id: "due_soon",
+        title: "Due in 3 weeks",
+        hint: "Anniversary within the next 21 days",
+        list: dated.filter((x) => x.due.daysUntil >= 0 && x.due.daysUntil <= 21),
+        tone: "border-amber-200 bg-amber-50/60 text-amber-900",
+      },
+      {
+        id: "not_open",
+        title: "Not open yet",
+        hint: "Anniversary more than 3 weeks away",
+        list: dated.filter((x) => x.due.daysUntil > 21),
+        tone: "border-emerald-200 bg-emerald-50/60 text-emerald-900",
+      },
+    ];
   }, [people]);
 
   const noStart = people.filter((p) => !p.hire_date).length;
