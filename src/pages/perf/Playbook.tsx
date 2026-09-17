@@ -581,7 +581,7 @@ export default function Playbook() {
                 A manager with 5 or more eligible reports cannot save pay entries above their team budget —
                 the entry must be escalated to the next-level manager and approved first.
               </Rule>
-              <Rule>Merit and share awards draw from separate budgets; unspent money cannot move between them.</Rule>
+              <Rule>Merit draws from the manager's merit budget; overspend needs an approved exception from the next-level manager.</Rule>
               <Rule>I/C scores are tracked against the Datapath target of {IC_TARGET}.</Rule>
             </>
           )}
