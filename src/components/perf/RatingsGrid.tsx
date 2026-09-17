@@ -255,20 +255,8 @@ export function RatingsGrid({ year }: { year: number }) {
           <div className="grid gap-1 text-right text-xs">
             <BudgetReadout label="Remaining MERIT USD Budget" remaining={meritBudget - spend.merit} total={meritBudget} over={meritOver} />
             <BudgetReadout label="Remaining DM USD Budget" remaining={dmBudget - spend.dm} total={dmBudget} over={dmOver} />
-            <BudgetReadout label="Remaining SHARE Budget" remaining={equityBudget - spend.equity} total={equityBudget} over={equityOver} />
             <div className={cn("font-medium", icOver ? "text-destructive" : "text-muted-foreground")}>
               Average I/C Score spend {spend.icAvg ?? "—"} <span className="text-muted-foreground">/ {IC_TARGET}</span>
-            </div>
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <span className="text-muted-foreground">Share price (USD)</span>
-              <Input
-                type="number"
-                step="0.01"
-                className="h-7 w-24 text-right text-xs"
-                placeholder="0.00"
-                value={sharePrice}
-                onChange={(e) => setSharePrice(e.target.value)}
-              />
             </div>
           </div>
         </div>
