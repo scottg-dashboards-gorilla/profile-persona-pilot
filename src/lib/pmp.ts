@@ -543,6 +543,7 @@ export const MERIT_PRINCIPLES = {
   delivery: "Each performance rating has an associated merit increase range — the higher the rating, the higher the range. 5% is the mid point: a solid \"Achieved\" (3) rating can be awarded 5%.",
   watchOuts: [
     "The team average merit increase target is 5%.",
+    "Associates rated 1 (Did Not Meet) receive a 0% merit increase — no salary adjustment.",
     "Managers cannot exceed the maximum of the merit increase range.",
     "Managers cannot spend more than their approved merit budget (5% of their team's total pay).",
     "For managers with teams of more than 5 associates, entries cannot be saved if the merit spend is higher than the merit budget.",

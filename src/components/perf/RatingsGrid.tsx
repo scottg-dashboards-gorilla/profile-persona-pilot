@@ -160,7 +160,7 @@ export function RatingsGrid({ year }: { year: number }) {
       const score = d.rating ? Number(d.rating) : null;
       const mRange = meritRange(score);
       const iRange = icRange(score);
-      const meritPct = d.merit === "" ? null : Number(d.merit);
+      const meritPct = score === 1 ? 0 : d.merit === "" ? null : Number(d.merit);
       const ic = d.ic === "" ? null : Number(d.ic);
       const comp = r.current_annual_comp ?? 0;
       const meritAmount = meritPct != null ? amountFromPercent(comp, meritPct) : null;
@@ -254,8 +254,9 @@ export function RatingsGrid({ year }: { year: number }) {
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
               Enter the rating, then the I/C score and merit. 5% is the mid point — an
-              "Achieved" (3) rating can be awarded 5%. The team should average 5%, and
-              values outside a range, or spend above the approved budget, cannot be saved.
+              "Achieved" (3) rating can be awarded 5%. A rating of 1 receives 0% — no
+              increase. The team should average 5%, and values outside a range, or spend
+              above the approved budget, cannot be saved.
             </CardDescription>
           </div>
           <div className="grid gap-1 text-right text-xs">
@@ -342,8 +343,11 @@ export function RatingsGrid({ year }: { year: number }) {
                       </TableCell>
                       <TableCell className="text-center"><CheckMark ok={c.icOk} /></TableCell>
                       <TableCell className="text-right text-muted-foreground">{c.mRange ? c.mRange.min.toFixed(2) : "—"}</TableCell>
-                      <TableCell className="text-right text-muted-foreground">{c.mRange ? c.mRange.max.toFixed(2) : "—"}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{c.mRange ? (c.score === 1 ? "0.00" : c.mRange.max.toFixed(2)) : "—"}</TableCell>
                       <TableCell className="text-right">
+                        {c.score === 1 ? (
+                          <div className="text-xs font-medium text-muted-foreground">0% — no increase</div>
+                        ) : (
                         <Input
                           type="number"
                           step="0.1"
@@ -352,6 +356,7 @@ export function RatingsGrid({ year }: { year: number }) {
                           disabled={c.score == null}
                           onChange={(e) => set(c.row.id, { merit: e.target.value })}
                         />
+                        )}
                       </TableCell>
                       <TableCell className="text-center"><CheckMark ok={c.meritOk} /></TableCell>
                       <TableCell className="text-right whitespace-nowrap">
