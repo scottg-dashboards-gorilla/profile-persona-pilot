@@ -247,6 +247,12 @@ export default function PDR() {
                 </Button>
               </>
             )}
+            {isAdminHr && employees.length > 0 && (
+              <Button variant="outline" onClick={addEveryone} disabled={addingAll}>
+                {addingAll ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Users className="h-4 w-4 mr-1" />}
+                Add all employees
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
