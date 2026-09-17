@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   ArrowRight,
-  FlaskConical,
   CheckCircle2,
   AlertTriangle,
   ChevronDown,
@@ -24,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { AttemptRow } from "@/lib/assessmentDeltas";
 import { Link } from "react-router-dom";
-import { TestCycleWizard } from "@/components/perf/TestCycleWizard";
 import {
   Bar,
   CartesianGrid,
@@ -144,7 +142,6 @@ function StatTile({
 }
 
 export default function Overview() {
-  const [wizardOpen, setWizardOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   
@@ -412,19 +409,13 @@ export default function Overview() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-xl font-semibold">Performance overview</h1>
-          <p className="text-sm text-muted-foreground">
-            Everything waiting on you, across {headcount} {headcount === 1 ? "person" : "people"}.
-          </p>
-        </div>
-        <Button size="sm" variant="outline" onClick={() => setWizardOpen(true)}>
-          <FlaskConical className="h-4 w-4 mr-1.5" /> Test review cycle
-        </Button>
+      <div>
+        <h1 className="text-xl font-semibold">Performance overview</h1>
+        <p className="text-sm text-muted-foreground">
+          Everything waiting on you, across {headcount} {headcount === 1 ? "person" : "people"}.
+        </p>
       </div>
 
-      <TestCycleWizard open={wizardOpen} onOpenChange={setWizardOpen} onCompleted={() => setReloadKey((k) => k + 1)} />
 
       {/* Needs your attention */}
       <Card>
