@@ -16,7 +16,6 @@ import Overview from "./pages/perf/Overview";
 import Reviews from "./pages/perf/Reviews";
 import People from "./pages/perf/People";
 import EmployeeDetail from "./pages/perf/EmployeeDetail";
-import Cycles from "./pages/perf/Cycles";
 import TaskTracker from "./pages/perf/TaskTracker";
 import Compensation from "./pages/perf/Compensation";
 import Calibration from "./pages/perf/Calibration";
@@ -60,7 +59,7 @@ const App = () => (
             <Route path="/me" element={<EmployeeOnly><MyReview /></EmployeeOnly>} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/playbook" element={<Playbook />} />
-            <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
+            <Route path="/cycles" element={<Navigate to="/pdr" replace />} />
             <Route path="/tasks" element={<TaskTracker />} />
             <Route path="/company" element={<RequireArea area="company"><CompanyPerformance /></RequireArea>} />
             <Route path="/compensation" element={<RequireArea area="compensation"><Compensation /></RequireArea>} />

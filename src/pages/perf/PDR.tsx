@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, Search, Users, Workflow } from "lucide-react";
+import { CalendarRange, ChevronDown, Loader2, Plus, Search, Users, Workflow } from "lucide-react";
+import Cycles from "./Cycles";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PDR_STAGES, pdrProgress, pdrStageLabel, type PdrForm, type PdrObjective, type PdrStage } from "@/lib/pmp";
@@ -55,6 +56,7 @@ export default function PDR() {
   const [creating, setCreating] = useState(false);
   const [addingAll, setAddingAll] = useState(false);
   const [newEmp, setNewEmp] = useState("");
+  const [showCycles, setShowCycles] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -334,6 +336,32 @@ export default function PDR() {
           )}
         </CardContent>
       </Card>
+
+      {isAdminHr && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between gap-3 flex-wrap pb-3">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <CalendarRange className="h-4 w-4" /> Review cycles
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Annual cycles — one per calendar year — that schedule everyone's reviews.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowCycles((v) => !v)}>
+              <ChevronDown
+                className={`h-4 w-4 mr-1 transition-transform ${showCycles ? "rotate-180" : ""}`}
+              />
+              {showCycles ? "Hide" : "Manage cycles"}
+            </Button>
+          </CardHeader>
+          {showCycles && (
+            <CardContent>
+              <Cycles />
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       <PdrDialog
         formId={openId}
