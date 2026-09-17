@@ -19,13 +19,103 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import {
   PDR_CATEGORIES,
+  GOAL_MEASURE_TYPES,
   c1Passed,
-  
+  formatGoalValue,
+  goalAchievementPercent,
+  type GoalMeasureType,
   type PdrCategory,
   type PdrForm,
   type PdrObjective,
 } from "@/lib/pmp";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+
+/** Target type, starting point and target value for a measurable goal. */
+function GoalTargetFields({
+  measure,
+  start,
+  target,
+  unit,
+  onMeasure,
+  onStart,
+  onTarget,
+  onUnit,
+}: {
+  measure: GoalMeasureType;
+  start: string;
+  target: string;
+  unit: string;
+  onMeasure: (v: GoalMeasureType) => void;
+  onStart: (v: string) => void;
+  onTarget: (v: string) => void;
+  onUnit: (v: string) => void;
+}) {
+  const chosen = GOAL_MEASURE_TYPES.find((m) => m.id === measure);
+  return (
+    <div className="grid gap-2 rounded-md bg-muted/40 p-2">
+      <div className="flex items-end gap-2 flex-wrap">
+        <div className="grid gap-1">
+          <Label className="text-[10px] uppercase text-muted-foreground">What are you measuring? *</Label>
+          <Select value={measure} onValueChange={(v) => onMeasure(v as GoalMeasureType)}>
+            <SelectTrigger className="h-9 w-[190px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {GOAL_MEASURE_TYPES.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {measure !== "milestone" && (
+          <>
+            <div className="grid gap-1">
+              <Label className="text-[10px] uppercase text-muted-foreground">Starting point</Label>
+              <Input
+                className="w-[110px]"
+                type="number"
+                value={start}
+                onChange={(e) => onStart(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div className="grid gap-1">
+              <Label className="text-[10px] uppercase text-muted-foreground">Target *</Label>
+              <Input
+                className="w-[110px]"
+                type="number"
+                value={target}
+                onChange={(e) => onTarget(e.target.value)}
+                placeholder={measure === "percentage" ? "95" : "40"}
+              />
+            </div>
+            {measure === "number" && (
+              <div className="grid gap-1">
+                <Label className="text-[10px] uppercase text-muted-foreground">Unit</Label>
+                <Input
+                  className="w-[130px]"
+                  value={unit}
+                  onChange={(e) => onUnit(e.target.value)}
+                  placeholder="tickets, sessions…"
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      <p className="text-[11px] text-muted-foreground">{chosen?.blurb}</p>
+    </div>
+  );
+}
 
 type Props = {
   formId: string | null;
