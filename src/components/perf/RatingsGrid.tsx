@@ -78,15 +78,13 @@ function toDraft(r: GridRow): Draft {
     rating: r.rating_score != null ? String(r.rating_score) : "",
     merit: r.merit_percent != null ? String(r.merit_percent) : "",
     ic: r.ic_score != null ? String(r.ic_score) : "",
-    dm: r.dm_percent != null ? String(r.dm_percent) : "",
-    dmEligible: r.dm_eligible,
   };
 }
 
 
 /**
  * The manager's ratings grid — one row per team member, with the performance
- * rating, I/C score, merit and Differentiated Merit entered inline and checked
+ * rating, I/C score and merit entered inline and checked
  * against the allowed ranges and the remaining team budget before saving.
  */
 export function RatingsGrid({ year }: { year: number }) {
