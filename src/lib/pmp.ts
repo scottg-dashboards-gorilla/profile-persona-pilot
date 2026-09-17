@@ -237,7 +237,70 @@ export type PdrObjective = {
   setting_manager_comment: string | null;
   midyear_employee_comment: string | null;
   midyear_manager_comment: string | null;
+  /** How the goal is measured. */
+  measure_type: GoalMeasureType;
+  start_value: number;
+  target_value: number | null;
+  current_value: number | null;
+  /** Free text unit shown next to numbers, e.g. "tickets", "days". */
+  unit: string | null;
 };
+
+export type GoalMeasureType = "percentage" | "number" | "currency" | "milestone";
+
+export const GOAL_MEASURE_TYPES: {
+  id: GoalMeasureType;
+  label: string;
+  blurb: string;
+}[] = [
+  {
+    id: "percentage",
+    label: "Percentage (%)",
+    blurb: "A share or rate — e.g. reach 95% first-response within SLA.",
+  },
+  {
+    id: "number",
+    label: "Number / count",
+    blurb: "A count of things — e.g. close 40 tickets a week, run 6 training sessions.",
+  },
+  {
+    id: "currency",
+    label: "Amount ($)",
+    blurb: "A money figure — e.g. grow recurring revenue by $120,000.",
+  },
+  {
+    id: "milestone",
+    label: "Done / not done",
+    blurb: "A one-off deliverable — e.g. pass the Azure certification. Tracked as complete or not.",
+  },
+];
+
+/** Human-readable value for a goal target, e.g. "95%", "40 tickets", "$120,000". */
+export function formatGoalValue(
+  value: number | null | undefined,
+  measure: GoalMeasureType,
+  unit?: string | null,
+): string {
+  if (value == null) return "—";
+  if (measure === "milestone") return value >= 100 ? "Done" : "Not done";
+  if (measure === "percentage") return `${value}%`;
+  if (measure === "currency") return `$${value.toLocaleString()}`;
+  return unit ? `${value.toLocaleString()} ${unit}` : value.toLocaleString();
+}
+
+/** How far a goal has come from its starting point towards its target (0–100+). */
+export function goalAchievementPercent(o: {
+  measure_type: GoalMeasureType;
+  start_value: number;
+  target_value: number | null;
+  current_value: number | null;
+}): number | null {
+  if (o.target_value == null || o.current_value == null) return null;
+  if (o.measure_type === "milestone") return o.current_value >= 100 ? 100 : 0;
+  const span = o.target_value - o.start_value;
+  if (span === 0) return o.current_value >= o.target_value ? 100 : 0;
+  return Math.max(0, Math.round(((o.current_value - o.start_value) / span) * 100));
+}
 
 /** Control C1 — every drafted objective must map to a category and be validated by the manager. */
 export function c1Passed(objectives: PdrObjective[]) {
