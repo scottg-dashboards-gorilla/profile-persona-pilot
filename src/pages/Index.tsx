@@ -63,8 +63,9 @@ const Index = () => {
   }, [employeeUuidParam]);
 
   const handleBegin = useCallback((name: string, selectedRoleId: string) => {
+    const effectiveName = linkedName ?? name;
     // Starting fresh discards this person's previous draft (others are kept).
-    clearSavedProgress(name);
+    clearSavedProgress(effectiveName);
     const cfg = roles.find((r) => r.id === selectedRoleId);
     setRole(selectedRoleId, cfg?.dimensions);
     setEmployeeName(name);
