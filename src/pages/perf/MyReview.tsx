@@ -221,7 +221,23 @@ export default function MyReview() {
       .select("id, fiscal_year, year_end_score, score_recorded_at, comments_finalized_at, stage")
       .eq("employee_uuid", (emp as Employee).uuid)
       .order("fiscal_year", { ascending: false });
-    setPdrScores((pdrRows ?? []) as PdrScore[]);
+    const pdrList = (pdrRows ?? []) as PdrScore[];
+    setPdrScores(pdrList);
+    // The goals from this person's most recent objective setting, with their
+    // manager's comments, so everything sits on one page.
+    const latestForm = pdrList[0] ?? null;
+    if (latestForm) {
+      const { data: objs } = await supabase
+        .from("pdr_objectives")
+        .select("*")
+        .eq("form_id", latestForm.id)
+        .order("sort_order");
+      setMyGoals((objs ?? []) as PdrObjective[]);
+      setGoalYear(latestForm.fiscal_year);
+    } else {
+      setMyGoals([]);
+      setGoalYear(null);
+    }
 
     const open = reviewList.find((r) => r.status !== "completed");
     if (open) {
