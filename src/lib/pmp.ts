@@ -549,7 +549,7 @@ export const MERIT_PRINCIPLES = {
   ],
 };
 
-/** The Team Score behind the bonus: four key metrics and their weightings. */
+/** The Team Score: four key metrics and their weightings. */
 export const TEAM_SCORE_METRICS: { id: string; label: string; weight: number }[] = [
   { id: "net_revenue", label: "Net Revenue", weight: 30 },
   { id: "nopbt", label: "Net Operating Profit Before Taxes (NOPBT)", weight: 30 },
