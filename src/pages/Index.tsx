@@ -220,6 +220,7 @@ const Index = () => {
       employeeName={employeeName}
       elapsedSeconds={elapsedSeconds}
       scores={scores}
+      previous={previous}
       onRestart={handleRestart}
     />
   );
