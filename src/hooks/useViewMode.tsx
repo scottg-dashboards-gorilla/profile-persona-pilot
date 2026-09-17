@@ -9,7 +9,7 @@ export const viewModeLabels: Record<ViewMode, string> = {
 };
 
 export const viewModeHints: Record<ViewMode, string> = {
-  employee: "Only your own review, PDR and goals",
+  employee: "Only your own review, objectives and tasks",
   manager: "The people you manage",
   admin: "Everything across the company",
 };

@@ -480,7 +480,7 @@ export default function Playbook() {
       )}
 
       <div className="space-y-3">
-        {visibleSteps.map((s) => (
+        {visibleSteps.map((s, i) => (
           <Card key={s.n}>
             <CardHeader className="pb-3">
               <div className="flex items-start gap-3">
@@ -489,7 +489,7 @@ export default function Playbook() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                    <span className="text-muted-foreground">{s.n}.</span> {s.title}
+                    <span className="text-muted-foreground">{forEmployee ? i + 1 : s.n}.</span> {s.title}
                     <Badge className={`text-[10px] border-0 ${ownerTone[s.owner]}`}>{s.owner}</Badge>
                   </CardTitle>
                   <CardDescription className="mt-1">{s.what}</CardDescription>
