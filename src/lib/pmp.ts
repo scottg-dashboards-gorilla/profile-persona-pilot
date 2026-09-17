@@ -2,7 +2,7 @@
  * Shared rules for the two Datapath processes:
  *  - PMP  : PDR objectives -> mid-year check-in -> year-end self input -> manager comments -> score
  *  - Pay review cycle : each person's pay review runs on their own start-date anniversary —
- *    rating (1-5) -> merit / bonus / I-C / exec pay-out -> budget gate -> HR approval -> shared with the employee
+ *    rating (1-5) -> merit / I-C / exec pay-out -> budget gate -> HR approval -> shared with the employee
  */
 
 import type { Rating } from "@/lib/compensation";
