@@ -13,7 +13,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { usePermissions, type PermissionArea } from "@/hooks/usePermissions";
-import { useViewMode } from "@/hooks/useViewMode";
 
 type Item = {
   title: string;

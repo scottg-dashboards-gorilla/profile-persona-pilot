@@ -34,7 +34,7 @@ const pageTitles: Record<string, string> = {
 
 function HeaderTitle() {
   const { pathname } = useLocation();
-  const { mode } = useViewMode();
+  const { viewMode } = usePermissions();
   const title =
     pageTitles[pathname] ??
     Object.entries(pageTitles).find(([k]) => k !== "/" && pathname.startsWith(k))?.[1] ??
