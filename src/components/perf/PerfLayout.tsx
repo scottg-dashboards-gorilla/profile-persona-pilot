@@ -25,6 +25,7 @@ const pageTitles: Record<string, string> = {
   "/cycles": "Cycles",
   "/tasks": "Task Tracker",
   "/me": "My review",
+  "/profile": "My profile",
   "/compensation": "Compensation & Raises",
   "/calibration": "Reviewer Calibration",
   "/org": "Org Rollups",
@@ -127,8 +128,8 @@ export default function PerfLayout() {
                     <ViewModeMenuSection />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/me" className="flex items-center gap-2">
-                        <UserSquare2 className="h-4 w-4" /> My review
+                      <Link to="/profile" className="flex items-center gap-2">
+                        <UserSquare2 className="h-4 w-4" /> My profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2">
