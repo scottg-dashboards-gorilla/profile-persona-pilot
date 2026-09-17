@@ -237,16 +237,17 @@ export default function MyReview() {
       setSupport(s?.support_needed ?? "");
     }
 
-    // Latest assessment result, whether or not a review is open.
-    const { data: att } = await supabase
+    // Latest two assessment results, so this one can be shown against the last.
+    const { data: atts } = await supabase
       .from("assessment_attempts")
       .select("id, submitted_at, tier, disc_primary, truthfulness_score, technical_scores")
       .eq("employee_uuid", (emp as Employee).uuid)
       .not("submitted_at", "is", null)
       .order("submitted_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    setAttempt((att ?? null) as AssessmentAttempt | null);
+      .limit(2);
+    const list = (atts ?? []) as AssessmentAttempt[];
+    setAttempt(list[0] ?? null);
+    setPrevAttempt(list[1] ?? null);
     setLoading(false);
   }, []);
 
