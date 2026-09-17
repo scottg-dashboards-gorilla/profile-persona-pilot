@@ -236,9 +236,6 @@ export function RatingsGrid({ year }: { year: number }) {
           merit_amount: c.meritAmount,
           merit_prorated_amount: c.prorated,
           ic_score: c.ic,
-          dm_eligible: c.draft.dmEligible,
-          dm_percent: c.dmPct,
-          dm_amount: c.dmAmount,
         })
         .eq("id", c.row.id);
       if (error) {
