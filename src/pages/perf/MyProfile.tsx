@@ -22,7 +22,13 @@ export default function MyProfile() {
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(true);
   const [me, setMe] = useState<EmployeeRow | null>(null);
-  const [manager, setManager] = useState<{ first_name: string; last_name: string; title: string | null } | null>(null);
+  const [manager, setManager] = useState<{
+    first_name: string;
+    last_name: string;
+    title: string | null;
+    email: string | null;
+    department: string | null;
+  } | null>(null);
   const [reports, setReports] = useState(0);
 
   useEffect(() => {
@@ -49,7 +55,7 @@ export default function MyProfile() {
       if (row.manager_uuid) {
         const { data: mgr } = await supabase
           .from("employees")
-          .select("first_name, last_name, title")
+          .select("first_name, last_name, title, email, department")
           .eq("uuid", row.manager_uuid)
           .maybeSingle();
         setManager(mgr ?? null);
@@ -107,8 +113,8 @@ export default function MyProfile() {
     },
     {
       icon: Users,
-      label: "Line manager",
-      value: manager ? `${manager.first_name} ${manager.last_name}${manager.title ? ` — ${manager.title}` : ""}` : "—",
+      label: "Direct reports",
+      value: reports > 0 ? `${reports} ${reports === 1 ? "person" : "people"}` : "—",
     },
   ];
 
@@ -133,18 +139,46 @@ export default function MyProfile() {
               </div>
             </div>
           ))}
-          {reports > 0 && (
-            <div className="flex items-start gap-3">
-              <Users className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Line manager / Supervisor</CardTitle>
+          <CardDescription>The person you report to</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {manager ? (
+            <>
               <div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Direct reports
-                </div>
                 <div className="text-sm font-medium">
-                  {reports} {reports === 1 ? "person" : "people"}
+                  {manager.first_name} {manager.last_name}
+                </div>
+                <div className="text-xs text-muted-foreground">{manager.title ?? "—"}</div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Mail className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Work email
+                  </div>
+                  <div className="text-sm font-medium">{manager.email ?? "—"}</div>
                 </div>
               </div>
-            </div>
+              <div className="flex items-start gap-3">
+                <Building2 className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Department
+                  </div>
+                  <div className="text-sm font-medium">{manager.department ?? "—"}</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No line manager is set on your record yet — HR can add one.
+            </p>
           )}
         </CardContent>
       </Card>
