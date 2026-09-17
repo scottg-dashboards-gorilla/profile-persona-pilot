@@ -7,7 +7,6 @@ export type AppRole = "admin" | "hr" | "manager";
 /** Feature areas that can be gated by role. */
 export type PermissionArea =
   | "reviews"
-  | "cycles"
   | "compensation"
   | "calibration"
   | "org"
@@ -20,7 +19,6 @@ export type PermissionArea =
 
 const AREA_ROLES: Record<PermissionArea, AppRole[]> = {
   reviews: ["admin", "hr", "manager"],
-  cycles: ["admin", "hr"],
   compensation: ["admin", "hr"],
   calibration: ["admin", "hr"],
   org: ["admin", "hr", "manager"],
@@ -34,7 +32,6 @@ const AREA_ROLES: Record<PermissionArea, AppRole[]> = {
 
 export const areaLabels: Record<PermissionArea, string> = {
   reviews: "Reviews",
-  cycles: "Cycles",
   compensation: "Compensation & Raises",
   calibration: "Calibration",
   org: "Org rollups",
