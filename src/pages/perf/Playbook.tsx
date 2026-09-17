@@ -74,7 +74,7 @@ const steps: {
     owner: "Employee",
     title: "Write the self-assessment",
     what:
-      "Four short questions: what went well, what was hard, how they've grown in how they think and operate, and what support they need. They also update where each of their goals actually landed.",
+      "Four short questions: what went well, what was hard, how they've grown in how they think and operate, and what support they need. Day-to-day work sits on their Task Tracker board.",
     where: "Private link (no account needed) or their own review page",
     href: "/me",
     icon: UserSquare2,
