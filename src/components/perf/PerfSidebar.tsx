@@ -32,6 +32,7 @@ const primary: Item[] = [
   { title: "People", url: "/people", icon: Users, area: "reviews" },
   { title: "Cycles", url: "/cycles", icon: CalendarRange, area: "cycles" },
   { title: "Task Tracker", url: "/tasks", icon: ListTodo },
+  { title: "My review", url: "/me", icon: UserSquare2 },
   { title: "Company performance", url: "/company", icon: Building2, area: "company" },
   { title: "Compensation", url: "/compensation", icon: DollarSign, area: "compensation" },
   { title: "Salary history", url: "/salary-history", icon: Lock, area: "salary" },
@@ -40,7 +41,6 @@ const primary: Item[] = [
 ];
 
 const secondary: Item[] = [
-  { title: "My review", url: "/me", icon: UserSquare2 },
   { title: "Playbook", url: "/playbook", icon: BookOpen },
   { title: "Assessments", url: "/assessments", icon: FileSpreadsheet, adminOnly: true },
   { title: "Role Configs", url: "/admin/roles", icon: Settings, adminOnly: true },
