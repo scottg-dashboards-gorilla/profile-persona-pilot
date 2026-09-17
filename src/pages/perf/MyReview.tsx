@@ -450,8 +450,6 @@ export default function MyReview() {
             <Button asChild variant="outline">
               <a
                 href={active ? `/assessment?review=${active.id}&employee=${me.uuid}` : `/assessment?employee=${me.uuid}`}
-                target="_blank"
-                rel="noreferrer"
               >
                 Open the assessment <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
               </a>
