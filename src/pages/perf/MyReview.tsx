@@ -681,6 +681,34 @@ export default function MyReview() {
         </Card>
       ))}
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" /> Your goals
+            {goalYear && <Badge variant="outline" className="text-[10px]">FY{goalYear}</Badge>}
+          </CardTitle>
+          <CardDescription>
+            The projects, KPIs and targets you and your manager signed off, with their comments and how
+            far each one has come.{" "}
+            {goalsSummary(myGoals).average != null && (
+              <span className="font-medium text-foreground">
+                Average progress {goalsSummary(myGoals).average}%.
+              </span>
+            )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <GoalsSummaryLine objectives={myGoals} />
+          <GoalsPanel
+            objectives={myGoals}
+            emptyText="No goals set yet — open Objective setting to draft them with your manager."
+          />
+          <Button asChild size="sm" variant="outline">
+            <Link to="/pdr">Open objective setting</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
       {pdrScores.length > 0 && (
         <Card>
           <CardHeader>
