@@ -373,6 +373,39 @@ export function RatingsGrid({ year }: { year: number }) {
                           {c.row.title ?? c.row.department ?? "—"}
                         </div>
                       </TableCell>
+                      <TableCell className="align-middle">
+                        {(() => {
+                          const objs = goalsByEmp[c.row.employee_uuid] ?? [];
+                          const s = goalsSummary(objs);
+                          if (s.total === 0) {
+                            return <span className="text-[11px] text-muted-foreground">No goals set</span>;
+                          }
+                          return (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="cursor-help">
+                                  <div className="font-medium">
+                                    {s.average == null ? "—" : `${s.average}%`}
+                                  </div>
+                                  <div className="text-[11px] text-muted-foreground">
+                                    {s.achieved}/{s.total} achieved
+                                  </div>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs space-y-1">
+                                {objs.map((o) => (
+                                  <div key={o.id} className="text-[11px]">
+                                    {o.title} —{" "}
+                                    {goalsSummary([o]).average == null
+                                      ? "no progress recorded"
+                                      : `${goalsSummary([o]).average}%`}
+                                  </div>
+                                ))}
+                              </TooltipContent>
+                            </Tooltip>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell className="bg-primary/5">
                         <Select
                           value={c.draft.rating}
