@@ -111,6 +111,7 @@ export default function MyProfile() {
     label: string;
     value: string;
     sub?: string;
+    expandable?: boolean;
   }[] = [
     {
       icon: Users,
