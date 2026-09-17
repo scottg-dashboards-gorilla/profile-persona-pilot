@@ -62,7 +62,7 @@ import { cn } from "@/lib/utils";
 const thisYear = new Date().getFullYear();
 
 const SELECT =
-  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at";
+  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, ic_score, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at";
 
 type Row = AprReview & {
   hr_finalized_at: string | null;
@@ -75,7 +75,7 @@ type Row = AprReview & {
 };
 
 const EXPORT_SELECT =
-  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, is_executive, exec_payout_amount, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
+  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
 
 type ExportRow = Record<string, string | number | boolean | null>;
 
