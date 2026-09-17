@@ -246,26 +246,28 @@ export default function Playbook() {
               </div>
             ))}
           </div>
-          <div>
-            <p className="text-sm font-medium">
-              Managers are encouraged to think through three lenses when deciding each rating.
-            </p>
-            <div className="grid gap-3 sm:grid-cols-3 mt-2">
-              {RATING_LENSES.map((l) => (
-                <div key={l.id} className="rounded-md border p-3">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-primary">{l.label}</div>
-                  <ul className="mt-1 space-y-1">
-                    {l.questions.map((q) => (
-                      <li key={q} className="text-xs text-muted-foreground flex gap-1.5">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
-                        {q}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+          {!forEmployee && (
+            <div>
+              <p className="text-sm font-medium">
+                Managers are encouraged to think through three lenses when deciding each rating.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3 mt-2">
+                {RATING_LENSES.map((l) => (
+                  <div key={l.id} className="rounded-md border p-3">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-primary">{l.label}</div>
+                    <ul className="mt-1 space-y-1">
+                      {l.questions.map((q) => (
+                        <li key={q} className="text-xs text-muted-foreground flex gap-1.5">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                          {q}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
