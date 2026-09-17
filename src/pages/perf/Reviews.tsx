@@ -44,11 +44,6 @@ function reviewYear(r: ReviewRow): number | null {
 
 type TabKey = "upcoming" | "in_progress" | "completed";
 
-const ratingLabel: Record<string, string> = {
-  exceeds: "Exceeds",
-  meets: "Meets",
-  below: "Below",
-};
 
 export default function Reviews() {
   const { toast } = useToast();
@@ -298,10 +293,7 @@ export default function Reviews() {
                     <TableHead>Status</TableHead>
                     <TableHead>Workflow</TableHead>
                     {tab === "completed" ? (
-                      <>
-                        <TableHead>Rating</TableHead>
-                        <TableHead>Comp change</TableHead>
-                      </>
+                      <TableHead>Comp change</TableHead>
                     ) : (
                       <TableHead className="text-right pr-4">Actions</TableHead>
                     )}
@@ -311,7 +303,7 @@ export default function Reviews() {
                 <TableBody>
                   {loading && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
                         <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
                         Loading reviews…
                       </TableCell>
@@ -319,7 +311,7 @@ export default function Reviews() {
                   )}
                   {!loading && filtered.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
                         No reviews in this view.
                       </TableCell>
                     </TableRow>
@@ -356,32 +348,16 @@ export default function Reviews() {
                           </TableCell>
 
                           {tab === "completed" ? (
-                            <>
-                              <TableCell>
-                                {r.overall_rating && (
-                                  <StatusPill
-                                    tone={
-                                      r.overall_rating === "exceeds"
-                                        ? "completed"
-                                        : r.overall_rating === "below"
-                                          ? "overdue"
-                                          : "in_progress"
-                                    }
-                                    label={ratingLabel[r.overall_rating] ?? r.overall_rating}
-                                  />
-                                )}
-                              </TableCell>
-                              <TableCell
-                                className={cn(
-                                  "font-medium",
-                                  (r.comp_adjustment_amount ?? 0) > 0 && "text-emerald-700",
-                                  (r.comp_adjustment_amount ?? 0) < 0 && "text-red-700",
-                                )}
-                              >
-                                {formatCompDelta(r.comp_adjustment_amount, r.comp_adjustment_percent)}
-                                {r.promotion && <span className="ml-2 text-xs text-primary">★ Promoted</span>}
-                              </TableCell>
-                            </>
+                            <TableCell
+                              className={cn(
+                                "font-medium",
+                                (r.comp_adjustment_amount ?? 0) > 0 && "text-emerald-700",
+                                (r.comp_adjustment_amount ?? 0) < 0 && "text-red-700",
+                              )}
+                            >
+                              {formatCompDelta(r.comp_adjustment_amount, r.comp_adjustment_percent)}
+                              {r.promotion && <span className="ml-2 text-xs text-primary">★ Promoted</span>}
+                            </TableCell>
                           ) : (
                             <TableCell className="text-right pr-2">
                               <div className="inline-flex items-center gap-1">

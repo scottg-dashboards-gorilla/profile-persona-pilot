@@ -25,7 +25,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   aggregate,
   methodLabels,
-  ratingBucket,
   type AggregationMethod,
 } from "@/lib/contributorAggregation";
 import { format, parseISO } from "date-fns";
@@ -40,7 +39,6 @@ import {
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
 import { SelfAssessmentPanel } from "@/components/perf/SelfAssessmentPanel";
-import { RATING_SCALE, ratingBand, scoreFromLegacy } from "@/lib/pmp";
 
 
 export type ReviewRow = {
@@ -99,9 +97,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [previousAttempt, setPreviousAttempt] = useState<AttemptRow | null>(null);
   const [presetContext, setPresetContext] = useState<DeltaContext | null>(null);
 
-  const [rating, setRating] = useState<string>("meets");
-  const [scoreOverride, setScoreOverride] = useState<number | null>(null);
-  const [autoSuggest, setAutoSuggest] = useState(true);
   const [promotion, setPromotion] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [notes, setNotes] = useState("");
@@ -109,10 +104,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
 
   useEffect(() => {
     if (!review) return;
-    setRating(review.overall_rating ?? "meets");
-    setScoreOverride(review.rating_score ?? null);
     setMethod(((review.aggregation_method as AggregationMethod) ?? "mean"));
-    setAutoSuggest(!review.overall_rating);
     setPromotion(review.promotion ?? false);
     setNewTitle(review.new_title ?? "");
     setNotes(review.notes ?? "");
@@ -159,9 +151,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     collab: aggregate(submitted, "rating_collaboration", method),
     impact: aggregate(submitted, "rating_impact", method),
   };
-  const suggestedBucket = ratingBucket(breakdown.overall);
-  const effectiveRating = autoSuggest && suggestedBucket ? suggestedBucket : rating;
-  const scoreValue = scoreOverride ?? scoreFromLegacy(effectiveRating) ?? 3;
+
 
   if (!review) return null;
 
@@ -194,8 +184,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
       .update({
         status: "completed",
         completed_date: today(),
-        overall_rating: ratingBand(scoreValue) ?? effectiveRating,
-        rating_score: scoreValue,
         promotion,
         new_title: promotion ? newTitle || null : null,
         notes: notes || null,
@@ -232,8 +220,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         <DialogHeader>
           <DialogTitle>Complete review · {review.employee_name}</DialogTitle>
           <DialogDescription>
-            Comment on what the employee shared, set the rating, and mark the review complete.
-            Pay is handled separately in the Pay review cycle.
+            Comment on what the employee shared, add your feedback, and mark the review complete.
+            Ratings and pay are handled separately in the Pay review cycle.
           </DialogDescription>
         </DialogHeader>
 
@@ -302,36 +290,12 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  No submissions yet. The rating below stays your call.
+                  No submissions yet.
                 </p>
               )}
             </div>
           )}
 
-          <div className="grid gap-2">
-            <Label>Performance rating (1–5)</Label>
-            <Select
-              value={String(scoreValue)}
-              onValueChange={(v) => {
-                setRating(ratingBand(Number(v)) ?? "meets");
-                setScoreOverride(Number(v));
-                setAutoSuggest(false);
-              }}
-            >
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {RATING_SCALE.map((r) => (
-                  <SelectItem key={r.score} value={String(r.score)}>{r.short}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {breakdown.overall != null && (
-              <p className="text-xs text-muted-foreground">
-                Suggested from {methodLabels[method].toLowerCase()} ({breakdown.overall.toFixed(2)} / 5).{" "}
-                {autoSuggest ? "Pick a rating to override." : "Manager override active."}
-              </p>
-            )}
-          </div>
 
           <div className="flex items-center gap-2">
             <Checkbox id="promo" checked={promotion} onCheckedChange={(v) => setPromotion(!!v)} />
@@ -345,12 +309,12 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
           )}
 
           <div className="grid gap-2">
-            <Label>Notes</Label>
+            <Label>Managers Feedback</Label>
             <Textarea
               rows={4}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Summary, themes, next-cycle focus areas…"
+              placeholder="Feedback, themes, next-cycle focus areas…"
             />
           </div>
           {wasShared && (
