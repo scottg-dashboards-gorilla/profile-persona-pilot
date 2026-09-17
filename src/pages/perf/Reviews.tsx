@@ -23,6 +23,7 @@ import { RemindersDialog } from "@/components/perf/RemindersDialog";
 import { ReviewTimeline, buildReviewStages } from "@/components/perf/ReviewTimeline";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useSearchParams } from "react-router-dom";
 
 
@@ -37,6 +38,8 @@ const ratingLabel: Record<string, string> = {
 
 export default function Reviews() {
   const { toast } = useToast();
+  const { has, unconfigured } = usePermissions();
+  const isAdminHr = unconfigured || has("admin") || has("hr");
   const [tab, setTab] = useState<TabKey>("upcoming");
   const [rows, setRows] = useState<ReviewRow[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
