@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useViewMode } from "@/hooks/useViewMode";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -33,6 +34,13 @@ import RequireArea from "./components/perf/RequireArea";
 
 const queryClient = new QueryClient();
 
+/** Page reachable in the employee view only — manager/admin views are sent to Overview. */
+const EmployeeOnly = ({ children }: { children: React.ReactNode }) => {
+  const { mode } = useViewMode();
+  if (mode === "manager" || mode === "admin") return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -48,7 +56,7 @@ const App = () => (
             <Route path="/apr" element={<RequireArea area="apr"><APR /></RequireArea>} />
             <Route path="/people" element={<People />} />
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
-            <Route path="/me" element={<MyReview />} />
+            <Route path="/me" element={<EmployeeOnly><MyReview /></EmployeeOnly>} />
             <Route path="/playbook" element={<Playbook />} />
             <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
             <Route path="/tasks" element={<TaskTracker />} />
