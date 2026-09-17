@@ -100,7 +100,8 @@ export function RatingsGrid({ year }: { year: number }) {
       supabase.from("manager_budgets").select("*").eq("fiscal_year", year),
     ]);
     let list = (data ?? []) as unknown as GridRow[];
-    // This grid is for the team — the signed-in person's own review never appears.
+    // This grid is for the team — the signed-in person's own review never appears,
+    // and a manager only ever sees the people who report directly to them.
     const { data: authData } = await supabase.auth.getUser();
     const uid = authData.user?.id;
     if (uid) {
@@ -109,7 +110,20 @@ export function RatingsGrid({ year }: { year: number }) {
         .select("uuid")
         .eq("user_id", uid)
         .maybeSingle();
-      if (me?.uuid) list = list.filter((r) => r.employee_uuid !== me.uuid);
+      if (me?.uuid) {
+        list = list.filter((r) => r.employee_uuid !== me.uuid);
+        if (!isAdminHr) {
+          const { data: team } = await supabase
+            .from("employees")
+            .select("uuid")
+            .eq("manager_uuid", me.uuid)
+            .eq("terminated", false);
+          const mine = new Set((team ?? []).map((t) => t.uuid as string));
+          list = list.filter((r) => mine.has(r.employee_uuid));
+        }
+      }
+    } else if (!isAdminHr) {
+      list = [];
     }
     setRows(list);
     const next: Record<string, Draft> = {};
