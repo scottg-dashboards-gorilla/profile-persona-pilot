@@ -69,9 +69,9 @@ export const PMP_PILLARS: { id: string; label: string; what: string }[] = [
     what: "Flexibility to set base salary merit increases that reward individual contribution, through broad overlapping merit ranges.",
   },
   {
-    id: "bonus",
-    label: "Bonus",
-    what: "Empowerment to recognise individual contribution in bonus pay-outs by setting Individual Contribution (I/C) scores.",
+    id: "ic",
+    label: "Individual Contribution",
+    what: "Empowerment to recognise individual contribution by setting Individual Contribution (I/C) scores.",
   },
 ];
 
