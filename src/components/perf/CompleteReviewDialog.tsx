@@ -221,8 +221,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         <DialogHeader>
           <DialogTitle>Complete review · {review.employee_name}</DialogTitle>
           <DialogDescription>
-            Comment on what the employee shared, set the rating, and mark the review complete.
-            Pay is handled separately in the Pay review cycle.
+            Comment on what the employee shared, add your feedback, and mark the review complete.
+            Ratings and pay are handled separately in the Pay review cycle.
           </DialogDescription>
         </DialogHeader>
 
@@ -291,7 +291,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  No submissions yet. The rating below stays your call.
+                  No submissions yet.
                 </p>
               )}
             </div>
