@@ -52,6 +52,7 @@ export default function PDR() {
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [addingAll, setAddingAll] = useState(false);
   const [newEmp, setNewEmp] = useState("");
 
   const load = useCallback(async () => {
