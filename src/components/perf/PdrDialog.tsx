@@ -484,6 +484,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                             placeholder="How will it be measured?"
                           />
                         </div>
+                        <GoalTargetFields
+                          measure={editMeasure}
+                          start={editStart}
+                          target={editTarget}
+                          unit={editUnit}
+                          onMeasure={setEditMeasure}
+                          onStart={setEditStart}
+                          onTarget={setEditTarget}
+                          onUnit={setEditUnit}
+                        />
                         <div className="flex justify-end gap-2">
                           <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
                             <X className="h-3.5 w-3.5 mr-1" /> Cancel
