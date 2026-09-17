@@ -121,6 +121,10 @@ export default function TaskTracker() {
   const [myName, setMyName] = useState<string>("");
   const [myUserId, setMyUserId] = useState<string>("");
   const [who, setWho] = useState<string>("");
+  // How far back the board looks. Defaults to the last 30 days.
+  const [range, setRange] = useState<"30" | "90" | "365" | "custom" | "all">("30");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [dragId, setDragId] = useState<string | null>(null);
   const [over, setOver] = useState<TaskStatus | null>(null);
