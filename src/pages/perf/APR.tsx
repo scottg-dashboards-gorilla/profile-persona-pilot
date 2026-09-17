@@ -571,15 +571,13 @@ function ManagerBudgets({ year }: { year: number }) {
   }, [load]);
 
   async function save(m: Mgr) {
-    const v = budgets[m.uuid] ?? { merit: "0", equity: "0" };
+    const v = budgets[m.uuid] ?? { merit: "0" };
     setSaving(m.uuid);
     const { error } = await supabase.from("manager_budgets").upsert(
       {
         manager_uuid: m.uuid,
         fiscal_year: year,
         merit_budget_amount: Number(v.merit) || 0,
-        
-        equity_budget_amount: Number(v.equity) || 0,
       },
       { onConflict: "manager_uuid,fiscal_year" },
     );
@@ -597,7 +595,7 @@ function ManagerBudgets({ year }: { year: number }) {
       <CardHeader>
         <CardTitle className="text-base">Manager budgets · FY{year}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Merit and share pots. Managers with 5 or more reports are hard-blocked from saving
+          Merit pots. Managers with 5 or more reports are hard-blocked from saving
           entries above these amounts — exceptions route to the next-level manager.
         </p>
       </CardHeader>
