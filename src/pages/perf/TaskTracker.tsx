@@ -432,8 +432,7 @@ export default function TaskTracker() {
       ) : !who ? (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground">
-            We couldn't match your sign-in to your staff record, so there's no board to add tasks to
-            yet. Ask HR to connect your work email to your name, then reload this page.
+            Setting up your board… if this stays here, reload the page.
           </CardContent>
         </Card>
       ) : (
