@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
 import { amountFromPercent, formatMoney } from "@/lib/compensation";
 import {
   IC_TARGET,
@@ -87,6 +88,8 @@ function toDraft(r: GridRow): Draft {
  */
 export function RatingsGrid({ year }: { year: number }) {
   const { toast } = useToast();
+  const { has, unconfigured } = usePermissions();
+  const isAdminHr = unconfigured || has("admin") || has("hr");
   const [rows, setRows] = useState<GridRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
@@ -140,7 +143,7 @@ export function RatingsGrid({ year }: { year: number }) {
       setBudget(null);
     }
     setLoading(false);
-  }, [year]);
+  }, [year, isAdminHr]);
 
   useEffect(() => {
     load();
