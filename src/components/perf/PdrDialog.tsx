@@ -245,6 +245,11 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setObjectives(objList);
     setMidObj(Object.fromEntries(objList.map((o) => [o.id, o.midyear_employee_comment ?? ""])));
     setMidMgr(Object.fromEntries(objList.map((o) => [o.id, o.midyear_manager_comment ?? ""])));
+    setMidVal(
+      Object.fromEntries(
+        objList.map((o) => [o.id, o.current_value == null ? "" : String(o.current_value)]),
+      ),
+    );
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
