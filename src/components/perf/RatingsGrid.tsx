@@ -76,7 +76,7 @@ type Draft = {
 };
 
 const SELECT =
-  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, dm_eligible, dm_percent, dm_amount, apr_stage";
+  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, apr_stage";
 
 function toDraft(r: GridRow): Draft {
   return {
