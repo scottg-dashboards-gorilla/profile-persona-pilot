@@ -88,7 +88,7 @@ export default function PerfLayout() {
           <div className="flex-1 flex flex-col min-w-0">
             <header className="sticky top-0 z-20 h-14 border-b border-border bg-background/80 backdrop-blur flex items-center gap-3 px-4">
               <SidebarTrigger />
-              <h1 className="text-base font-semibold tracking-tight">{title}</h1>
+              <h1 className="text-base font-semibold tracking-tight"><HeaderTitle /></h1>
               <div className="ml-auto flex items-center gap-3">
                 <ViewModeBadge />
                 <div className="relative hidden md:block">
