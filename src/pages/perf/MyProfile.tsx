@@ -113,8 +113,8 @@ export default function MyProfile() {
     },
     {
       icon: Users,
-      label: "Line manager",
-      value: manager ? `${manager.first_name} ${manager.last_name}${manager.title ? ` — ${manager.title}` : ""}` : "—",
+      label: "Direct reports",
+      value: reports > 0 ? `${reports} ${reports === 1 ? "person" : "people"}` : "—",
     },
   ];
 
