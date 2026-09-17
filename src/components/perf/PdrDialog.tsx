@@ -530,6 +530,28 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         {o.description && (
                           <p className="text-xs text-muted-foreground">{o.description}</p>
                         )}
+                        {o.target_value != null && (
+                          <div className="flex items-center gap-2 flex-wrap text-xs">
+                            <Badge variant="secondary" className="text-[10px]">
+                              Target: {formatGoalValue(o.target_value, o.measure_type, o.unit)}
+                            </Badge>
+                            {o.measure_type !== "milestone" && Number(o.start_value) !== 0 && (
+                              <span className="text-muted-foreground">
+                                from {formatGoalValue(o.start_value, o.measure_type, o.unit)}
+                              </span>
+                            )}
+                            {o.current_value != null ? (
+                              <span className="text-muted-foreground">
+                                now {formatGoalValue(o.current_value, o.measure_type, o.unit)} ·{" "}
+                                <span className="font-medium text-foreground">
+                                  {goalAchievementPercent(o)}% of target
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">no progress recorded yet</span>
+                            )}
+                          </div>
+                        )}
                         {canManage ? (
                           <div className="grid gap-1">
                             <Label className="text-[10px] uppercase text-muted-foreground">
