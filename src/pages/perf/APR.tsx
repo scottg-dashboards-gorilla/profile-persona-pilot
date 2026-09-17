@@ -602,7 +602,7 @@ function ManagerBudgets({ year }: { year: number }) {
       <CardContent className="space-y-3">
         {mgrs.length === 0 && <p className="text-sm text-muted-foreground">No managers with reports yet.</p>}
         {mgrs.map((m) => {
-          const v = budgets[m.uuid] ?? { merit: "", equity: "" };
+          const v = budgets[m.uuid] ?? { merit: "" };
           return (
             <div key={m.uuid} className="flex items-end gap-3 flex-wrap border-b pb-3 last:border-0">
               <div className="min-w-[160px]">
