@@ -193,6 +193,82 @@ export default function EmployeeDetail() {
         </CardContent>
       </Card>
 
+      {current && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Latest assessment result</CardTitle>
+          </CardHeader>
+          <CardContent className="p-5 pt-2 grid gap-5 md:grid-cols-3">
+            <div className="space-y-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Tier</div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Badge variant="secondary">{readableTier(current.tier)}</Badge>
+                  {tier?.changed && (
+                    <span className={`text-xs inline-flex items-center gap-1 ${deltaTone(tier.to - tier.from)}`}>
+                      <DeltaIcon d={tier.to - tier.from} />
+                      was {readableTier(tier.from)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">DISC style</div>
+                <div className="font-semibold">{current.disc_primary ?? "—"}</div>
+                <div className="mt-1.5 space-y-1">
+                  {(["D", "I", "S", "C"] as const).map((k) => (
+                    <div key={k} className="flex items-center gap-2 text-xs">
+                      <span className="w-3 font-medium text-muted-foreground">{k}</span>
+                      <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${Math.max(0, Math.min(100, current.disc_scores?.[k] ?? 0))}%` }}
+                        />
+                      </div>
+                      <span className="w-8 text-right tabular-nums">{current.disc_scores?.[k] ?? 0}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Consistency</div>
+                <div className="font-semibold">
+                  {current.truthfulness_score != null ? `${Math.round(current.truthfulness_score)}%` : "—"}
+                </div>
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Skills areas</div>
+              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
+                {Object.entries(current.technical_scores ?? {})
+                  .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
+                  .slice(0, 10)
+                  .map(([name, score]) => (
+                    <div key={name} className="flex items-center gap-2 text-sm">
+                      <span className="flex-1 truncate">{name}</span>
+                      <div className="h-1.5 w-24 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${Math.max(0, Math.min(100, score ?? 0))}%` }}
+                        />
+                      </div>
+                      <span className="w-10 text-right tabular-nums text-muted-foreground">
+                        {Math.round(score ?? 0)}%
+                      </span>
+                    </div>
+                  ))}
+                {Object.keys(current.technical_scores ?? {}).length === 0 && (
+                  <div className="text-sm text-muted-foreground">No skill scores recorded on this attempt.</div>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground mt-3">
+                Taken {format(parseISO(current.taken_at), "MMM d, yyyy")} · full trends and history below
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {attempts.length === 0 && !loading && (() => {
         const now = new Date();
         const overdueReviews = reviews.filter(
