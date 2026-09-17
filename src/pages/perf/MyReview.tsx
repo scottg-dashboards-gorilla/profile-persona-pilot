@@ -390,7 +390,7 @@ export default function MyReview() {
       {released.length === 0 && pendingHistory.length === 0 && hasHistory && (
         <Card>
           <CardContent className="p-4 text-sm text-muted-foreground">
-            No reviews match those filters.
+            No reviews on file for {selectedYear}.
           </CardContent>
         </Card>
       )}
