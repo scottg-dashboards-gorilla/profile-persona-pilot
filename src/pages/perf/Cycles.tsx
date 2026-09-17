@@ -80,13 +80,13 @@ export default function Cycles() {
 
 
   // create form
-  const today = new Date();
-  const plus30 = new Date();
-  plus30.setDate(plus30.getDate() + 30);
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(currentYear);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [startsAt, setStartsAt] = useState(iso(today));
-  const [endsAt, setEndsAt] = useState(iso(plus30));
+  // Cycles are annual only: one cycle per calendar year, spanning Jan 1 – Dec 31.
+  const startsAt = `${year}-01-01`;
+  const endsAt = `${year}-12-31`;
   const [types, setTypes] = useState<string[]>(["self", "manager"]);
   const [scopeType, setScopeType] = useState<"all" | "department">("all");
   const [scopeValue, setScopeValue] = useState<string>("");
