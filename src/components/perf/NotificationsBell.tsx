@@ -382,13 +382,6 @@ export function NotificationsBell() {
       "Nobody is assigned to complete them.",
       "/reviews",
     );
-    add(
-      "adm-cycle",
-      reviews.filter((r) => !r.cycle_id).length,
-      "review(s) not in a cycle",
-      "They won't roll up into cycle progress.",
-      "/cycles",
-    );
     add("adm-reminders", queued ?? 0, "reminder(s) queued to send", "Waiting to go out to employees and reviewers.", "/reviews");
 
     return out;

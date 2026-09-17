@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardCheck, Users, CalendarRange, Target, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Users, Target, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,

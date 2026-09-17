@@ -301,14 +301,6 @@ export default function Overview() {
         tone: "blue",
       },
       {
-        key: "no-cycle",
-        count: reviews.filter((r) => !r.cycle_id).length,
-        title: "Reviews not attached to a cycle",
-        detail: "They won't show in cycle progress or calibration.",
-        to: "/cycles",
-        tone: "blue",
-      },
-      {
         key: "reminders",
         count: queuedReminders,
         title: "Reminder emails waiting to go out",

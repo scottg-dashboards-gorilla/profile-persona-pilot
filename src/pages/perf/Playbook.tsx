@@ -53,11 +53,11 @@ const steps: {
   {
     n: 1,
     owner: "HR",
-    title: "Launch the cycle",
+    title: "Schedule the year's reviews",
     what:
-      "Create the review cycle with its window, scope (company, department or one manager's team) and review type. A review is scheduled automatically for everyone in scope. Re-run Sync any time someone joins mid-cycle.",
-    where: "Cycles",
-    href: "/cycles",
+      "Schedule a review for each person for the year. Reviews are opened on each person's anniversary, and HR can add anyone who joins mid-year.",
+    where: "Reviews",
+    href: "/reviews",
     icon: CalendarRange,
   },
   {
