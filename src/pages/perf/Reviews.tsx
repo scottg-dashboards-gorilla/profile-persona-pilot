@@ -257,6 +257,19 @@ export default function Reviews() {
             className="pl-8 w-80 h-9"
           />
         </div>
+        <Select value={year} onValueChange={setYear}>
+          <SelectTrigger className="w-[140px] h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All years</SelectItem>
+            {years.map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button variant="outline" size="sm" className="ml-auto" onClick={() => setRemindersOpen(true)}>
           <BellRing className="h-4 w-4 mr-1" /> Reminders
         </Button>
