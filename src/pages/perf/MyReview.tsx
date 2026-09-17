@@ -102,6 +102,7 @@ export default function MyReview() {
   const [assessment, setAssessment] = useState<SelfAssessment | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [attempt, setAttempt] = useState<AssessmentAttempt | null>(null);
+  const [prevAttempt, setPrevAttempt] = useState<AssessmentAttempt | null>(null);
   const [krs, setKrs] = useState<Kr[]>([]);
   const [saving, setSaving] = useState(false);
   const [pdrScores, setPdrScores] = useState<PdrScore[]>([]);
