@@ -172,9 +172,23 @@ export default function APR() {
       .select(SELECT)
       .eq("fiscal_year", year)
       .order("employee_name");
-    setRows((data ?? []) as unknown as Row[]);
+    let list = (data ?? []) as unknown as Row[];
+    if (!isHr) {
+      // Managers manage their team's cycles only — never their own.
+      const { data: authData } = await supabase.auth.getUser();
+      const uid = authData.user?.id;
+      if (uid) {
+        const { data: me } = await supabase
+          .from("employees")
+          .select("uuid")
+          .eq("user_id", uid)
+          .maybeSingle();
+        if (me?.uuid) list = list.filter((r) => r.employee_uuid !== me.uuid);
+      }
+    }
+    setRows(list);
     setLoading(false);
-  }, [year]);
+  }, [year, isHr]);
 
   useEffect(() => {
     load();
