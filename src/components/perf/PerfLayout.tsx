@@ -21,7 +21,7 @@ import { ViewModeBadge, ViewModeMenuSection } from "./ViewModeSwitcher";
 const pageTitles: Record<string, string> = {
   "/": "Overview",
   "/reviews": "Reviews",
-  "/people": "People",
+  "/people": "Team's Assessment",
   "/cycles": "Cycles",
   "/tasks": "Task Tracker",
   "/me": "My review",
