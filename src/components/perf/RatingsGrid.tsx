@@ -292,7 +292,6 @@ export function RatingsGrid({ year }: { year: number }) {
                     </TableHead>
                     <TableHead colSpan={4} className="text-center bg-muted">I/C SCORE</TableHead>
                     <TableHead colSpan={5} className="text-center bg-muted/60">MERIT</TableHead>
-                    <TableHead colSpan={3} className="text-center bg-muted">DIFFERENTIATED MERIT</TableHead>
                   </TableRow>
                   <TableRow>
                     <TableHead className="text-right">Min</TableHead>
