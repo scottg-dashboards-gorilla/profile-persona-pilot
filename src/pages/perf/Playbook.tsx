@@ -131,16 +131,59 @@ const steps: {
 ];
 
 export default function Playbook() {
+  const { has, unconfigured } = usePermissions();
+  const isAdminHr = unconfigured || has("admin") || has("hr");
+  const forEmployee = !isAdminHr && !has("manager");
+  const visibleSteps = forEmployee ? steps.filter((s) => s.owner === "Employee") : steps;
+
   return (
     <div className="space-y-5 max-w-4xl">
       <div>
         <h1 className="text-xl font-semibold">Datapath review playbook</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Datapath's own performance and pay rules — the order things happen in, and who owns each step.
-          Every step below maps to a real screen, and the Workflow panel on any review row tracks exactly
-          where that person is.
+          {forEmployee
+            ? "How performance and pay work at Datapath, and what's yours to do — your objectives, your input at mid-year and year-end, and how your outcome reaches you."
+            : "Datapath's own performance and pay rules — the order things happen in, and who owns each step. Every step below maps to a real screen, and the Workflow panel on any review row tracks exactly where that person is."}
         </p>
       </div>
+
+      {forEmployee && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">What's yours to do</CardTitle>
+            <CardDescription className="text-foreground">
+              Three conversations a year, all on your own pages.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <Rule>
+              Set your objectives under Faster, Stronger, Better or L&amp;D — each needs a name and a short
+              description of how it will be measured. You can edit or remove them until your manager aligns
+              them; after that, ask your manager to send them back if something needs to change.{" "}
+              <Link className="underline" to="/pdr">Objective Setting</Link>
+            </Rule>
+            <Rule>
+              At mid-year, add your own comment against each objective. Your manager replies on the same
+              objective, so nothing is written from scratch.
+            </Rule>
+            <Rule>
+              At year-end, write your self-input (Dec 01–15) and take the assessment for the period. Your
+              manager then comments and records your development score.
+            </Rule>
+            <Rule>
+              Keep your day-to-day work moving on your{" "}
+              <Link className="underline" to="/tasks">Task Tracker</Link> board.
+            </Rule>
+            <Rule>
+              When your outcome is shared, confirm you've received it on{" "}
+              <Link className="underline" to="/me">My review</Link> — and if you're not happy with the
+              amount, raise a pay concern there with your reasons. Your manager takes it to HR and you see
+              the decision on the same page.
+            </Rule>
+          </CardContent>
+        </Card>
+      )}
+
 
       <Card className="border-primary/30 bg-primary/5">
         <CardHeader className="pb-3">
