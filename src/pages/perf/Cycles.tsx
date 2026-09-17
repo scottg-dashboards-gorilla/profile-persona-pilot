@@ -302,7 +302,7 @@ export default function Cycles() {
             <CalendarRange className="h-6 w-6 mx-auto text-muted-foreground" />
             <div className="font-medium">No cycles yet</div>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              A cycle groups reviews for a period — annual, quarterly, or a one-off spot review round.
+              Cycles run annually — one per calendar year, covering everyone's reviews for that year.
               Creating one can bulk-schedule reviews for everyone in scope.
             </p>
             <Button size="sm" onClick={() => setOpen(true)}>
@@ -409,9 +409,9 @@ export default function Cycles() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create review cycle</DialogTitle>
+            <DialogTitle>Create annual cycle</DialogTitle>
             <DialogDescription>
-              Set the window, pick who's in scope, and optionally bulk-schedule a review for each person.
+              One cycle per year, covering Jan 1 – Dec 31. Pick who's in scope and optionally bulk-schedule a review for each person.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
