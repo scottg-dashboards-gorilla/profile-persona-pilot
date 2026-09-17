@@ -590,6 +590,33 @@ export default function MyReview() {
         </Card>
       )}
 
+      {reviews.some((r) => r.released_at) && (
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm font-medium">Your review outcomes</div>
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger className="w-[140px] h-8 text-xs">
+              <SelectValue placeholder="All years" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All years</SelectItem>
+              {years.map((y) => (
+                <SelectItem key={y} value={String(y)}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {released.length === 0 && reviews.some((r) => r.released_at) && (
+        <Card>
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            No review outcomes for {yearFilter}.
+          </CardContent>
+        </Card>
+      )}
+
       {released.map((r) => (
         <Card key={r.id}>
           <CardHeader>
