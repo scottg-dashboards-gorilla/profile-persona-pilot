@@ -282,9 +282,8 @@ export default function APR() {
       </header>
 
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Stat label="Merit planned" value={formatMoney(totals.merit)} icon={Wallet} />
-        <Stat label="Bonus planned" value={formatMoney(totals.bonus)} icon={BadgeCheck} />
         <Stat label="Executive pay-out" value={formatMoney(totals.exec)} icon={ShieldCheck} />
         <Card>
           <CardHeader className="pb-2">
@@ -349,7 +348,7 @@ export default function APR() {
                     <TableHead>Employee</TableHead>
                     <TableHead>Rating</TableHead>
                     <TableHead className="text-right">Merit</TableHead>
-                    <TableHead className="text-right">Bonus</TableHead>
+                    
                     <TableHead className="text-right">I/C</TableHead>
                     <TableHead>Stage</TableHead>
                     <TableHead className="text-right">Next step</TableHead>
@@ -381,9 +380,6 @@ export default function APR() {
                               <div className="text-xs text-muted-foreground">{r.merit_percent}%</div>
                             </>
                           ) : "—"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {r.bonus_eligible ? formatMoney(r.bonus_amount ?? 0) : <span className="text-muted-foreground">n/a</span>}
                         </TableCell>
                         <TableCell className="text-right">{r.ic_score ?? "—"}</TableCell>
                         <TableCell>
