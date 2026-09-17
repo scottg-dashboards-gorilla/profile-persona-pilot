@@ -183,9 +183,8 @@ export function RatingsGrid({ year }: { year: number }) {
 
   const spend = useMemo(() => {
     const merit = computed.reduce((s, c) => s + (c.prorated ?? 0), 0);
-    const dm = computed.reduce((s, c) => s + (c.dmAmount ?? 0), 0);
     const icAvg = icAverage(computed.map((c) => c.ic));
-    return { merit, dm, icAvg };
+    return { merit, icAvg };
   }, [computed]);
 
   const eligibleCount = rows.length;
