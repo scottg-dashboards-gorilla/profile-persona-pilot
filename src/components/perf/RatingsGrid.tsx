@@ -42,7 +42,9 @@ import {
   meritRange,
   ratingBand,
   withinRange,
+  goalsSummary,
   type ManagerBudget,
+  type PdrObjective,
 } from "@/lib/pmp";
 import { cn } from "@/lib/utils";
 
