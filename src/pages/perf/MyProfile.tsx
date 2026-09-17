@@ -146,17 +146,55 @@ export default function MyProfile() {
         </CardHeader>
         <CardContent className="space-y-4">
           {fields.map((f) => (
-            <div key={f.label} className="flex items-start gap-3">
-              <f.icon className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {f.label}
+            <div key={f.label}>
+              <div className="flex items-start gap-3">
+                <f.icon className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                <div className="flex-1">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {f.label}
+                  </div>
+                  <div className="text-sm font-medium">{f.value}</div>
+                  {f.sub && (
+                    <div className="text-xs text-muted-foreground">{f.sub}</div>
+                  )}
                 </div>
-                <div className="text-sm font-medium">{f.value}</div>
-                {f.sub && (
-                  <div className="text-xs text-muted-foreground">{f.sub}</div>
+                {f.expandable && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-muted-foreground"
+                    onClick={() => setExpanded((v) => !v)}
+                  >
+                    {expanded ? (
+                      <>
+                        Hide <ChevronUp className="h-3.5 w-3.5 ml-1" />
+                      </>
+                    ) : (
+                      <>
+                        View <ChevronDown className="h-3.5 w-3.5 ml-1" />
+                      </>
+                    )}
+                  </Button>
                 )}
               </div>
+              {f.expandable && expanded && (
+                <div className="mt-3 ml-7 space-y-3">
+                  {reportRows.map((r) => (
+                    <div key={r.uuid} className="rounded-lg border p-3">
+                      <div className="text-sm font-medium">
+                        {r.first_name} {r.last_name}
+                      </div>
+                      <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                        <div>{r.title ?? "Team member"}{r.department ? ` · ${r.department}` : ""}</div>
+                        {r.email && <div>{r.email}</div>}
+                        {r.hire_date && (
+                          <div>Hired {format(parseISO(r.hire_date), "MMMM d, yyyy")}</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </CardContent>
