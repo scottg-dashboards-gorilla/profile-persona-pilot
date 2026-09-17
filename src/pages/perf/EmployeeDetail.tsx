@@ -205,8 +205,7 @@ export default function EmployeeDetail() {
                 <div className="flex items-center gap-2 mt-0.5">
                   <Badge variant="secondary">{readableTier(current.tier)}</Badge>
                   {tier?.changed && (
-                    <span className={`text-xs inline-flex items-center gap-1 ${deltaTone(tier.to - tier.from)}`}>
-                      <DeltaIcon d={tier.to - tier.from} />
+                    <span className="text-xs text-muted-foreground">
                       was {readableTier(tier.from)}
                     </span>
                   )}
@@ -241,19 +240,28 @@ export default function EmployeeDetail() {
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Skills areas</div>
               <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
                 {Object.entries(current.technical_scores ?? {})
-                  .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
+                  .map(([name, v]) => {
+                    const num =
+                      typeof v === "number"
+                        ? v
+                        : typeof v === "object" && v != null
+                          ? (v.normalizedScore ?? v.score ?? 0)
+                          : 0;
+                    return { name, num };
+                  })
+                  .sort((a, b) => b.num - a.num)
                   .slice(0, 10)
-                  .map(([name, score]) => (
+                  .map(({ name, num }) => (
                     <div key={name} className="flex items-center gap-2 text-sm">
                       <span className="flex-1 truncate">{name}</span>
                       <div className="h-1.5 w-24 rounded-full bg-muted overflow-hidden">
                         <div
                           className="h-full rounded-full bg-primary"
-                          style={{ width: `${Math.max(0, Math.min(100, score ?? 0))}%` }}
+                          style={{ width: `${Math.max(0, Math.min(100, num))}%` }}
                         />
                       </div>
                       <span className="w-10 text-right tabular-nums text-muted-foreground">
-                        {Math.round(score ?? 0)}%
+                        {Math.round(num)}%
                       </span>
                     </div>
                   ))}
