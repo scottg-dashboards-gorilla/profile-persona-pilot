@@ -412,7 +412,6 @@ export function RatingsGrid({ year }: { year: number }) {
                 </div>
                 <div className="mt-2 space-y-3">
                   <Bar label="Merit" budget={meritBudget} spend={spend.merit} />
-                  <Bar label="Differentiated merit" budget={dmBudget} spend={spend.dm} />
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
                   <div className="font-semibold text-muted-foreground">I/C budget ({rows.length} emps)</div>
