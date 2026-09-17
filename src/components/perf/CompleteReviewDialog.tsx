@@ -25,7 +25,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   aggregate,
   methodLabels,
-  ratingBucket,
   type AggregationMethod,
 } from "@/lib/contributorAggregation";
 import { format, parseISO } from "date-fns";
