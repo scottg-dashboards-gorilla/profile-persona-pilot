@@ -197,47 +197,19 @@ export function RatingsGrid({ year }: { year: number }) {
       o.merit !== c.draft.merit ||
       o.ic !== c.draft.ic ||
       o.dm !== c.draft.dm ||
-      o.dmEligible !== c.draft.dmEligible ||
-      o.eq !== c.draft.eq ||
-      o.eqEligible !== c.draft.eqEligible ||
-      (c.row.equity_price_per_share ?? null) !== price
+      o.dmEligible !== c.draft.dmEligible
     );
   });
-
-  async function saveAll() {
-    if (blocked) {
-      toast({
-        title: "Entries can't be saved",
+...
         description: meritOver
           ? "Merit spend is higher than the merit budget."
-          : equityOver
-            ? "Share award value is higher than the share budget."
-            : icOver
-              ? `The team I/C average is above the target of ${IC_TARGET}.`
-              : "Some entries fall outside the allowed range.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setSaving(true);
-    for (const c of computed) {
-      const { error } = await supabase
-        .from("performance_reviews")
-        .update({
-          rating_score: c.score,
-          overall_rating: ratingBand(c.score) ?? undefined,
-          merit_percent: c.meritPct,
-          merit_amount: c.meritAmount,
-          merit_prorated_amount: c.prorated,
-          ic_score: c.ic,
+          : icOver
+            ? `The team I/C average is above the target of ${IC_TARGET}.`
+            : "Some entries fall outside the allowed range.",
+...
           dm_eligible: c.draft.dmEligible,
           dm_percent: c.dmPct,
           dm_amount: c.dmAmount,
-          equity_eligible: c.draft.eqEligible,
-          equity_percent: c.eqPct,
-          equity_value: c.eqValue,
-          equity_shares: c.eqShares,
-          equity_price_per_share: price,
         })
         .eq("id", c.row.id);
       if (error) {
