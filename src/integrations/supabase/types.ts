@@ -490,6 +490,7 @@ export type Database = {
       daily_tasks: {
         Row: {
           cadence: string
+          color: string
           completed_at: string | null
           created_at: string
           created_by: string | null
@@ -505,6 +506,7 @@ export type Database = {
         }
         Insert: {
           cadence?: string
+          color?: string
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -520,6 +522,7 @@ export type Database = {
         }
         Update: {
           cadence?: string
+          color?: string
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -1740,6 +1743,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      task_comments: {
+        Row: {
+          author_id: string
+          author_name: string
+          body: string
+          created_at: string
+          id: string
+          task_id: string
+        }
+        Insert: {
+          author_id?: string
+          author_name: string
+          body: string
+          created_at?: string
+          id?: string
+          task_id: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          body?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "daily_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
