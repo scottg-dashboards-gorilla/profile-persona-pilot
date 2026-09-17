@@ -2,7 +2,8 @@ import { Outlet, useLocation, Navigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { PerfSidebar } from "./PerfSidebar";
-import { Search, Bell, Loader2, LogOut, UserSquare2 } from "lucide-react";
+import { Search, Loader2, LogOut, UserSquare2 } from "lucide-react";
+import { NotificationsBell } from "./NotificationsBell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -99,9 +100,7 @@ export default function PerfLayout() {
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input placeholder="Search people, reviews…" className="pl-8 w-72 h-9" />
                 </div>
-                <button className="relative p-2 rounded-md hover:bg-muted" aria-label="Notifications">
-                  <Bell className="h-4 w-4" />
-                </button>
+                <NotificationsBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
