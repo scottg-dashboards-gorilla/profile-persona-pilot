@@ -186,25 +186,41 @@ export default function Reviews() {
 
   const cycleFilter = searchParams.get("cycle");
 
+  // Every year that has reviews on file, newest first, so history stays reachable.
+  const years = useMemo(() => {
+    const set = new Set<number>();
+    rows.forEach((r) => {
+      const y = reviewYear(r);
+      if (y) set.add(y);
+    });
+    set.add(new Date().getFullYear());
+    return [...set].sort((a, b) => b - a);
+  }, [rows]);
+
+  const inYear = (r: ReviewRow) => year === "all" || String(reviewYear(r) ?? "") === year;
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((r) => {
+      if (!inYear(r)) return false;
       if (cycleFilter && (r as any).cycle_id !== cycleFilter) return false;
       if (q && !`${r.employee_name} ${r.department ?? ""}`.toLowerCase().includes(q)) return false;
       if (tab === "upcoming") return r.status === "scheduled";
       if (tab === "in_progress") return r.status === "in_progress";
       return r.status === "completed";
     });
-  }, [rows, query, tab, cycleFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, query, tab, cycleFilter, year]);
 
-  const counts = useMemo(
-    () => ({
-      upcoming: rows.filter((r) => r.status === "scheduled").length,
-      in_progress: rows.filter((r) => r.status === "in_progress").length,
-      completed: rows.filter((r) => r.status === "completed").length,
-    }),
-    [rows],
-  );
+  const counts = useMemo(() => {
+    const scoped = rows.filter(inYear);
+    return {
+      upcoming: scoped.filter((r) => r.status === "scheduled").length,
+      in_progress: scoped.filter((r) => r.status === "in_progress").length,
+      completed: scoped.filter((r) => r.status === "completed").length,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, year]);
 
   async function patchRow(id: string, patch: Partial<ReviewRow>) {
     setBusyId(id);
