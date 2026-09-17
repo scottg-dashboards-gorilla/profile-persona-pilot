@@ -204,11 +204,16 @@ export default function TaskTracker() {
       setComments([]);
       return;
     }
-    const { data } = await supabase
-      .from("daily_tasks")
-      .select("*")
-      .eq("employee_uuid", who)
-      .order("sort_order");
+    let q = supabase.from("daily_tasks").select("*").eq("employee_uuid", who);
+    if (range === "custom") {
+      if (from) q = q.gte("created_at", `${from}T00:00:00.000Z`);
+      if (to) q = q.lte("created_at", `${to}T23:59:59.999Z`);
+    } else if (range !== "all") {
+      const since = new Date();
+      since.setDate(since.getDate() - Number(range));
+      q = q.gte("created_at", since.toISOString());
+    }
+    const { data } = await q.order("sort_order");
     const rows = (data ?? []) as Task[];
     setTasks(rows);
     if (rows.length) {
