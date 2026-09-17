@@ -65,7 +65,7 @@ const statusTone: Record<string, string> = {
   archived: "bg-slate-100 text-slate-500 border-slate-200",
 };
 
-const iso = (d: Date) => d.toISOString().slice(0, 10);
+
 
 export default function Cycles() {
   const { toast } = useToast();
@@ -80,13 +80,13 @@ export default function Cycles() {
 
 
   // create form
-  const today = new Date();
-  const plus30 = new Date();
-  plus30.setDate(plus30.getDate() + 30);
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(currentYear);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [startsAt, setStartsAt] = useState(iso(today));
-  const [endsAt, setEndsAt] = useState(iso(plus30));
+  // Cycles are annual only: one cycle per calendar year, spanning Jan 1 – Dec 31.
+  const startsAt = `${year}-01-01`;
+  const endsAt = `${year}-12-31`;
   const [types, setTypes] = useState<string[]>(["self", "manager"]);
   const [scopeType, setScopeType] = useState<"all" | "department">("all");
   const [scopeValue, setScopeValue] = useState<string>("");
@@ -148,14 +148,25 @@ export default function Cycles() {
   );
 
   async function createCycle() {
-    if (!name.trim()) return;
+    const cycleName = name.trim() || `${year} Annual Cycle`;
+    const duplicate = cycles.some(
+      (c) => parseISO(c.starts_at).getFullYear() === year,
+    );
+    if (duplicate) {
+      toast({
+        title: `${year} already has a cycle`,
+        description: "Cycles are annual — edit the existing cycle for that year instead.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
     let cycleId: string | null = null;
     try {
       const { data, error } = await supabase
         .from("review_cycles")
         .insert({
-          name: name.trim(),
+          name: cycleName,
           description: description.trim() || null,
           starts_at: startsAt,
           ends_at: endsAt,
@@ -291,7 +302,7 @@ export default function Cycles() {
             <CalendarRange className="h-6 w-6 mx-auto text-muted-foreground" />
             <div className="font-medium">No cycles yet</div>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              A cycle groups reviews for a period — annual, quarterly, or a one-off spot review round.
+              Cycles run annually — one per calendar year, covering everyone's reviews for that year.
               Creating one can bulk-schedule reviews for everyone in scope.
             </p>
             <Button size="sm" onClick={() => setOpen(true)}>
@@ -398,9 +409,9 @@ export default function Cycles() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create review cycle</DialogTitle>
+            <DialogTitle>Create annual cycle</DialogTitle>
             <DialogDescription>
-              Set the window, pick who's in scope, and optionally bulk-schedule a review for each person.
+              One cycle per year, covering Jan 1 – Dec 31. Pick who's in scope and optionally bulk-schedule a review for each person.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -409,7 +420,7 @@ export default function Cycles() {
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. FY26 Annual Reviews"
+                placeholder={`e.g. ${year} Annual Cycle`}
               />
             </div>
             <div>
@@ -420,15 +431,18 @@ export default function Cycles() {
                 rows={2}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Starts</Label>
-                <Input type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-              </div>
-              <div>
-                <Label>Ends (review due date)</Label>
-                <Input type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
-              </div>
+            <div>
+              <Label>Year</Label>
+              <Input
+                type="number"
+                min={2020}
+                max={2100}
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value) || currentYear)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Cycles run annually — this one covers Jan 1 – Dec 31, {year}.
+              </p>
             </div>
             <div>
               <Label>Included review types</Label>
