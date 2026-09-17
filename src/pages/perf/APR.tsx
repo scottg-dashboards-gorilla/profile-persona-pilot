@@ -191,7 +191,9 @@ export default function APR() {
 
   const totals = useMemo(() => {
     const merit = rows.reduce((s, r) => s + (r.merit_amount ?? 0), 0);
-    return { merit, ic: icAverage(rows.map((r) => r.ic_score)) };
+    // The merit pot for this list of people: 5% of their combined annual pay.
+    const pool = Math.round(rows.reduce((s, r) => s + Number(r.current_annual_comp ?? 0), 0) * 0.05);
+    return { merit, pool, ic: icAverage(rows.map((r) => r.ic_score)) };
   }, [rows]);
 
   const stageCount = (stage: AprStage) => rows.filter((r) => r.apr_stage === stage).length;
