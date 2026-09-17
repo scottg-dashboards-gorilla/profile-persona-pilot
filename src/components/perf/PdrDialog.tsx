@@ -627,6 +627,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         {o.description && (
                           <p className="text-xs text-muted-foreground">{o.description}</p>
                         )}
+                        {(o.start_date || o.end_date) && (
+                          <p className="text-[11px] text-muted-foreground">
+                            {o.start_date ? format(parseISO(o.start_date), "MMM d, yyyy") : "No start date"} →{" "}
+                            {o.end_date ? format(parseISO(o.end_date), "MMM d, yyyy") : "no end date"}
+                          </p>
+                        )}
                         {o.target_value != null && (
                           <div className="flex items-center gap-2 flex-wrap text-xs">
                             <Badge variant="secondary" className="text-[10px]">
