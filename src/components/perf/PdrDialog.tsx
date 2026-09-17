@@ -37,29 +37,80 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-/** Target type, starting point and target value for a measurable goal. */
+/** Goal kind, dates, target type, starting point and target value for a measurable goal. */
 function GoalTargetFields({
+  kind,
+  startDate,
+  endDate,
   measure,
   start,
   target,
   unit,
+  onKind,
+  onStartDate,
+  onEndDate,
   onMeasure,
   onStart,
   onTarget,
   onUnit,
 }: {
+  kind: GoalKind;
+  startDate: string;
+  endDate: string;
   measure: GoalMeasureType;
   start: string;
   target: string;
   unit: string;
+  onKind: (v: GoalKind) => void;
+  onStartDate: (v: string) => void;
+  onEndDate: (v: string) => void;
   onMeasure: (v: GoalMeasureType) => void;
   onStart: (v: string) => void;
   onTarget: (v: string) => void;
   onUnit: (v: string) => void;
 }) {
   const chosen = GOAL_MEASURE_TYPES.find((m) => m.id === measure);
+  const chosenKind = GOAL_KINDS.find((k) => k.id === kind);
   return (
     <div className="grid gap-2 rounded-md bg-muted/40 p-2">
+      <div className="flex items-end gap-2 flex-wrap">
+        <div className="grid gap-1">
+          <Label className="text-[10px] uppercase text-muted-foreground">Type of goal *</Label>
+          <Select value={kind} onValueChange={(v) => onKind(v as GoalKind)}>
+            <SelectTrigger className="h-9 w-[170px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {GOAL_KINDS.map((k) => (
+                <SelectItem key={k.id} value={k.id}>
+                  {k.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid gap-1">
+          <Label className="text-[10px] uppercase text-muted-foreground">Start date</Label>
+          <Input
+            className="w-[145px]"
+            type="date"
+            value={startDate}
+            onChange={(e) => onStartDate(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-1">
+          <Label className="text-[10px] uppercase text-muted-foreground">
+            {kind === "project" ? "Finish by" : "Review by"} *
+          </Label>
+          <Input
+            className="w-[145px]"
+            type="date"
+            value={endDate}
+            onChange={(e) => onEndDate(e.target.value)}
+          />
+        </div>
+      </div>
+      <p className="text-[11px] text-muted-foreground">{chosenKind?.blurb}</p>
       <div className="flex items-end gap-2 flex-wrap">
         <div className="grid gap-1">
           <Label className="text-[10px] uppercase text-muted-foreground">What are you measuring? *</Label>
