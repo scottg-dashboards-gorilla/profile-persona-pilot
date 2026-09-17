@@ -206,9 +206,7 @@ export function RatingsGrid({ year }: { year: number }) {
     return (
       o.rating !== c.draft.rating ||
       o.merit !== c.draft.merit ||
-      o.ic !== c.draft.ic ||
-      o.dm !== c.draft.dm ||
-      o.dmEligible !== c.draft.dmEligible
+      o.ic !== c.draft.ic
     );
   });
 
