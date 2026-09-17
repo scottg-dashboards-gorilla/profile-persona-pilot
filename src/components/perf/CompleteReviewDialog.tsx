@@ -40,7 +40,6 @@ import {
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
 import { SelfAssessmentPanel } from "@/components/perf/SelfAssessmentPanel";
-import { RATING_SCALE, ratingBand, scoreFromLegacy } from "@/lib/pmp";
 
 
 export type ReviewRow = {
@@ -99,9 +98,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [previousAttempt, setPreviousAttempt] = useState<AttemptRow | null>(null);
   const [presetContext, setPresetContext] = useState<DeltaContext | null>(null);
 
-  const [rating, setRating] = useState<string>("meets");
-  const [scoreOverride, setScoreOverride] = useState<number | null>(null);
-  const [autoSuggest, setAutoSuggest] = useState(true);
   const [promotion, setPromotion] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [notes, setNotes] = useState("");
