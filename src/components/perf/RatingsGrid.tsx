@@ -206,13 +206,8 @@ export function RatingsGrid({ year }: { year: number }) {
   const meritOver = gateEnforced && spend.merit > meritBudget;
   const icOver =
     gateEnforced && spend.icAvg != null && spend.icAvg > IC_TARGET;
-  const rangeBreaches = computed.filter(
-    (c) => c.meritOk === false || c.icOk === false,
-  ).length;
-
-  const blocked = meritOver || icOver || rangeBreaches > 0;
-
-  const dirty = computed.some((c) => {
+  /** Only what the manager has touched this session — older entries never block a save. */
+  const changed = computed.filter((c) => {
     const o = toDraft(c.row);
     return (
       o.rating !== c.draft.rating ||
@@ -220,6 +215,13 @@ export function RatingsGrid({ year }: { year: number }) {
       o.ic !== c.draft.ic
     );
   });
+  const rangeBreaches = changed.filter(
+    (c) => c.meritOk === false || c.icOk === false,
+  ).length;
+
+  const blocked = meritOver || icOver || rangeBreaches > 0;
+
+  const dirty = changed.length > 0;
 
   async function saveAll() {
     if (blocked) {
