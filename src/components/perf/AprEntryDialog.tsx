@@ -329,7 +329,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
               <ArrowUpRight className="h-4 w-4 mr-1" /> Escalate
             </Button>
           )}
-          <Button onClick={() => save(false)} disabled={saving || gate.blocked}>
+          <Button onClick={() => save(false)} disabled={saving || gate.blocked || meritOutOfRange}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
             Save entry
           </Button>
