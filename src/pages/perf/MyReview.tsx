@@ -71,6 +71,15 @@ type PdrScore = {
   stage: string;
 };
 
+type AssessmentAttempt = {
+  id: string;
+  submitted_at: string | null;
+  tier: string | null;
+  disc_primary: string | null;
+  truthfulness_score: number | null;
+  technical_scores: Record<string, number> | null;
+};
+
 const ratingLabel: Record<string, string> = {
   exceeds: "Exceeds expectations",
   meets: "Meets expectations",
@@ -85,6 +94,7 @@ export default function MyReview() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [assessment, setAssessment] = useState<SelfAssessment | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [attempt, setAttempt] = useState<AssessmentAttempt | null>(null);
   const [krs, setKrs] = useState<Kr[]>([]);
   const [saving, setSaving] = useState(false);
   const [pdrScores, setPdrScores] = useState<PdrScore[]>([]);
