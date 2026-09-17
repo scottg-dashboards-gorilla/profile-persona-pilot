@@ -62,7 +62,7 @@ import { cn } from "@/lib/utils";
 const thisYear = new Date().getFullYear();
 
 const SELECT =
-  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at";
+  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, ic_score, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at";
 
 type Row = AprReview & {
   hr_finalized_at: string | null;
@@ -75,7 +75,7 @@ type Row = AprReview & {
 };
 
 const EXPORT_SELECT =
-  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, is_executive, exec_payout_amount, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
+  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
 
 type ExportRow = Record<string, string | number | boolean | null>;
 
@@ -95,8 +95,6 @@ const EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "new_annual_comp", label: "New annual pay" },
   { key: "increase_percent", label: "Total increase %" },
   { key: "ic_score", label: "I/C score" },
-  { key: "is_executive", label: "Executive" },
-  { key: "exec_payout_amount", label: "Executive pay-out" },
   { key: "comp_adjustment_amount", label: "Pay change amount" },
   { key: "comp_adjustment_percent", label: "Pay change %" },
   { key: "comp_effective_date", label: "Effective date" },
@@ -193,8 +191,7 @@ export default function APR() {
 
   const totals = useMemo(() => {
     const merit = rows.reduce((s, r) => s + (r.merit_amount ?? 0), 0);
-    const exec = rows.reduce((s, r) => s + (r.exec_payout_amount ?? 0), 0);
-    return { merit, exec, ic: icAverage(rows.map((r) => r.ic_score)) };
+    return { merit, ic: icAverage(rows.map((r) => r.ic_score)) };
   }, [rows]);
 
   const stageCount = (stage: AprStage) => rows.filter((r) => r.apr_stage === stage).length;
@@ -288,9 +285,8 @@ export default function APR() {
       </header>
 
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Stat label="Merit planned" value={formatMoney(totals.merit)} icon={Wallet} />
-        <Stat label="Executive pay-out" value={formatMoney(totals.exec)} icon={ShieldCheck} />
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -369,7 +365,6 @@ export default function APR() {
                           <div className="font-medium">{r.employee_name}</div>
                           <div className="text-xs text-muted-foreground">
                             {r.title ?? r.department ?? "—"}
-                            {r.is_executive && " · Executive"}
                           </div>
                         </TableCell>
                         <TableCell>
