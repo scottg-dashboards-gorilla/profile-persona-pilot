@@ -40,27 +40,42 @@ const Index = () => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [linkedName, setLinkedName] = useState<string | null>(null);
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null);
+  const [suggestedRoleId, setSuggestedRoleId] = useState<string | null>(null);
 
-  // Opened from a signed-in employee's review page: identify them automatically.
+  // Signed in through the performance tool? Identify the person automatically:
+  // link their login to their staff record, prefill their name, and suggest a
+  // role from their job title.
   useEffect(() => {
-    if (!employeeUuidParam) return;
     void (async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+      // Make sure the login is linked to a staff record (by email, then name).
+      await supabase.rpc("claim_employee_link");
       const { data: emp } = await supabase
         .from("employees")
-        .select("first_name, last_name, email")
-        .eq("uuid", employeeUuidParam)
+        .select("uuid, first_name, last_name, email, title")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (emp) {
-        setLinkedName(`${emp.first_name} ${emp.last_name}`.trim());
-        setLinkedEmail(emp.email ?? user.email ?? null);
+      if (!emp) return;
+      if (employeeUuidParam && emp.uuid !== employeeUuidParam) return; // link is for someone else
+      setLinkedName(`${emp.first_name} ${emp.last_name}`.trim());
+      setLinkedEmail(emp.email ?? user.email ?? null);
+      const title = (emp.title ?? "").toLowerCase();
+      if (roles.length) {
+        const match = roles.find((r) => {
+          const key = `${r.id} ${r.label}`.toLowerCase();
+          if (/engineer|techni|support|develop|\bit\b|azure|cloud/.test(title))
+            return /technical|engineer/.test(key);
+          if (/manager|lead|head|director|chief/.test(title))
+            return /leader|manager/.test(key);
+          return false;
+        });
+        if (match) setSuggestedRoleId(match.id);
       }
     })();
-  }, [employeeUuidParam]);
+  }, [employeeUuidParam, roles]);
 
   const handleBegin = useCallback((name: string, selectedRoleId: string) => {
     const effectiveName = linkedName ?? name;
