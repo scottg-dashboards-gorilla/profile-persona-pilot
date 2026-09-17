@@ -371,33 +371,6 @@ export function RatingsGrid({ year }: { year: number }) {
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Checkbox
-                            checked={c.draft.dmEligible}
-                            onCheckedChange={(v) => set(c.row.id, { dmEligible: !!v, dm: v ? c.draft.dm : "" })}
-                          />
-                          <span className="text-[11px] text-muted-foreground">
-                            {c.draft.dmEligible ? "YES" : "NO"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right text-muted-foreground">
-                        {DM_RANGE.min.toFixed(2)} – {DM_RANGE.max.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Input
-                          type="number"
-                          step="0.1"
-                          className={cn("h-8 w-20 text-right text-xs", c.dmOk === false && "border-destructive")}
-                          value={c.draft.dm}
-                          disabled={!c.draft.dmEligible}
-                          onChange={(e) => set(c.row.id, { dm: e.target.value })}
-                        />
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
-                          {formatMoney(c.dmAmount)}
-                        </div>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
