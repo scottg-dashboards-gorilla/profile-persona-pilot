@@ -95,8 +95,6 @@ const EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "new_annual_comp", label: "New annual pay" },
   { key: "increase_percent", label: "Total increase %" },
   { key: "ic_score", label: "I/C score" },
-  { key: "is_executive", label: "Executive" },
-  { key: "exec_payout_amount", label: "Executive pay-out" },
   { key: "comp_adjustment_amount", label: "Pay change amount" },
   { key: "comp_adjustment_percent", label: "Pay change %" },
   { key: "comp_effective_date", label: "Effective date" },
@@ -193,8 +191,7 @@ export default function APR() {
 
   const totals = useMemo(() => {
     const merit = rows.reduce((s, r) => s + (r.merit_amount ?? 0), 0);
-    const exec = rows.reduce((s, r) => s + (r.exec_payout_amount ?? 0), 0);
-    return { merit, exec, ic: icAverage(rows.map((r) => r.ic_score)) };
+    return { merit, ic: icAverage(rows.map((r) => r.ic_score)) };
   }, [rows]);
 
   const stageCount = (stage: AprStage) => rows.filter((r) => r.apr_stage === stage).length;
@@ -288,9 +285,8 @@ export default function APR() {
       </header>
 
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Stat label="Merit planned" value={formatMoney(totals.merit)} icon={Wallet} />
-        <Stat label="Executive pay-out" value={formatMoney(totals.exec)} icon={ShieldCheck} />
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -369,7 +365,6 @@ export default function APR() {
                           <div className="font-medium">{r.employee_name}</div>
                           <div className="text-xs text-muted-foreground">
                             {r.title ?? r.department ?? "—"}
-                            {r.is_executive && " · Executive"}
                           </div>
                         </TableCell>
                         <TableCell>
