@@ -1804,6 +1804,7 @@ export type Database = {
         Args: { _employee_uuid: string }
         Returns: boolean
       }
+      is_my_manager: { Args: { _employee_uuid: string }; Returns: boolean }
       is_review_contributor: {
         Args: { _contributor_id: string }
         Returns: boolean
