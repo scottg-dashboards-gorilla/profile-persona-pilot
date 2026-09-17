@@ -106,8 +106,24 @@ export default function TaskTracker() {
         .order("first_name"),
       supabase.auth.getUser(),
     ]);
-    const all = (emps ?? []) as Emp[];
-    const mine = all.find((e) => e.user_id && e.user_id === auth?.user?.id) ?? null;
+    let all = (emps ?? []) as Emp[];
+    let mine = all.find((e) => e.user_id && e.user_id === auth?.user?.id) ?? null;
+
+    // Signed in but not yet matched to a staff record: link by work email so the
+    // person can use their own board straight away.
+    if (!mine && auth?.user) {
+      const { data: claim } = await supabase.rpc("claim_employee_link");
+      const linked = (claim as { status?: string; employee_uuid?: string } | null) ?? null;
+      if (linked?.status === "linked" && linked.employee_uuid) {
+        const { data: again } = await supabase
+          .from("employees")
+          .select("uuid,first_name,last_name,department,manager_uuid,user_id")
+          .eq("terminated", false)
+          .order("first_name");
+        all = (again ?? []) as Emp[];
+        mine = all.find((e) => e.uuid === linked.employee_uuid) ?? null;
+      }
+    }
     setMeUuid(mine?.uuid ?? null);
 
     let visible: Emp[] = [];
@@ -306,6 +322,13 @@ export default function TaskTracker() {
         <div className="flex items-center gap-2 p-8 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> Loading tasks…
         </div>
+      ) : !who ? (
+        <Card>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            We couldn't match your sign-in to your staff record, so there's no board to add tasks to
+            yet. Ask HR to connect your work email to your name, then reload this page.
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid gap-4 lg:grid-cols-4">
           {COLUMNS.map((col) => (
