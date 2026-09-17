@@ -118,16 +118,13 @@ export default function MyReview() {
   const [concernNote, setConcernNote] = useState("");
 
   const [yearFilter, setYearFilter] = useState<string>("all");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   const active = reviews.find((r) => r.status !== "completed") ?? null;
   const years = Array.from(
     new Set(reviews.map((r) => new Date(r.scheduled_date).getFullYear())),
   ).sort((a, b) => b - a);
-  const typeOptions = Array.from(new Set(reviews.map((r) => r.review_cycle))).sort();
   const inFilter = (r: Review) =>
-    (yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter)) &&
-    (typeFilter === "all" || r.review_cycle === typeFilter);
+    yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter);
   const released = reviews.filter((r) => r.released_at && inFilter(r));
   // Everything that isn't a released outcome: the open review plus completed ones being finalised.
   const pendingHistory = reviews.filter((r) => !r.released_at && inFilter(r));
@@ -366,6 +363,230 @@ export default function MyReview() {
         <p className="text-sm text-muted-foreground">{me.title ?? "—"}</p>
       </div>
 
+      {hasHistory && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm font-medium">Your review history</div>
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger className="w-[140px] h-8 text-xs">
+              <SelectValue placeholder="All years" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All years</SelectItem>
+              {years.map((y) => (
+                <SelectItem key={y} value={String(y)}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {released.length === 0 && pendingHistory.length === 0 && hasHistory && (
+        <Card>
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            No reviews match those filters.
+          </CardContent>
+        </Card>
+      )}
+
+      {released.map((r) => (
+        <Card key={r.id}>
+          <CardHeader>
+            <CardTitle className="text-base">{r.review_cycle} outcome</CardTitle>
+            <CardDescription>
+              Shared {r.released_at ? format(parseISO(r.released_at), "MMM d, yyyy") : "—"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Rating</div>
+                <div className="font-medium">{ratingLabel[r.overall_rating ?? ""] ?? "—"}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Pay change
+                </div>
+                <div className="font-medium">
+                  {formatCompDelta(r.comp_adjustment_amount, r.comp_adjustment_percent)}
+                  {r.comp_effective_date && (
+                    <span className="text-muted-foreground font-normal">
+                      {" "}
+                      from {format(parseISO(r.comp_effective_date), "MMM d, yyyy")}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {r.promotion && (
+              <div className="text-primary font-medium">★ Promoted{r.new_title ? ` to ${r.new_title}` : ""}</div>
+            )}
+            {r.notes && (
+              <>
+                <Separator />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                    Manager summary
+                  </div>
+                  <p className="whitespace-pre-wrap">{r.notes}</p>
+                </div>
+              </>
+            )}
+            <Separator />
+            {r.employee_ack_at ? (
+              <div className="flex items-start gap-2 text-emerald-700">
+                <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+                <div>
+                  You confirmed receipt on {format(parseISO(r.employee_ack_at), "MMM d, yyyy 'at' h:mma")}
+                  {r.employee_ack_comment && (
+                    <div className="text-muted-foreground">"{r.employee_ack_comment}"</div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 rounded-md border border-amber-200 bg-amber-50/60 p-3">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                  <div className="text-sm">
+                    <div className="font-medium">Action needed: confirm you've received this</div>
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      Confirming records that this outcome was shared with you and that you've read it.
+                      It doesn't mean you agree — use the box below if you want anything on record.
+                    </p>
+                  </div>
+                </div>
+                <Textarea
+                  rows={2}
+                  placeholder="Your comments (optional) — visible to your manager and HR…"
+                  value={ackComment}
+                  onChange={(e) => setAckComment(e.target.value)}
+                />
+                <label className="flex items-start gap-2 text-xs cursor-pointer">
+                  <Checkbox
+                    checked={ackConfirmed === r.id}
+                    onCheckedChange={(v) => setAckConfirmed(v ? r.id : null)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    I confirm I've reviewed my rating
+                    {(r.comp_adjustment_amount ?? 0) !== 0 ? ", pay change" : ""} and my manager's
+                    summary for {r.review_cycle}.
+                  </span>
+                </label>
+                <div className="flex justify-end">
+                  <Button size="sm" disabled={saving || ackConfirmed !== r.id} onClick={() => acknowledge(r.id)}>
+                    {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                    Confirm receipt
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {(r.comp_adjustment_amount ?? 0) !== 0 && (
+              <>
+                <Separator />
+                {r.pay_pushback_status === "none" ? (
+                  concernFor === r.id ? (
+                    <div className="space-y-2 rounded-md border p-3">
+                      <div className="text-sm font-medium">Tell your manager what doesn't sit right</div>
+                      <p className="text-xs text-muted-foreground">
+                        This goes to your manager and HR. Your manager will come back to you after
+                        speaking with HR.
+                      </p>
+                      <Textarea
+                        rows={3}
+                        placeholder="Why you think the amount isn't right…"
+                        value={concernNote}
+                        onChange={(e) => setConcernNote(e.target.value)}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => setConcernFor(null)}>
+                          Cancel
+                        </Button>
+                        <Button size="sm" disabled={saving || !concernNote.trim()} onClick={() => raiseConcern(r.id)}>
+                          {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                          Send
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        Not happy with the pay amount? Raise it and your manager will take it to HR.
+                      </p>
+                      <Button size="sm" variant="outline" onClick={() => setConcernFor(r.id)}>
+                        Raise a pay concern
+                      </Button>
+                    </div>
+                  )
+                ) : (
+                  <div className="rounded-md border border-amber-200 bg-amber-50/60 p-3 space-y-2 text-xs">
+                    <div className="font-medium text-sm">
+                      {r.pay_pushback_status === "resolved"
+                        ? "Your pay concern is closed"
+                        : r.pay_pushback_status === "with_hr"
+                          ? "Your manager is speaking to HR"
+                          : "Your pay concern was sent to your manager"}
+                    </div>
+                    {r.pay_pushback_employee_note && (
+                      <div>
+                        <span className="text-muted-foreground">You said: </span>
+                        "{r.pay_pushback_employee_note}"
+                        {r.pay_pushback_raised_at && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {format(parseISO(r.pay_pushback_raised_at), "MMM d, h:mma")}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {r.pay_pushback_manager_note && (
+                      <div>
+                        <span className="text-muted-foreground">Your manager: </span>
+                        {r.pay_pushback_manager_note}
+                      </div>
+                    )}
+                    {r.pay_pushback_hr_note && (
+                      <div>
+                        <span className="text-muted-foreground">HR outcome: </span>
+                        {r.pay_pushback_hr_note}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+
+      {pendingHistory.map((r) => (
+        <Card key={r.id}>
+          <CardContent className="p-4 flex flex-wrap items-center gap-3 text-sm">
+            <StatusPill
+              tone={computeReviewTone(
+                r.status as "scheduled" | "in_progress" | "completed" | "cancelled",
+                r.scheduled_date,
+              )}
+            />
+            <div className="flex-1 min-w-[10rem]">
+              <div className="font-medium">{r.review_cycle}</div>
+              <div className="text-xs text-muted-foreground">
+                {r.completed_date
+                  ? `Completed ${format(parseISO(r.completed_date), "MMM d, yyyy")}`
+                  : `Scheduled ${format(parseISO(r.scheduled_date), "MMM d, yyyy")}`}
+              </div>
+            </div>
+            {r.status === "completed" && !r.released_at && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5" /> Being finalised
+              </span>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+
       {pdrScores.length > 0 && (
         <Card>
           <CardHeader>
@@ -585,244 +806,6 @@ export default function MyReview() {
       )}
 
 
-      {hasHistory && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-sm font-medium">Your review history</div>
-          <div className="flex items-center gap-2">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[170px] h-8 text-xs">
-                <SelectValue placeholder="All review types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All review types</SelectItem>
-                {typeOptions.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={yearFilter} onValueChange={setYearFilter}>
-              <SelectTrigger className="w-[140px] h-8 text-xs">
-                <SelectValue placeholder="All years" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All years</SelectItem>
-                {years.map((y) => (
-                  <SelectItem key={y} value={String(y)}>
-                    {y}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
-
-      {released.length === 0 && pendingHistory.length === 0 && hasHistory && (
-        <Card>
-          <CardContent className="p-4 text-sm text-muted-foreground">
-            No reviews match those filters.
-          </CardContent>
-        </Card>
-      )}
-
-      {released.map((r) => (
-        <Card key={r.id}>
-          <CardHeader>
-            <CardTitle className="text-base">{r.review_cycle} outcome</CardTitle>
-            <CardDescription>
-              Shared {r.released_at ? format(parseISO(r.released_at), "MMM d, yyyy") : "—"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Rating</div>
-                <div className="font-medium">{ratingLabel[r.overall_rating ?? ""] ?? "—"}</div>
-              </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Pay change
-                </div>
-                <div className="font-medium">
-                  {formatCompDelta(r.comp_adjustment_amount, r.comp_adjustment_percent)}
-                  {r.comp_effective_date && (
-                    <span className="text-muted-foreground font-normal">
-                      {" "}
-                      from {format(parseISO(r.comp_effective_date), "MMM d, yyyy")}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            {r.promotion && (
-              <div className="text-primary font-medium">★ Promoted{r.new_title ? ` to ${r.new_title}` : ""}</div>
-            )}
-            {r.notes && (
-              <>
-                <Separator />
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                    Manager summary
-                  </div>
-                  <p className="whitespace-pre-wrap">{r.notes}</p>
-                </div>
-              </>
-            )}
-            <Separator />
-            {r.employee_ack_at ? (
-              <div className="flex items-start gap-2 text-emerald-700">
-                <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-                <div>
-                  You confirmed receipt on {format(parseISO(r.employee_ack_at), "MMM d, yyyy 'at' h:mma")}
-                  {r.employee_ack_comment && (
-                    <div className="text-muted-foreground">"{r.employee_ack_comment}"</div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3 rounded-md border border-amber-200 bg-amber-50/60 p-3">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                  <div className="text-sm">
-                    <div className="font-medium">Action needed: confirm you've received this</div>
-                    <p className="text-muted-foreground text-xs mt-0.5">
-                      Confirming records that this outcome was shared with you and that you've read it.
-                      It doesn't mean you agree — use the box below if you want anything on record.
-                    </p>
-                  </div>
-                </div>
-                <Textarea
-                  rows={2}
-                  placeholder="Your comments (optional) — visible to your manager and HR…"
-                  value={ackComment}
-                  onChange={(e) => setAckComment(e.target.value)}
-                />
-                <label className="flex items-start gap-2 text-xs cursor-pointer">
-                  <Checkbox
-                    checked={ackConfirmed === r.id}
-                    onCheckedChange={(v) => setAckConfirmed(v ? r.id : null)}
-                    className="mt-0.5"
-                  />
-                  <span>
-                    I confirm I've reviewed my rating
-                    {(r.comp_adjustment_amount ?? 0) !== 0 ? ", pay change" : ""} and my manager's
-                    summary for {r.review_cycle}.
-                  </span>
-                </label>
-                <div className="flex justify-end">
-                  <Button size="sm" disabled={saving || ackConfirmed !== r.id} onClick={() => acknowledge(r.id)}>
-                    {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-                    Confirm receipt
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {(r.comp_adjustment_amount ?? 0) !== 0 && (
-              <>
-                <Separator />
-                {r.pay_pushback_status === "none" ? (
-                  concernFor === r.id ? (
-                    <div className="space-y-2 rounded-md border p-3">
-                      <div className="text-sm font-medium">Tell your manager what doesn't sit right</div>
-                      <p className="text-xs text-muted-foreground">
-                        This goes to your manager and HR. Your manager will come back to you after
-                        speaking with HR.
-                      </p>
-                      <Textarea
-                        rows={3}
-                        placeholder="Why you think the amount isn't right…"
-                        value={concernNote}
-                        onChange={(e) => setConcernNote(e.target.value)}
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="ghost" onClick={() => setConcernFor(null)}>
-                          Cancel
-                        </Button>
-                        <Button size="sm" disabled={saving || !concernNote.trim()} onClick={() => raiseConcern(r.id)}>
-                          {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-                          Send
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs text-muted-foreground">
-                        Not happy with the pay amount? Raise it and your manager will take it to HR.
-                      </p>
-                      <Button size="sm" variant="outline" onClick={() => setConcernFor(r.id)}>
-                        Raise a pay concern
-                      </Button>
-                    </div>
-                  )
-                ) : (
-                  <div className="rounded-md border border-amber-200 bg-amber-50/60 p-3 space-y-2 text-xs">
-                    <div className="font-medium text-sm">
-                      {r.pay_pushback_status === "resolved"
-                        ? "Your pay concern is closed"
-                        : r.pay_pushback_status === "with_hr"
-                          ? "Your manager is speaking to HR"
-                          : "Your pay concern was sent to your manager"}
-                    </div>
-                    {r.pay_pushback_employee_note && (
-                      <div>
-                        <span className="text-muted-foreground">You said: </span>
-                        "{r.pay_pushback_employee_note}"
-                        {r.pay_pushback_raised_at && (
-                          <span className="text-muted-foreground">
-                            {" "}
-                            · {format(parseISO(r.pay_pushback_raised_at), "MMM d, h:mma")}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    {r.pay_pushback_manager_note && (
-                      <div>
-                        <span className="text-muted-foreground">Your manager: </span>
-                        {r.pay_pushback_manager_note}
-                      </div>
-                    )}
-                    {r.pay_pushback_hr_note && (
-                      <div>
-                        <span className="text-muted-foreground">HR outcome: </span>
-                        {r.pay_pushback_hr_note}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-
-      {pendingHistory.map((r) => (
-        <Card key={r.id}>
-          <CardContent className="p-4 flex flex-wrap items-center gap-3 text-sm">
-            <StatusPill
-              tone={computeReviewTone(
-                r.status as "scheduled" | "in_progress" | "completed" | "cancelled",
-                r.scheduled_date,
-              )}
-            />
-            <div className="flex-1 min-w-[10rem]">
-              <div className="font-medium">{r.review_cycle}</div>
-              <div className="text-xs text-muted-foreground">
-                {r.completed_date
-                  ? `Completed ${format(parseISO(r.completed_date), "MMM d, yyyy")}`
-                  : `Scheduled ${format(parseISO(r.scheduled_date), "MMM d, yyyy")}`}
-              </div>
-            </div>
-            {r.status === "completed" && !r.released_at && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <Lock className="h-3.5 w-3.5" /> Being finalised
-              </span>
-            )}
-          </CardContent>
-        </Card>
-      ))}
     </div>
   );
 }
