@@ -540,9 +540,11 @@ export const UNCONSCIOUS_BIASES: { label: string; what: string }[] = [
 export const MERIT_PRINCIPLES = {
   what: "Merit Increase is an increase to an associate's base salary and is designed to reward individual performance for the prior year.",
   eligibility: "Merit eligible associates as per local policy.",
-  delivery: "Each performance rating has an associated merit increase range — the higher the rating, the higher the range.",
+  delivery: "Each performance rating has an associated merit increase range — the higher the rating, the higher the range. 5% is the mid point: a solid \"Achieved\" (3) rating can be awarded 5%.",
   watchOuts: [
+    "The team average merit increase target is 5%.",
     "Managers cannot exceed the maximum of the merit increase range.",
+    "Managers cannot spend more than their approved merit budget (5% of their team's total pay).",
     "For managers with teams of more than 5 associates, entries cannot be saved if the merit spend is higher than the merit budget.",
     "For managers with direct reports based in different countries, the budget will be shown in USD.",
   ],
@@ -625,12 +627,15 @@ export function promotionCalibrationLevel(promotionDate: string | null | undefin
 
 /** Merit increase range per rating — the higher the rating, the higher the range. */
 export const MERIT_RANGES: Record<RatingScore, { min: number; max: number }> = {
-  5: { min: 3.5, max: 6 },
-  4: { min: 2.5, max: 4 },
-  3: { min: 1.4, max: 2.5 },
-  2: { min: 0, max: 1 },
+  5: { min: 7, max: 10 },
+  4: { min: 5.5, max: 8 },
+  3: { min: 4, max: 6 },
+  2: { min: 0, max: 3 },
   1: { min: 0, max: 0 },
 };
+
+/** The team merit average must land on 5% — the mid point of a "meets" rating. */
+export const MERIT_AVERAGE_TARGET = 5;
 
 /** I/C score range per rating. The team average must land on the target of 105. */
 export const IC_RANGES: Record<RatingScore, { min: number; max: number }> = {
