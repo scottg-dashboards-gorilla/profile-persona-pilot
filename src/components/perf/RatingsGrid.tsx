@@ -160,7 +160,7 @@ export function RatingsGrid({ year }: { year: number }) {
       const score = d.rating ? Number(d.rating) : null;
       const mRange = meritRange(score);
       const iRange = icRange(score);
-      const meritPct = d.merit === "" ? null : Number(d.merit);
+      const meritPct = score === 1 ? 0 : d.merit === "" ? null : Number(d.merit);
       const ic = d.ic === "" ? null : Number(d.ic);
       const comp = r.current_annual_comp ?? 0;
       const meritAmount = meritPct != null ? amountFromPercent(comp, meritPct) : null;
