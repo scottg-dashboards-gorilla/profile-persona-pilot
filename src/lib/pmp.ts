@@ -411,39 +411,34 @@ export function icAverage(scores: (number | null | undefined)[]): number | null 
   return Math.round((list.reduce((a, b) => a + b, 0) / list.length) * 10) / 10;
 }
 
-export type BudgetPot = "merit" | "bonus";
+export type BudgetPot = "merit";
 
 export type ManagerBudget = {
   id: string;
   manager_uuid: string;
   fiscal_year: number;
   merit_budget_amount: number;
-  bonus_budget_amount: number;
   equity_budget_amount?: number;
   note: string | null;
 };
 
 
 /**
- * Merit and bonus draw from separate pots — leftover in one cannot fund the other.
+ * Merit draws from the manager's merit pot.
  * The gate only bites for managers with 5 or more eligible reports (mirrored in the database).
  */
 export function budgetGate(opts: {
   eligibleCount: number;
   budget: ManagerBudget | null;
   plannedMerit: number;
-  plannedBonus: number;
 }) {
   const enforced = opts.eligibleCount >= 5 && !!opts.budget;
   const meritOver = enforced ? opts.plannedMerit > (opts.budget?.merit_budget_amount ?? 0) : false;
-  const bonusOver = enforced ? opts.plannedBonus > (opts.budget?.bonus_budget_amount ?? 0) : false;
   return {
     enforced,
     meritOver,
-    bonusOver,
-    blocked: meritOver || bonusOver,
+    blocked: meritOver,
     meritRemaining: (opts.budget?.merit_budget_amount ?? 0) - opts.plannedMerit,
-    bonusRemaining: (opts.budget?.bonus_budget_amount ?? 0) - opts.plannedBonus,
   };
 }
 
