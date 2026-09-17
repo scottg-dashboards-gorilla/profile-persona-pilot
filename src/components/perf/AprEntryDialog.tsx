@@ -136,6 +136,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   if (!review) return null;
 
   const comp = Number(review.current_annual_comp ?? 0);
+  const meritPct = meritPercent === "" ? 0 : Number(meritPercent);
   const scoreNum = Number(score);
   const meritRange = (MERIT_RANGES as Record<number, { min: number; max: number }>)[scoreNum] ?? null;
   const meritLocked = !!meritRange && meritRange.max === 0;
