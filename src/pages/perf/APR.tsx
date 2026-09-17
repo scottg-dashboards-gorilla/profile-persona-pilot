@@ -659,6 +659,8 @@ type Person = {
   title: string | null;
   hire_date: string | null;
   current_annual_comp: number | null;
+  manager_uuid: string | null;
+  user_id: string | null;
 };
 
 /**
@@ -676,6 +678,8 @@ function AnniversaryPanel({
   onCreated: () => void;
 }) {
   const { toast } = useToast();
+  const { has, unconfigured } = usePermissions();
+  const isAdminHr = unconfigured || has("admin") || has("hr");
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -683,14 +687,35 @@ function AnniversaryPanel({
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("employees")
-        .select("uuid, first_name, last_name, email, department, title, hire_date, current_annual_comp")
-        .eq("terminated", false);
-      setPeople((data ?? []) as unknown as Person[]);
+      const [{ data }, { data: auth }] = await Promise.all([
+        supabase
+          .from("employees")
+          .select("uuid, first_name, last_name, email, department, title, hire_date, current_annual_comp, manager_uuid, user_id")
+          .eq("terminated", false),
+        supabase.auth.getUser(),
+      ]);
+      const all = (data ?? []) as unknown as Person[];
+      if (isAdminHr) {
+        setPeople(all);
+      } else {
+        // Managers only see their own anniversary plus the people they manage
+        // (direct reports and one level below).
+        const meUuid = all.find((e) => e.user_id && e.user_id === auth?.user?.id)?.uuid ?? null;
+        if (!meUuid) {
+          setPeople([]);
+        } else {
+          const direct = all.filter((e) => e.manager_uuid === meUuid).map((e) => e.uuid);
+          const team = new Set([
+            ...direct,
+            ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid),
+          ]);
+          team.add(meUuid);
+          setPeople(all.filter((e) => team.has(e.uuid)));
+        }
+      }
       setLoading(false);
     })();
-  }, []);
+  }, [isAdminHr]);
 
   const existing = useMemo(() => new Set(rows.map((r) => r.employee_uuid)), [rows]);
 
