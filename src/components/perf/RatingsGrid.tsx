@@ -98,6 +98,8 @@ export function RatingsGrid({ year }: { year: number }) {
   const [pendingBudget, setPendingBudget] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  /** Goals for each person shown, keyed by employee uuid. */
+  const [goalsByEmp, setGoalsByEmp] = useState<Record<string, PdrObjective[]>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
