@@ -120,7 +120,7 @@ const Index = () => {
       acc[s.dimensionId] = s.normalizedScore;
       return acc;
     }, {});
-    const employee_uuid = employeeUuidParam ?? employeeName;
+    const employee_uuid = linkedUuid ?? employeeUuidParam ?? employeeName;
     let linkedCycleId: string | null = null;
     if (reviewId) {
       const { data } = await supabase
@@ -159,7 +159,7 @@ const Index = () => {
         .update({ assessment_attempt_id: attempt.id })
         .eq("id", reviewId);
     }
-  }, [startTime, completeAssessment, employeeName, role, scores, discProfile, truthfulness]);
+  }, [startTime, completeAssessment, employeeName, role, scores, discProfile, truthfulness, linkedUuid, employeeUuidParam, reviewId, state.answers]);
 
   const handleRestart = useCallback(() => {
     reset();
