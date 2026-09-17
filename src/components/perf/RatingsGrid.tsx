@@ -200,13 +200,31 @@ export function RatingsGrid({ year }: { year: number }) {
       o.dmEligible !== c.draft.dmEligible
     );
   });
-...
+
+  async function saveAll() {
+    if (blocked) {
+      toast({
+        title: "Entries can't be saved",
         description: meritOver
           ? "Merit spend is higher than the merit budget."
           : icOver
             ? `The team I/C average is above the target of ${IC_TARGET}.`
             : "Some entries fall outside the allowed range.",
-...
+        variant: "destructive",
+      });
+      return;
+    }
+    setSaving(true);
+    for (const c of computed) {
+      const { error } = await supabase
+        .from("performance_reviews")
+        .update({
+          rating_score: c.score,
+          overall_rating: ratingBand(c.score) ?? undefined,
+          merit_percent: c.meritPct,
+          merit_amount: c.meritAmount,
+          merit_prorated_amount: c.prorated,
+          ic_score: c.ic,
           dm_eligible: c.draft.dmEligible,
           dm_percent: c.dmPct,
           dm_amount: c.dmAmount,
