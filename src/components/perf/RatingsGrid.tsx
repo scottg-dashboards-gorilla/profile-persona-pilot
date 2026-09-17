@@ -173,10 +173,8 @@ export function RatingsGrid({ year }: { year: number }) {
   const spend = useMemo(() => {
     const merit = computed.reduce((s, c) => s + (c.prorated ?? 0), 0);
     const dm = computed.reduce((s, c) => s + (c.dmAmount ?? 0), 0);
-    const equity = computed.reduce((s, c) => s + (c.eqValue ?? 0), 0);
-    const shares = computed.reduce((s, c) => s + (c.eqShares ?? 0), 0);
     const icAvg = icAverage(computed.map((c) => c.ic));
-    return { merit, dm, equity, shares, icAvg };
+    return { merit, dm, icAvg };
   }, [computed]);
 
   const eligibleCount = rows.length;
@@ -184,14 +182,13 @@ export function RatingsGrid({ year }: { year: number }) {
   const meritBudget = budget?.merit_budget_amount ?? 0;
   const meritOver = gateEnforced && spend.merit > meritBudget;
   const dmOver = dmBudget > 0 && spend.dm > dmBudget;
-  const equityOver = equityBudget > 0 && spend.equity > equityBudget;
   const icOver =
     gateEnforced && spend.icAvg != null && spend.icAvg > IC_TARGET;
   const rangeBreaches = computed.filter(
-    (c) => c.meritOk === false || c.icOk === false || c.dmOk === false || c.eqOk === false,
+    (c) => c.meritOk === false || c.icOk === false || c.dmOk === false,
   ).length;
 
-  const blocked = meritOver || icOver || equityOver || rangeBreaches > 0;
+  const blocked = meritOver || icOver || rangeBreaches > 0;
 
   const dirty = computed.some((c) => {
     const o = toDraft(c.row);
