@@ -129,9 +129,9 @@ export default function MyReview() {
     (yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter)) &&
     (typeFilter === "all" || r.review_cycle === typeFilter);
   const released = reviews.filter((r) => r.released_at && inFilter(r));
-  // Past reviews that aren't released yet (being finalised, or still open from earlier periods).
-  const pendingHistory = reviews.filter((r) => !r.released_at && r.id !== active?.id && inFilter(r));
-  const hasHistory = reviews.some((r) => r.id !== active?.id);
+  // Everything that isn't a released outcome: the open review plus completed ones being finalised.
+  const pendingHistory = reviews.filter((r) => !r.released_at && inFilter(r));
+  const hasHistory = reviews.length > 0;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -584,15 +584,6 @@ export default function MyReview() {
         </>
       )}
 
-      {reviews.some((r) => r.status === "completed" && !r.released_at) && (
-        <Card>
-          <CardContent className="p-4 text-sm text-muted-foreground flex items-center gap-2">
-            <Lock className="h-4 w-4 shrink-0" />
-            A completed review is being finalised. You'll see the outcome here once your manager shares
-            it.
-          </CardContent>
-        </Card>
-      )}
 
       {hasHistory && (
         <div className="flex flex-wrap items-center justify-between gap-3">
