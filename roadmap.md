@@ -10,5 +10,5 @@
 
 - [x] Admin option to add all employees to an objective setting (PDR) cycle
 
-- Manager view: Merit planned tile should show 5% of direct reports total salary; manager merit budgets set to 5%.
-- Admin: annual merit budget approval page (2026 only; managers 5% of team pay, admin approves)
+- [x] Manager view: Merit planned = 5% of direct reports total pay; manager merit budgets set to 5%.
+- [x] Admin: annual merit budget approval page (2026)

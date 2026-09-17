@@ -821,6 +821,9 @@ export type Database = {
       }
       manager_budgets: {
         Row: {
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           fiscal_year: number
           id: string
@@ -830,6 +833,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           fiscal_year: number
           id?: string
@@ -839,6 +845,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           fiscal_year?: number
           id?: string
@@ -1072,14 +1081,12 @@ export type Database = {
           escalation_decided_at: string | null
           escalation_note: string | null
           escalation_status: string
-          exec_payout_amount: number | null
           fiscal_year: number | null
           hire_date: string | null
           hr_finalized_at: string | null
           hr_finalized_by: string | null
           ic_score: number | null
           id: string
-          is_executive: boolean
           kickoff_at: string | null
           manager_review_response: string | null
           manager_review_sent_at: string | null
@@ -1146,14 +1153,12 @@ export type Database = {
           escalation_decided_at?: string | null
           escalation_note?: string | null
           escalation_status?: string
-          exec_payout_amount?: number | null
           fiscal_year?: number | null
           hire_date?: string | null
           hr_finalized_at?: string | null
           hr_finalized_by?: string | null
           ic_score?: number | null
           id?: string
-          is_executive?: boolean
           kickoff_at?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
@@ -1220,14 +1225,12 @@ export type Database = {
           escalation_decided_at?: string | null
           escalation_note?: string | null
           escalation_status?: string
-          exec_payout_amount?: number | null
           fiscal_year?: number | null
           hire_date?: string | null
           hr_finalized_at?: string | null
           hr_finalized_by?: string | null
           ic_score?: number | null
           id?: string
-          is_executive?: boolean
           kickoff_at?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null

@@ -191,7 +191,9 @@ export default function APR() {
 
   const totals = useMemo(() => {
     const merit = rows.reduce((s, r) => s + (r.merit_amount ?? 0), 0);
-    return { merit, ic: icAverage(rows.map((r) => r.ic_score)) };
+    // The merit pot for this list of people: 5% of their combined annual pay.
+    const pool = Math.round(rows.reduce((s, r) => s + Number(r.current_annual_comp ?? 0), 0) * 0.05);
+    return { merit, pool, ic: icAverage(rows.map((r) => r.ic_score)) };
   }, [rows]);
 
   const stageCount = (stage: AprStage) => rows.filter((r) => r.apr_stage === stage).length;
@@ -285,8 +287,13 @@ export default function APR() {
       </header>
 
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Stat label="Merit planned" value={formatMoney(totals.merit)} icon={Wallet} />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Stat
+          label={isHr ? "Merit planned · 5% of pay" : "Merit planned · 5% of team pay"}
+          value={formatMoney(totals.pool)}
+          icon={Wallet}
+        />
+        <Stat label="Merit entered so far" value={formatMoney(totals.merit)} icon={Wallet} />
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">
