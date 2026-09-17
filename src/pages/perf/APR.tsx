@@ -158,29 +158,61 @@ export default function APR() {
   const [open, setOpen] = useState<AprReview | null>(null);
   const [connectRow, setConnectRow] = useState<Row | null>(null);
   const [connectNote, setConnectNote] = useState("");
+  /** Approved merit pot for the people in view, plus anything still awaiting approval. */
+  const [approvedBudget, setApprovedBudget] = useState(0);
+  const [pendingBudget, setPendingBudget] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("performance_reviews")
-      .select(SELECT)
-      .eq("fiscal_year", year)
-      .order("employee_name");
+    const [{ data }, { data: budgets }] = await Promise.all([
+      supabase
+        .from("performance_reviews")
+        .select(SELECT)
+        .eq("fiscal_year", year)
+        .order("employee_name"),
+      supabase.from("manager_budgets").select("manager_uuid, merit_budget_amount, approval_status").eq("fiscal_year", year),
+    ]);
     let list = (data ?? []) as unknown as Row[];
+    let myUuid: string | null = null;
+    const { data: authData } = await supabase.auth.getUser();
+    const uid = authData.user?.id;
+    if (uid) {
+      const { data: me } = await supabase
+        .from("employees")
+        .select("uuid")
+        .eq("user_id", uid)
+        .maybeSingle();
+      myUuid = (me?.uuid as string) ?? null;
+    }
     if (!isHr) {
       // Managers manage their team's cycles only — never their own.
-      const { data: authData } = await supabase.auth.getUser();
-      const uid = authData.user?.id;
-      if (uid) {
-        const { data: me } = await supabase
+      if (myUuid) {
+        list = list.filter((r) => r.employee_uuid !== myUuid);
+        const { data: team } = await supabase
           .from("employees")
           .select("uuid")
-          .eq("user_id", uid)
-          .maybeSingle();
-        if (me?.uuid) list = list.filter((r) => r.employee_uuid !== me.uuid);
+          .eq("manager_uuid", myUuid)
+          .eq("terminated", false);
+        const mine = new Set((team ?? []).map((t) => t.uuid as string));
+        list = list.filter((r) => mine.has(r.employee_uuid));
+      } else {
+        list = [];
       }
     }
     setRows(list);
+    // The approved merit pot for this view: the manager's own, or all of them for HR.
+    const bs = ((budgets ?? []) as { manager_uuid: string; merit_budget_amount: number; approval_status: string | null }[])
+      .filter((b) => (isHr ? true : myUuid != null && b.manager_uuid === myUuid));
+    setApprovedBudget(
+      bs
+        .filter((b) => (b.approval_status ?? "pending") === "approved")
+        .reduce((s, b) => s + Number(b.merit_budget_amount ?? 0), 0),
+    );
+    setPendingBudget(
+      bs
+        .filter((b) => (b.approval_status ?? "pending") !== "approved")
+        .reduce((s, b) => s + Number(b.merit_budget_amount ?? 0), 0),
+    );
     setLoading(false);
   }, [year, isHr]);
 
@@ -190,10 +222,11 @@ export default function APR() {
 
   const totals = useMemo(() => {
     const merit = rows.reduce((s, r) => s + (r.merit_amount ?? 0), 0);
-    // The merit pot for this list of people: 5% of their combined annual pay.
-    const pool = Math.round(rows.reduce((s, r) => s + Number(r.current_annual_comp ?? 0), 0) * 0.05);
-    return { merit, pool, ic: icAverage(rows.map((r) => r.ic_score)) };
-  }, [rows]);
+    const teamPay = rows.reduce((s, r) => s + Number(r.current_annual_comp ?? 0), 0);
+    // The approved pot is what can actually be spent; 5% of pay is what it should be.
+    const pool = approvedBudget > 0 ? approvedBudget : Math.round(teamPay * 0.05);
+    return { merit, pool, teamPay, ic: icAverage(rows.map((r) => r.ic_score)) };
+  }, [rows, approvedBudget]);
 
   const stageCount = (stage: AprStage) => rows.filter((r) => r.apr_stage === stage).length;
 
@@ -288,11 +321,21 @@ export default function APR() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Stat
-          label={isHr ? "Merit planned · 5% of pay" : "Merit planned · 5% of team pay"}
-          value={formatMoney(totals.pool)}
+          label={
+            approvedBudget > 0
+              ? "Approved merit budget"
+              : pendingBudget > 0
+                ? "Merit budget awaiting approval"
+                : "Merit planned · 5% of team pay"
+          }
+          value={formatMoney(approvedBudget > 0 ? approvedBudget : pendingBudget > 0 ? pendingBudget : totals.pool)}
           icon={Wallet}
         />
-        <Stat label="Merit entered so far" value={formatMoney(totals.merit)} icon={Wallet} />
+        <Stat
+          label={`Merit entered so far · ${formatMoney(totals.pool - totals.merit)} left`}
+          value={formatMoney(totals.merit)}
+          icon={Wallet}
+        />
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">

@@ -482,6 +482,8 @@ export type ManagerBudget = {
   fiscal_year: number;
   merit_budget_amount: number;
   note: string | null;
+  /** "pending" until HR or an admin approves the pot for the year. */
+  approval_status?: string | null;
 };
 
 
