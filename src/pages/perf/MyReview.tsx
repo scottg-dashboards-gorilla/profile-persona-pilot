@@ -475,16 +475,54 @@ export default function MyReview() {
                 evolved across reviews.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button asChild variant="outline">
-                <a
-                  href={`/assessment?review=${active.id}&employee=${me.uuid}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open the assessment <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
-                </a>
-              </Button>
+            <CardContent className="space-y-4">
+              {attempt ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <span className="text-muted-foreground">
+                      Completed {attempt.submitted_at ? format(parseISO(attempt.submitted_at), "MMM d, yyyy") : ""}
+                    </span>
+                    {attempt.tier && <Badge variant="secondary">{attempt.tier}</Badge>}
+                    {attempt.disc_primary && (
+                      <Badge variant="outline">DISC: {attempt.disc_primary}</Badge>
+                    )}
+                    {attempt.truthfulness_score != null && (
+                      <Badge variant="outline">
+                        Consistency: {Math.round(attempt.truthfulness_score)}%
+                      </Badge>
+                    )}
+                  </div>
+                  {attempt.technical_scores && Object.keys(attempt.technical_scores).length > 0 && (
+                    <div className="space-y-1.5">
+                      {Object.entries(attempt.technical_scores).map(([name, score]) => (
+                        <div key={name} className="flex items-center gap-2">
+                          <span className="w-40 truncate text-xs text-muted-foreground">{name}</span>
+                          <div className="h-1.5 flex-1 rounded bg-muted">
+                            <div
+                              className="h-1.5 rounded bg-primary"
+                              style={{ width: `${Math.max(0, Math.min(100, Number(score) || 0))}%` }}
+                            />
+                          </div>
+                          <span className="w-9 text-right text-xs font-medium">
+                            {Math.round(Number(score) || 0)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Button asChild variant="outline">
+                  <a
+                    href={`/assessment?review=${active.id}&employee=${me.uuid}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open the assessment <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+                  </a>
+                </Button>
+              )}
             </CardContent>
           </Card>
 
