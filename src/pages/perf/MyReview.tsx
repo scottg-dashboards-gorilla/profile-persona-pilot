@@ -175,17 +175,30 @@ export default function MyReview() {
 
     const open = reviewList.find((r) => r.status !== "completed");
     if (open) {
-      const { data: sa } = await supabase
-        .from("review_self_assessments")
-        .select("wins, challenges, growth, support_needed, submitted_at")
-        .eq("review_id", open.id)
-        .maybeSingle();
+      const [{ data: sa }, { data: att }] = await Promise.all([
+        supabase
+          .from("review_self_assessments")
+          .select("wins, challenges, growth, support_needed, submitted_at")
+          .eq("review_id", open.id)
+          .maybeSingle(),
+        supabase
+          .from("assessment_attempts")
+          .select("id, submitted_at, tier, disc_primary, truthfulness_score, technical_scores")
+          .eq("employee_uuid", (emp as Employee).uuid)
+          .not("submitted_at", "is", null)
+          .order("submitted_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
       const s = (sa ?? null) as SelfAssessment | null;
       setAssessment(s);
       setWins(s?.wins ?? "");
       setChallenges(s?.challenges ?? "");
       setGrowth(s?.growth ?? "");
       setSupport(s?.support_needed ?? "");
+      setAttempt((att ?? null) as AssessmentAttempt | null);
+    } else {
+      setAttempt(null);
     }
     setLoading(false);
   }, []);
