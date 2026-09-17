@@ -322,6 +322,13 @@ export default function TaskTracker() {
         <div className="flex items-center gap-2 p-8 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> Loading tasks…
         </div>
+      ) : !who ? (
+        <Card>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            We couldn't match your sign-in to your staff record, so there's no board to add tasks to
+            yet. Ask HR to connect your work email to your name, then reload this page.
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid gap-4 lg:grid-cols-4">
           {COLUMNS.map((col) => (
