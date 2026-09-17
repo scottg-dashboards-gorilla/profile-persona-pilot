@@ -335,6 +335,8 @@ export default function PDR() {
         </CardContent>
       </Card>
 
+      {canManage && !loading && <TeamGoals forms={rows} objectives={objectives} onOpen={setOpenId} />}
+
       <PdrDialog
         formId={openId}
         canManage={canManage}
