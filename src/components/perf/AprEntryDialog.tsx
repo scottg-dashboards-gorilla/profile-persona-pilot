@@ -169,7 +169,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
     const { error } = await supabase.from("performance_reviews").update(body).eq("id", review.id);
     setSaving(false);
     if (error) {
-      if (/Over (merit|bonus) budget/i.test(error.message)) {
+      if (/Over merit budget/i.test(error.message)) {
         setBlockedMsg(error.message);
         toast({
           title: "Over budget — can't save",
@@ -194,7 +194,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
         <DialogHeader>
           <DialogTitle>Pay review entry · {review.employee_name}</DialogTitle>
           <DialogDescription>
-            Manager step, Dec – Jan 1st half. Merit and bonus draw from separate budgets.
+            Manager step, Dec – Jan 1st half. Merit draws from the manager's merit budget.
           </DialogDescription>
         </DialogHeader>
 
