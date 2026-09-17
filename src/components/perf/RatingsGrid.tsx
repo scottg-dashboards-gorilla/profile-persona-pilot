@@ -61,9 +61,6 @@ type GridRow = {
   merit_prorated_amount: number | null;
   
   ic_score: number | null;
-  dm_eligible: boolean;
-  dm_percent: number | null;
-  dm_amount: number | null;
   apr_stage: string;
 };
 
@@ -71,8 +68,6 @@ type Draft = {
   rating: string;
   merit: string;
   ic: string;
-  dm: string;
-  dmEligible: boolean;
 };
 
 const SELECT =
