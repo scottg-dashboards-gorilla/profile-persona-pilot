@@ -259,13 +259,12 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score, merit and Differentiated Merit.
+              Enter the rating, then the I/C score and merit.
               Values outside a range, or spend above budget, cannot be saved.
             </CardDescription>
           </div>
           <div className="grid gap-1 text-right text-xs">
             <BudgetReadout label="Remaining MERIT USD Budget" remaining={meritBudget - spend.merit} total={meritBudget} over={meritOver} />
-            <BudgetReadout label="Remaining DM USD Budget" remaining={dmBudget - spend.dm} total={dmBudget} over={dmOver} />
             <div className={cn("font-medium", icOver ? "text-destructive" : "text-muted-foreground")}>
               Average I/C Score spend {spend.icAvg ?? "—"} <span className="text-muted-foreground">/ {IC_TARGET}</span>
             </div>
