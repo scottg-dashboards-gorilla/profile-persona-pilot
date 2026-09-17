@@ -109,8 +109,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [notes, setNotes] = useState("");
   const [reopenReason, setReopenReason] = useState("");
 
-  const scoreValue = scoreOverride ?? scoreFromLegacy(rating) ?? 3;
-
   useEffect(() => {
     if (!review) return;
     setRating(review.overall_rating ?? "meets");
@@ -166,13 +164,8 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     impact: aggregate(submitted, "rating_impact", method),
   };
   const suggestedBucket = ratingBucket(breakdown.overall);
-
-  // Live-suggest rating from selected aggregation method while autoSuggest is on.
-  // Must stay above the early return so the hook order never changes.
-  useEffect(() => {
-    if (autoSuggest && suggestedBucket) setRating(suggestedBucket);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [suggestedBucket, autoSuggest]);
+  const effectiveRating = autoSuggest && suggestedBucket ? suggestedBucket : rating;
+  const scoreValue = scoreOverride ?? scoreFromLegacy(effectiveRating) ?? 3;
 
   if (!review) return null;
 
@@ -209,7 +202,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
       .update({
         status: "completed",
         completed_date: today(),
-        overall_rating: ratingBand(scoreValue) ?? rating,
+        overall_rating: ratingBand(scoreValue) ?? effectiveRating,
         rating_score: scoreValue,
         comp_adjustment_amount: amountNum,
         comp_adjustment_percent: pct != null ? Number(pct.toFixed(2)) : null,
