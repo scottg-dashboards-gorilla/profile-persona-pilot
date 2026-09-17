@@ -2,7 +2,8 @@ import { Outlet, useLocation, Navigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { PerfSidebar } from "./PerfSidebar";
-import { Search, Bell, Loader2, LogOut, UserSquare2 } from "lucide-react";
+import { Search, Loader2, LogOut, UserSquare2 } from "lucide-react";
+import { NotificationsBell } from "./NotificationsBell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
