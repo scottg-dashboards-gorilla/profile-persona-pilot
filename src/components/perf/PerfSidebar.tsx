@@ -25,6 +25,8 @@ type Item = {
   adminOnly?: boolean;
   /** Only shown in the employee view. */
   employeeOnly?: boolean;
+  /** Hidden in the employee view (shown in manager/admin views). */
+  notInEmployeeView?: boolean;
 };
 
 const primary: Item[] = [
@@ -32,7 +34,7 @@ const primary: Item[] = [
   { title: "Objective setting", url: "/pdr", icon: Workflow, area: "pdr" },
   { title: "Pay review cycle", url: "/apr", icon: Wallet, area: "apr" },
   { title: "Reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
-  { title: "Team's Assessment", url: "/people", icon: Users, area: "reviews" },
+  { title: "Team's Assessment", url: "/people", icon: Users, area: "reviews", notInEmployeeView: true },
   { title: "Task Tracker", url: "/tasks", icon: ListTodo },
   { title: "My review", url: "/me", icon: UserSquare2, employeeOnly: true },
   { title: "Company performance", url: "/company", icon: Building2, area: "company" },
@@ -64,8 +66,12 @@ export function PerfSidebar() {
     if (item.adminOnly && !(has("admin") || has("hr"))) return false;
     if (item.area && !can(item.area)) return false;
     if (item.employeeOnly && (mode === "manager" || mode === "admin")) return false;
+    if (item.notInEmployeeView && mode === "employee") return false;
     return true;
   };
+
+  const labelFor = (item: Item) =>
+    item.url === "/people" && mode === "admin" ? "Assessments" : item.title;
 
   const primaryItems = primary.filter(visible);
   const secondaryItems = secondary.filter(visible);
