@@ -91,7 +91,9 @@ export function RatingsGrid({ year }: { year: number }) {
   const isAdminHr = (unconfigured && viewMode === "admin") || has("admin") || has("hr");
   const [rows, setRows] = useState<GridRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
-  const [budget, setBudget] = useState<ManagerBudget | null>(null);
+  /** Approved merit budget for the people shown, and anything still awaiting approval. */
+  const [approvedBudget, setApprovedBudget] = useState(0);
+  const [pendingBudget, setPendingBudget] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -102,6 +104,7 @@ export function RatingsGrid({ year }: { year: number }) {
       supabase.from("manager_budgets").select("*").eq("fiscal_year", year),
     ]);
     let list = (data ?? []) as unknown as GridRow[];
+    let myUuid: string | null = null;
     // This grid is for the team — the signed-in person's own review never appears,
     // and a manager only ever sees the people who report directly to them.
     const { data: authData } = await supabase.auth.getUser();
@@ -113,12 +116,13 @@ export function RatingsGrid({ year }: { year: number }) {
         .eq("user_id", uid)
         .maybeSingle();
       if (me?.uuid) {
-        list = list.filter((r) => r.employee_uuid !== me.uuid);
+        myUuid = me.uuid as string;
+        list = list.filter((r) => r.employee_uuid !== myUuid);
         if (!isAdminHr) {
           const { data: team } = await supabase
             .from("employees")
             .select("uuid")
-            .eq("manager_uuid", me.uuid)
+            .eq("manager_uuid", myUuid)
             .eq("terminated", false);
           const mine = new Set((team ?? []).map((t) => t.uuid as string));
           list = list.filter((r) => mine.has(r.employee_uuid));
@@ -134,16 +138,17 @@ export function RatingsGrid({ year }: { year: number }) {
     const next: Record<string, Draft> = {};
     list.forEach((r) => (next[r.id] = toDraft(r)));
     setDrafts(next);
-    const bs = (budgets ?? []) as unknown as ManagerBudget[];
-    if (bs.length > 0) {
-      setBudget({
-        ...bs[0],
-        merit_budget_amount: bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0),
-        
-      });
-    } else {
-      setBudget(null);
-    }
+    // Only the budget that belongs to this team counts: a manager sees their own
+    // approved pot, HR and admins see the approved pots added together.
+    const bs = ((budgets ?? []) as unknown as ManagerBudget[]).filter((b) =>
+      isAdminHr ? true : myUuid != null && b.manager_uuid === myUuid,
+    );
+    const sum = (status: string) =>
+      bs
+        .filter((b) => (b.approval_status ?? "pending") === status)
+        .reduce((s, b) => s + Number(b.merit_budget_amount ?? 0), 0);
+    setApprovedBudget(sum("approved"));
+    setPendingBudget(bs.reduce((s, b) => s + Number(b.merit_budget_amount ?? 0), 0) - sum("approved"));
     setLoading(false);
   }, [year, isAdminHr]);
 
@@ -190,18 +195,19 @@ export function RatingsGrid({ year }: { year: number }) {
   }, [computed]);
 
   const eligibleCount = rows.length;
-  const gateEnforced = eligibleCount >= 5 && !!budget;
-  const meritBudget = budget?.merit_budget_amount ?? 0;
+  /** Total pay of the people shown, and the 5% pot that pay funds. */
+  const teamPay = useMemo(
+    () => rows.reduce((s, r) => s + Number(r.current_annual_comp ?? 0), 0),
+    [rows],
+  );
+  const pool5 = Math.round(teamPay * (MERIT_AVERAGE_TARGET / 100));
+  const meritBudget = approvedBudget;
+  const gateEnforced = eligibleCount >= 5 && meritBudget > 0;
   const meritOver = gateEnforced && spend.merit > meritBudget;
   const icOver =
     gateEnforced && spend.icAvg != null && spend.icAvg > IC_TARGET;
-  const rangeBreaches = computed.filter(
-    (c) => c.meritOk === false || c.icOk === false,
-  ).length;
-
-  const blocked = meritOver || icOver || rangeBreaches > 0;
-
-  const dirty = computed.some((c) => {
+  /** Only what the manager has touched this session — older entries never block a save. */
+  const changed = computed.filter((c) => {
     const o = toDraft(c.row);
     return (
       o.rating !== c.draft.rating ||
@@ -209,6 +215,13 @@ export function RatingsGrid({ year }: { year: number }) {
       o.ic !== c.draft.ic
     );
   });
+  const rangeBreaches = changed.filter(
+    (c) => c.meritOk === false || c.icOk === false,
+  ).length;
+
+  const blocked = meritOver || icOver || rangeBreaches > 0;
+
+  const dirty = changed.length > 0;
 
   async function saveAll() {
     if (blocked) {
@@ -224,7 +237,7 @@ export function RatingsGrid({ year }: { year: number }) {
       return;
     }
     setSaving(true);
-    for (const c of computed) {
+    for (const c of changed) {
       const { error } = await supabase
         .from("performance_reviews")
         .update({
@@ -242,7 +255,7 @@ export function RatingsGrid({ year }: { year: number }) {
       }
     }
     setSaving(false);
-    toast({ title: "Entries saved", description: `${computed.length} team member(s)` });
+    toast({ title: "Entries saved", description: `${changed.length} team member(s)` });
     await load();
   }
 
@@ -253,8 +266,8 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score and merit. 5% is the mid point — an
-              "Achieved" (3) rating can be awarded 5%. A rating of 1 receives 0% — no
+              Enter the rating, then the I/C score and merit. 5% is the mid point — a
+              3 (Overall Met) rating can be awarded 4–6%. A rating of 1 receives 0% — no
               increase, and a rating of 2 (Partially Met) can be awarded between 0% and
               3%. The team should average 5%, and values outside a range, or spend
               above the approved budget, cannot be saved.
@@ -262,6 +275,19 @@ export function RatingsGrid({ year }: { year: number }) {
           </div>
           <div className="grid gap-1 text-right text-xs">
             <BudgetReadout label="Remaining MERIT USD Budget" remaining={meritBudget - spend.merit} total={meritBudget} over={meritOver} />
+            <div className="text-muted-foreground">
+              {MERIT_AVERAGE_TARGET}% of team pay ({formatMoney(teamPay)}) = {formatMoney(pool5)}
+            </div>
+            {meritBudget === 0 && (
+              <div className="font-medium text-amber-700">
+                {pendingBudget > 0
+                  ? `Budget of ${formatMoney(pendingBudget)} is awaiting approval`
+                  : "No merit budget approved yet"}
+              </div>
+            )}
+            {meritBudget > 0 && pendingBudget > 0 && (
+              <div className="text-amber-700">{formatMoney(pendingBudget)} still awaiting approval</div>
+            )}
             <div className={cn("font-medium", spend.meritAvg != null && spend.meritAvg > MERIT_AVERAGE_TARGET ? "text-destructive" : "text-muted-foreground")}>
               Average merit % {spend.meritAvg ?? "—"} <span className="text-muted-foreground">/ {MERIT_AVERAGE_TARGET}% target</span>
             </div>
@@ -290,7 +316,7 @@ export function RatingsGrid({ year }: { year: number }) {
                       Performance Rating
                     </TableHead>
                     <TableHead colSpan={4} className="text-center bg-muted">I/C SCORE</TableHead>
-                    <TableHead colSpan={5} className="text-center bg-muted/60">MERIT</TableHead>
+                    <TableHead colSpan={6} className="text-center bg-muted/60">MERIT</TableHead>
                   </TableRow>
                   <TableRow>
                     <TableHead className="text-right">Min %</TableHead>
@@ -302,6 +328,7 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead className="text-right">%</TableHead>
                     <TableHead className="text-center">Check</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Their 5% share</TableHead>
 
                   </TableRow>
                 </TableHeader>
@@ -367,6 +394,15 @@ export function RatingsGrid({ year }: { year: number }) {
                       <TableCell className="text-center"><CheckMark ok={c.meritOk} /></TableCell>
                       <TableCell className="text-right whitespace-nowrap">
                         {formatMoney(c.meritAmount)}
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap text-muted-foreground">
+                        {c.row.current_annual_comp
+                          ? formatMoney(
+                              Math.round(
+                                Number(c.row.current_annual_comp) * (MERIT_AVERAGE_TARGET / 100),
+                              ),
+                            )
+                          : "no pay on file"}
                       </TableCell>
                     </TableRow>
                   ))}
