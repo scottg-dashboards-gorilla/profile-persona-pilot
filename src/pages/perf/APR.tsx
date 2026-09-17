@@ -305,7 +305,7 @@ export default function APR() {
             >
               {totals.ic ?? "—"}
             </div>
-            <p className="text-xs text-muted-foreground">Global target {IC_TARGET}</p>
+            <p className="text-xs text-muted-foreground">Company target {IC_TARGET}</p>
           </CardContent>
         </Card>
       </div>
