@@ -19,13 +19,103 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import {
   PDR_CATEGORIES,
+  GOAL_MEASURE_TYPES,
   c1Passed,
-  
+  formatGoalValue,
+  goalAchievementPercent,
+  type GoalMeasureType,
   type PdrCategory,
   type PdrForm,
   type PdrObjective,
 } from "@/lib/pmp";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+
+/** Target type, starting point and target value for a measurable goal. */
+function GoalTargetFields({
+  measure,
+  start,
+  target,
+  unit,
+  onMeasure,
+  onStart,
+  onTarget,
+  onUnit,
+}: {
+  measure: GoalMeasureType;
+  start: string;
+  target: string;
+  unit: string;
+  onMeasure: (v: GoalMeasureType) => void;
+  onStart: (v: string) => void;
+  onTarget: (v: string) => void;
+  onUnit: (v: string) => void;
+}) {
+  const chosen = GOAL_MEASURE_TYPES.find((m) => m.id === measure);
+  return (
+    <div className="grid gap-2 rounded-md bg-muted/40 p-2">
+      <div className="flex items-end gap-2 flex-wrap">
+        <div className="grid gap-1">
+          <Label className="text-[10px] uppercase text-muted-foreground">What are you measuring? *</Label>
+          <Select value={measure} onValueChange={(v) => onMeasure(v as GoalMeasureType)}>
+            <SelectTrigger className="h-9 w-[190px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {GOAL_MEASURE_TYPES.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {measure !== "milestone" && (
+          <>
+            <div className="grid gap-1">
+              <Label className="text-[10px] uppercase text-muted-foreground">Starting point</Label>
+              <Input
+                className="w-[110px]"
+                type="number"
+                value={start}
+                onChange={(e) => onStart(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div className="grid gap-1">
+              <Label className="text-[10px] uppercase text-muted-foreground">Target *</Label>
+              <Input
+                className="w-[110px]"
+                type="number"
+                value={target}
+                onChange={(e) => onTarget(e.target.value)}
+                placeholder={measure === "percentage" ? "95" : "40"}
+              />
+            </div>
+            {measure === "number" && (
+              <div className="grid gap-1">
+                <Label className="text-[10px] uppercase text-muted-foreground">Unit</Label>
+                <Input
+                  className="w-[130px]"
+                  value={unit}
+                  onChange={(e) => onUnit(e.target.value)}
+                  placeholder="tickets, sessions…"
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      <p className="text-[11px] text-muted-foreground">{chosen?.blurb}</p>
+    </div>
+  );
+}
 
 type Props = {
   formId: string | null;
@@ -131,6 +221,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] = useState<PdrCategory>("faster");
   const [editDescription, setEditDescription] = useState("");
+  const [newMeasure, setNewMeasure] = useState<GoalMeasureType>("percentage");
+  const [newStart, setNewStart] = useState("0");
+  const [newTarget, setNewTarget] = useState("");
+  const [newUnit, setNewUnit] = useState("");
+  const [editMeasure, setEditMeasure] = useState<GoalMeasureType>("percentage");
+  const [editStart, setEditStart] = useState("0");
+  const [editTarget, setEditTarget] = useState("");
+  const [editUnit, setEditUnit] = useState("");
+  /** Mid-year "where are you now" figure, keyed by objective id. */
+  const [midVal, setMidVal] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     if (!formId) return;
@@ -145,6 +245,11 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setObjectives(objList);
     setMidObj(Object.fromEntries(objList.map((o) => [o.id, o.midyear_employee_comment ?? ""])));
     setMidMgr(Object.fromEntries(objList.map((o) => [o.id, o.midyear_manager_comment ?? ""])));
+    setMidVal(
+      Object.fromEntries(
+        objList.map((o) => [o.id, o.current_value == null ? "" : String(o.current_value)]),
+      ),
+    );
     setSelfInput(rec?.employee_self_input ?? "");
     setManagerComments(rec?.manager_comments ?? "");
     setMidyear(rec?.midyear_manager_feedback ?? "");
@@ -172,6 +277,15 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
 
   async function addObjective() {
     if (!form || !newTitle.trim() || !newDescription.trim()) return;
+    const isMilestone = newMeasure === "milestone";
+    if (!isMilestone && !newTarget.trim()) {
+      toast({
+        title: "Target needed",
+        description: "Choose what you're measuring and the target you're aiming for.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy("add");
     const { error } = await supabase.from("pdr_objectives").insert({
       form_id: form.id,
@@ -179,6 +293,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       title: newTitle.trim(),
       description: newDescription.trim(),
       sort_order: objectives.length,
+      measure_type: newMeasure,
+      start_value: isMilestone ? 0 : Number(newStart || 0),
+      target_value: isMilestone ? 100 : Number(newTarget),
+      unit: newMeasure === "number" && newUnit.trim() ? newUnit.trim() : null,
     });
     setBusy(null);
     if (error) {
@@ -187,6 +305,9 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     }
     setNewTitle("");
     setNewDescription("");
+    setNewTarget("");
+    setNewStart("0");
+    setNewUnit("");
     await load();
   }
 
@@ -205,10 +326,14 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setBusy("midself");
     for (const o of objectives) {
       const comment = midObj[o.id];
-      if (comment == null) continue;
+      const figure = midVal[o.id];
+      if (comment == null && figure == null) continue;
       const { error } = await supabase
         .from("pdr_objectives")
-        .update({ midyear_employee_comment: comment.trim() || null })
+        .update({
+          midyear_employee_comment: comment?.trim() || null,
+          current_value: figure == null || figure.trim() === "" ? null : Number(figure),
+        })
         .eq("id", o.id);
       if (error) {
         setBusy(null);
@@ -263,15 +388,28 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setEditTitle(o.title);
     setEditCategory(o.category as PdrCategory);
     setEditDescription(o.description ?? "");
+    setEditMeasure(o.measure_type ?? "percentage");
+    setEditStart(String(o.start_value ?? 0));
+    setEditTarget(o.target_value == null ? "" : String(o.target_value));
+    setEditUnit(o.unit ?? "");
   }
 
   async function saveEdit() {
     if (!editingId || !editTitle.trim() || !editDescription.trim()) return;
+    const isMilestone = editMeasure === "milestone";
+    if (!isMilestone && !editTarget.trim()) {
+      toast({ title: "Target needed", description: "Set the target you're aiming for.", variant: "destructive" });
+      return;
+    }
     setBusy("edit");
     await updateObjective(editingId, {
       title: editTitle.trim(),
       category: editCategory,
       description: editDescription.trim(),
+      measure_type: editMeasure,
+      start_value: isMilestone ? 0 : Number(editStart || 0),
+      target_value: isMilestone ? 100 : Number(editTarget),
+      unit: editMeasure === "number" && editUnit.trim() ? editUnit.trim() : null,
     });
     setBusy(null);
     setEditingId(null);
@@ -346,6 +484,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                             placeholder="How will it be measured?"
                           />
                         </div>
+                        <GoalTargetFields
+                          measure={editMeasure}
+                          start={editStart}
+                          target={editTarget}
+                          unit={editUnit}
+                          onMeasure={setEditMeasure}
+                          onStart={setEditStart}
+                          onTarget={setEditTarget}
+                          onUnit={setEditUnit}
+                        />
                         <div className="flex justify-end gap-2">
                           <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
                             <X className="h-3.5 w-3.5 mr-1" /> Cancel
@@ -381,6 +529,28 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         </div>
                         {o.description && (
                           <p className="text-xs text-muted-foreground">{o.description}</p>
+                        )}
+                        {o.target_value != null && (
+                          <div className="flex items-center gap-2 flex-wrap text-xs">
+                            <Badge variant="secondary" className="text-[10px]">
+                              Target: {formatGoalValue(o.target_value, o.measure_type, o.unit)}
+                            </Badge>
+                            {o.measure_type !== "milestone" && Number(o.start_value) !== 0 && (
+                              <span className="text-muted-foreground">
+                                from {formatGoalValue(o.start_value, o.measure_type, o.unit)}
+                              </span>
+                            )}
+                            {o.current_value != null ? (
+                              <span className="text-muted-foreground">
+                                now {formatGoalValue(o.current_value, o.measure_type, o.unit)} ·{" "}
+                                <span className="font-medium text-foreground">
+                                  {goalAchievementPercent(o)}% of target
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">no progress recorded yet</span>
+                            )}
+                          </div>
                         )}
                         {canManage ? (
                           <div className="grid gap-1">
@@ -467,6 +637,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                       placeholder="How will it be measured?"
                     />
                   </div>
+                  <GoalTargetFields
+                    measure={newMeasure}
+                    start={newStart}
+                    target={newTarget}
+                    unit={newUnit}
+                    onMeasure={setNewMeasure}
+                    onStart={setNewStart}
+                    onTarget={setNewTarget}
+                    onUnit={setNewUnit}
+                  />
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground rounded-md border border-dashed p-3">
@@ -564,6 +744,48 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                               {cat?.label ?? o.category}
                             </div>
                           </div>
+                          {o.target_value != null && (
+                            <div className="flex items-end gap-2 flex-wrap">
+                              <div className="grid gap-1">
+                                <Label className="text-[10px] uppercase text-muted-foreground">
+                                  {o.measure_type === "milestone" ? "Is it done?" : "Where are you now?"}
+                                </Label>
+                                {o.measure_type === "milestone" ? (
+                                  <Select
+                                    value={midVal[o.id] === "100" ? "100" : "0"}
+                                    onValueChange={(v) => setMidVal((m) => ({ ...m, [o.id]: v }))}
+                                  >
+                                    <SelectTrigger className="h-9 w-[140px]">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="0">Not done yet</SelectItem>
+                                      <SelectItem value="100">Done</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                ) : (
+                                  <Input
+                                    type="number"
+                                    className="w-[120px]"
+                                    value={midVal[o.id] ?? ""}
+                                    onChange={(e) => setMidVal((m) => ({ ...m, [o.id]: e.target.value }))}
+                                    placeholder="0"
+                                  />
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground pb-2">
+                                Target {formatGoalValue(o.target_value, o.measure_type, o.unit)}
+                                {midVal[o.id]?.trim()
+                                  ? ` · ${goalAchievementPercent({
+                                      measure_type: o.measure_type,
+                                      start_value: Number(o.start_value ?? 0),
+                                      target_value: o.target_value,
+                                      current_value: Number(midVal[o.id]),
+                                    })}% achieved`
+                                  : ""}
+                              </p>
+                            </div>
+                          )}
                           <Textarea
                             rows={2}
                             value={comment}

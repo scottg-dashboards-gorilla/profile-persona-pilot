@@ -8,6 +8,7 @@ import ThankYouScreen from "@/components/assessment/ThankYouScreen";
 import { toast } from "@/hooks/use-toast";
 import { useRoles } from "@/hooks/useRoles";
 import { classifyTier } from "@/lib/tierClassification";
+import type { PreviousAttempt } from "@/components/assessment/ProgressComparison";
 
 type Screen = "intro" | "questions" | "results";
 
@@ -42,6 +43,8 @@ const Index = () => {
   const [linkedUuid, setLinkedUuid] = useState<string | null>(null);
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null);
   const [suggestedRoleId, setSuggestedRoleId] = useState<string | null>(null);
+  /** The person's last assessment, so this one can be shown against it. */
+  const [previous, setPrevious] = useState<PreviousAttempt | null>(null);
 
   // Signed in through the performance tool? Identify the person automatically:
   // link their login to their staff record, prefill their name, and suggest a
@@ -64,6 +67,33 @@ const Index = () => {
       setLinkedName(`${emp.first_name} ${emp.last_name}`.trim());
       setLinkedUuid(emp.uuid as string);
       setLinkedEmail(emp.email ?? user.email ?? null);
+      // Their most recent assessment becomes the baseline for the comparison.
+      const { data: last } = await supabase
+        .from("assessment_attempts")
+        .select("taken_at, technical_scores")
+        .eq("employee_uuid", emp.uuid as string)
+        .order("taken_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (last?.technical_scores) {
+        const raw = last.technical_scores as Record<string, unknown>;
+        const scoresMap: Record<string, number> = {};
+        for (const [id, val] of Object.entries(raw)) {
+          const num =
+            typeof val === "number"
+              ? val
+              : typeof val === "object" && val !== null
+                ? Number(
+                    (val as { normalizedScore?: number; score?: number }).normalizedScore ??
+                      (val as { score?: number }).score,
+                  )
+                : NaN;
+          if (Number.isFinite(num)) scoresMap[id] = num;
+        }
+        if (Object.keys(scoresMap).length > 0) {
+          setPrevious({ taken_at: last.taken_at as string, scores: scoresMap });
+        }
+      }
       const title = (emp.title ?? "").toLowerCase();
       if (roles.length) {
         const match = roles.find((r) => {
@@ -190,6 +220,7 @@ const Index = () => {
       employeeName={employeeName}
       elapsedSeconds={elapsedSeconds}
       scores={scores}
+      previous={previous}
       onRestart={handleRestart}
     />
   );

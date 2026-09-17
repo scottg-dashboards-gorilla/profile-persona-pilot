@@ -2,11 +2,14 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock } from "lucide-react";
 import { DimensionScore } from "@/types/assessment";
 import DimensionsTab from "./DimensionsTab";
+import ProgressComparison, { type PreviousAttempt } from "./ProgressComparison";
 
 interface ThankYouScreenProps {
   employeeName: string;
   elapsedSeconds: number;
   scores: DimensionScore[];
+  /** Their last assessment, when there is one, so progress can be shown. */
+  previous?: PreviousAttempt | null;
   onRestart: () => void;
 }
 
@@ -17,7 +20,7 @@ function formatDuration(seconds: number): string {
   return `${m}m ${s}s`;
 }
 
-const ThankYouScreen = ({ employeeName, elapsedSeconds, scores, onRestart }: ThankYouScreenProps) => {
+const ThankYouScreen = ({ employeeName, elapsedSeconds, scores, previous, onRestart }: ThankYouScreenProps) => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto animate-fade-in space-y-6">
@@ -39,6 +42,9 @@ const ThankYouScreen = ({ employeeName, elapsedSeconds, scores, onRestart }: Tha
             Completed in {formatDuration(elapsedSeconds)}
           </p>
         </div>
+
+        {/* Progress against their last assessment */}
+        {previous && <ProgressComparison scores={scores} previous={previous} />}
 
         {/* Skills only */}
         <DimensionsTab scores={scores} />
