@@ -130,6 +130,7 @@ export default function MyProfile() {
       icon: Users,
       label: "Direct reports",
       value: reports > 0 ? `${reports} ${reports === 1 ? "person" : "people"}` : "—",
+      expandable: reports > 0,
     },
   ];
 
