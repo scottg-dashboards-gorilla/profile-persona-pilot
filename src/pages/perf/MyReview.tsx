@@ -395,6 +395,44 @@ export default function MyReview() {
         <p className="text-sm text-muted-foreground">{me.title ?? "—"}</p>
       </div>
 
+      {todos.length > 0 && (
+        <Card className="border-amber-200 bg-amber-50/60">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              {todos.length === 1 ? "1 thing needs your attention" : `${todos.length} things need your attention`}
+            </div>
+            <ul className="space-y-2">
+              {todos.map((t) => (
+                <li key={t.id} className="flex items-start gap-2 text-sm">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                  <div>
+                    <div className="font-medium">{t.title}</div>
+                    <div className="text-xs text-muted-foreground">{t.detail}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {concernOpen && (
+        <Card>
+          <CardContent className="p-4 flex items-start gap-2 text-sm">
+            <Loader2 className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+            <div>
+              <div className="font-medium">Your pay concern is being looked at</div>
+              <div className="text-xs text-muted-foreground">
+                {concernOpen.pay_pushback_status === "manager"
+                  ? "Your manager has it and will speak with HR."
+                  : "It's with HR now — you'll see their decision here once it's closed."}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {hasHistory && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm font-medium">Your review history</div>
