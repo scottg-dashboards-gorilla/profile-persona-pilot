@@ -159,14 +159,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     })();
   }, [review]);
 
-  if (!review) return null;
-
-  const wasShared = !!review.released_at;
-
-  const baseComp = Number(review.current_annual_comp ?? 0);
-  const amountNum = compAmount === "" ? null : Number(compAmount);
-  const pct = amountNum != null && baseComp > 0 ? (amountNum / baseComp) * 100 : null;
-
   const submitted = contribs.filter((c) => c.status === "submitted");
   const breakdown = {
     overall: aggregate(submitted, "rating_overall", method),
@@ -175,11 +167,20 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   };
   const suggestedBucket = ratingBucket(breakdown.overall);
 
-  // Live-suggest rating from selected aggregation method while autoSuggest is on
+  // Live-suggest rating from selected aggregation method while autoSuggest is on.
+  // Must stay above the early return so the hook order never changes.
   useEffect(() => {
     if (autoSuggest && suggestedBucket) setRating(suggestedBucket);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suggestedBucket, autoSuggest]);
+
+  if (!review) return null;
+
+  const wasShared = !!review.released_at;
+
+  const baseComp = Number(review.current_annual_comp ?? 0);
+  const amountNum = compAmount === "" ? null : Number(compAmount);
+  const pct = amountNum != null && baseComp > 0 ? (amountNum / baseComp) * 100 : null;
 
   async function handleSave() {
     if (!currentAttempt) {
