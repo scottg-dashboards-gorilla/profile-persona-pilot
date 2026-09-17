@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   CalendarRange,
   UserSquare2,
@@ -74,7 +75,7 @@ const steps: {
     owner: "Employee",
     title: "Write the self-assessment",
     what:
-      "Four short questions: what went well, what was hard, how they've grown in how they think and operate, and what support they need. They also update where each of their goals actually landed.",
+      "Four short questions: what went well, what was hard, how they've grown in how they think and operate, and what support they need. Day-to-day work sits on their Task Tracker board.",
     where: "Private link (no account needed) or their own review page",
     href: "/me",
     icon: UserSquare2,
@@ -131,16 +132,59 @@ const steps: {
 ];
 
 export default function Playbook() {
+  const { has, unconfigured } = usePermissions();
+  const isAdminHr = unconfigured || has("admin") || has("hr");
+  const forEmployee = !isAdminHr && !has("manager");
+  const visibleSteps = forEmployee ? steps.filter((s) => s.owner === "Employee") : steps;
+
   return (
     <div className="space-y-5 max-w-4xl">
       <div>
         <h1 className="text-xl font-semibold">Datapath review playbook</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Datapath's own performance and pay rules — the order things happen in, and who owns each step.
-          Every step below maps to a real screen, and the Workflow panel on any review row tracks exactly
-          where that person is.
+          {forEmployee
+            ? "How performance and pay work at Datapath, and what's yours to do — your objectives, your input at mid-year and year-end, and how your outcome reaches you."
+            : "Datapath's own performance and pay rules — the order things happen in, and who owns each step. Every step below maps to a real screen, and the Workflow panel on any review row tracks exactly where that person is."}
         </p>
       </div>
+
+      {forEmployee && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">What's yours to do</CardTitle>
+            <CardDescription className="text-foreground">
+              Three conversations a year, all on your own pages.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <Rule>
+              Set your objectives under Faster, Stronger, Better or L&amp;D — each needs a name and a short
+              description of how it will be measured. You can edit or remove them until your manager aligns
+              them; after that, ask your manager to send them back if something needs to change.{" "}
+              <Link className="underline" to="/pdr">Objective Setting</Link>
+            </Rule>
+            <Rule>
+              At mid-year, add your own comment against each objective. Your manager replies on the same
+              objective, so nothing is written from scratch.
+            </Rule>
+            <Rule>
+              At year-end, write your self-input (Dec 01–15) and take the assessment for the period. Your
+              manager then comments and records your development score.
+            </Rule>
+            <Rule>
+              Keep your day-to-day work moving on your{" "}
+              <Link className="underline" to="/tasks">Task Tracker</Link> board.
+            </Rule>
+            <Rule>
+              When your outcome is shared, confirm you've received it on{" "}
+              <Link className="underline" to="/me">My review</Link> — and if you're not happy with the
+              amount, raise a pay concern there with your reasons. Your manager takes it to HR and you see
+              the decision on the same page.
+            </Rule>
+          </CardContent>
+        </Card>
+      )}
+
 
       <Card className="border-primary/30 bg-primary/5">
         <CardHeader className="pb-3">
@@ -225,23 +269,43 @@ export default function Playbook() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Example of how to decide on ratings</CardTitle>
-          <CardDescription>
-            One set of objectives, and what the evidence looks like at each point on the scale.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-md border bg-muted/40 p-3 space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-primary">Objectives</div>
-            {RATING_EXAMPLE.objectives.map((o) => {
-              const cat = PDR_CATEGORIES.find((c) => c.id === o.category);
-              return (
-                <div key={o.category}>
-                  <div className="text-sm font-medium">{cat?.label ?? o.category}</div>
-                  <ul className="mt-0.5 space-y-0.5">
-                    {o.points.map((p) => (
+      {!forEmployee && (
+  <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Example of how to decide on ratings</CardTitle>
+            <CardDescription>
+              One set of objectives, and what the evidence looks like at each point on the scale.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-primary">Objectives</div>
+              {RATING_EXAMPLE.objectives.map((o) => {
+                const cat = PDR_CATEGORIES.find((c) => c.id === o.category);
+                return (
+                  <div key={o.category}>
+                    <div className="text-sm font-medium">{cat?.label ?? o.category}</div>
+                    <ul className="mt-0.5 space-y-0.5">
+                      {o.points.map((p) => (
+                        <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                          {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="grid gap-3 lg:grid-cols-5">
+              {RATING_EXAMPLE.evidence.map((e) => (
+                <div key={e.score} className="rounded-md border overflow-hidden">
+                  <div className={`px-2 py-1.5 text-center ${ratingMeta(e.score)?.tone ?? ""}`}>
+                    <div className="text-sm font-semibold">{e.score}</div>
+                    <div className="text-[11px] leading-tight font-medium">{ratingMeta(e.score)?.label}</div>
+                  </div>
+                  <ul className="p-2 space-y-1">
+                    {e.points.map((p) => (
                       <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
                         <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
                         {p}
@@ -249,18 +313,134 @@ export default function Playbook() {
                     ))}
                   </ul>
                 </div>
-              );
-            })}
-          </div>
-          <div className="grid gap-3 lg:grid-cols-5">
-            {RATING_EXAMPLE.evidence.map((e) => (
-              <div key={e.score} className="rounded-md border overflow-hidden">
-                <div className={`px-2 py-1.5 text-center ${ratingMeta(e.score)?.tone ?? ""}`}>
-                  <div className="text-sm font-semibold">{e.score}</div>
-                  <div className="text-[11px] leading-tight font-medium">{ratingMeta(e.score)?.label}</div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!forEmployee && (
+  <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Unconscious bias</CardTitle>
+            <CardDescription>
+              Being aware of unconscious biases is a good reminder to keep to objective, data or
+              evidence-based performance evaluations.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y">
+            {UNCONSCIOUS_BIASES.map((b) => (
+              <div key={b.label} className="grid gap-1 py-2 sm:grid-cols-[10rem_1fr] sm:gap-4">
+                <div className="text-sm font-semibold">{b.label}</div>
+                <p className="text-xs text-muted-foreground">{b.what}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {!forEmployee && (
+  <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Merit increase</CardTitle>
+              <CardDescription>{MERIT_PRINCIPLES.what}</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-primary">Who is eligible?</div>
+                <p className="text-xs text-muted-foreground">{MERIT_PRINCIPLES.eligibility}</p>
+              </div>
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-primary">How is it delivered?</div>
+                <p className="text-xs text-muted-foreground">{MERIT_PRINCIPLES.delivery}</p>
+              </div>
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-2 space-y-1.5">
+                <div className="text-xs font-semibold text-amber-900">Watch outs</div>
+                {MERIT_PRINCIPLES.watchOuts.map((w) => (
+                  <div key={w} className="text-xs text-amber-900/90 flex gap-1.5">
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                    {w}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Individual Contribution (I/C) score</CardTitle>
+              <CardDescription>{IC_PRINCIPLES.what}</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-primary">Who is eligible?</div>
+                <p className="text-xs text-muted-foreground">{IC_PRINCIPLES.eligibility}</p>
+              </div>
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-2 space-y-1.5">
+                <div className="text-xs font-semibold text-amber-900">Watch outs</div>
+                {IC_PRINCIPLES.watchOuts.map((w) => (
+                  <div key={w} className="text-xs text-amber-900/90 flex gap-1.5">
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                    {w}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {!forEmployee && (
+  <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">How the bonus is built</CardTitle>
+            <CardDescription>Team Score sets the pot; the I/C score multiplies each payout.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid gap-2 sm:grid-cols-4">
+              {TEAM_SCORE_METRICS.map((m) => (
+                <div key={m.id} className="rounded-md border p-2">
+                  <div className="text-lg font-semibold text-primary">{m.weight}%</div>
+                  <div className="text-xs text-muted-foreground">{m.label}</div>
                 </div>
-                <ul className="p-2 space-y-1">
-                  {e.points.map((p) => (
+              ))}
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3 text-xs">
+              <div className="rounded-md border p-2">
+                <div className="font-semibold">Team Score</div>
+                <div className="text-muted-foreground">
+                  {BONUS_PRINCIPLES.teamScoreMin}–{BONUS_PRINCIPLES.teamScoreMax}% of bonus target
+                </div>
+              </div>
+              <div className="rounded-md border p-2">
+                <div className="font-semibold">Qualitative review</div>
+                <div className="text-muted-foreground">+/- {BONUS_PRINCIPLES.qualitativeSwing} points on a 100% team score</div>
+              </div>
+              <div className="rounded-md border p-2">
+                <div className="font-semibold">I/C score multiplier</div>
+                <div className="text-muted-foreground">
+                  {BONUS_PRINCIPLES.icMin}–{BONUS_PRINCIPLES.icMax}% of bonus target · target average {IC_TARGET}
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">{BONUS_PRINCIPLES.teamScore} {BONUS_PRINCIPLES.icScore}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!forEmployee && (
+  <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Focal point eligibility</CardTitle>
+            <CardDescription>Who is in and out of the year-end ratings and merit process.</CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y">
+            {FOCAL_POINT_ELIGIBILITY.map((g) => (
+              <div key={g.id} className="grid gap-1 py-3 sm:grid-cols-[10rem_1fr] sm:gap-4">
+                <div className="text-sm font-semibold">{g.label}</div>
+                <ul className="space-y-1">
+                  {g.points.map((p) => (
                     <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
                       <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
                       {p}
@@ -269,162 +449,38 @@ export default function Playbook() {
                 </ul>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Unconscious bias</CardTitle>
-          <CardDescription>
-            Being aware of unconscious biases is a good reminder to keep to objective, data or
-            evidence-based performance evaluations.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="divide-y">
-          {UNCONSCIOUS_BIASES.map((b) => (
-            <div key={b.label} className="grid gap-1 py-2 sm:grid-cols-[10rem_1fr] sm:gap-4">
-              <div className="text-sm font-semibold">{b.label}</div>
-              <p className="text-xs text-muted-foreground">{b.what}</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Merit increase</CardTitle>
-            <CardDescription>{MERIT_PRINCIPLES.what}</CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm space-y-2">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-primary">Who is eligible?</div>
-              <p className="text-xs text-muted-foreground">{MERIT_PRINCIPLES.eligibility}</p>
-            </div>
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-primary">How is it delivered?</div>
-              <p className="text-xs text-muted-foreground">{MERIT_PRINCIPLES.delivery}</p>
-            </div>
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-2 space-y-1.5">
-              <div className="text-xs font-semibold text-amber-900">Watch outs</div>
-              {MERIT_PRINCIPLES.watchOuts.map((w) => (
-                <div key={w} className="text-xs text-amber-900/90 flex gap-1.5">
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-700" />
-                  {w}
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
+      )}
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Individual Contribution (I/C) score</CardTitle>
-            <CardDescription>{IC_PRINCIPLES.what}</CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm space-y-2">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-primary">Who is eligible?</div>
-              <p className="text-xs text-muted-foreground">{IC_PRINCIPLES.eligibility}</p>
-            </div>
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-2 space-y-1.5">
-              <div className="text-xs font-semibold text-amber-900">Watch outs</div>
-              {IC_PRINCIPLES.watchOuts.map((w) => (
-                <div key={w} className="text-xs text-amber-900/90 flex gap-1.5">
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-700" />
-                  {w}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">How the bonus is built</CardTitle>
-          <CardDescription>Team Score sets the pot; the I/C score multiplies each payout.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid gap-2 sm:grid-cols-4">
-            {TEAM_SCORE_METRICS.map((m) => (
-              <div key={m.id} className="rounded-md border p-2">
-                <div className="text-lg font-semibold text-primary">{m.weight}%</div>
-                <div className="text-xs text-muted-foreground">{m.label}</div>
-              </div>
-            ))}
-          </div>
-          <div className="grid gap-2 sm:grid-cols-3 text-xs">
-            <div className="rounded-md border p-2">
-              <div className="font-semibold">Team Score</div>
-              <div className="text-muted-foreground">
-                {BONUS_PRINCIPLES.teamScoreMin}–{BONUS_PRINCIPLES.teamScoreMax}% of bonus target
-              </div>
-            </div>
-            <div className="rounded-md border p-2">
-              <div className="font-semibold">Qualitative review</div>
-              <div className="text-muted-foreground">+/- {BONUS_PRINCIPLES.qualitativeSwing} points on a 100% team score</div>
-            </div>
-            <div className="rounded-md border p-2">
-              <div className="font-semibold">I/C score multiplier</div>
-              <div className="text-muted-foreground">
-                {BONUS_PRINCIPLES.icMin}–{BONUS_PRINCIPLES.icMax}% of bonus target · target average {IC_TARGET}
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">{BONUS_PRINCIPLES.teamScore} {BONUS_PRINCIPLES.icScore}</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Focal point eligibility</CardTitle>
-          <CardDescription>Who is in and out of the year-end ratings and merit process.</CardDescription>
-        </CardHeader>
-        <CardContent className="divide-y">
-          {FOCAL_POINT_ELIGIBILITY.map((g) => (
-            <div key={g.id} className="grid gap-1 py-3 sm:grid-cols-[10rem_1fr] sm:gap-4">
-              <div className="text-sm font-semibold">{g.label}</div>
-              <ul className="space-y-1">
-                {g.points.map((p) => (
-                  <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
-                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
-                    {p}
-                  </li>
+      {!forEmployee && (
+  <div className="grid gap-4 sm:grid-cols-2">
+          {PMP_ROLES.map((r) => (
+            <Card key={r.id}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">{r.label}</CardTitle>
+                <CardDescription>Roles and responsibilities</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm space-y-2">
+                {r.points.map((p) => (
+                  <Rule key={p}>{p}</Rule>
                 ))}
-              </ul>
-            </div>
+              </CardContent>
+            </Card>
           ))}
-        </CardContent>
-      </Card>
+        </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {PMP_ROLES.map((r) => (
-          <Card key={r.id}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">{r.label}</CardTitle>
-              <CardDescription>Roles and responsibilities</CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm space-y-2">
-              {r.points.map((p) => (
-                <Rule key={p}>{p}</Rule>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-2 text-xs">
-        {(["HR", "Employee", "Manager"] as Owner[]).map((o) => (
-          <span key={o} className={`rounded-full px-2 py-1 font-medium ${ownerTone[o]}`}>
-            {o}
-          </span>
-        ))}
-      </div>
+        <div className="flex flex-wrap gap-2 text-xs">
+          {(["HR", "Employee", "Manager"] as Owner[]).map((o) => (
+            <span key={o} className={`rounded-full px-2 py-1 font-medium ${ownerTone[o]}`}>
+              {o}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-3">
-        {steps.map((s) => (
+        {visibleSteps.map((s, i) => (
           <Card key={s.n}>
             <CardHeader className="pb-3">
               <div className="flex items-start gap-3">
@@ -433,7 +489,7 @@ export default function Playbook() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                    <span className="text-muted-foreground">{s.n}.</span> {s.title}
+                    <span className="text-muted-foreground">{forEmployee ? i + 1 : s.n}.</span> {s.title}
                     <Badge className={`text-[10px] border-0 ${ownerTone[s.owner]}`}>{s.owner}</Badge>
                   </CardTitle>
                   <CardDescription className="mt-1">{s.what}</CardDescription>
@@ -477,6 +533,7 @@ export default function Playbook() {
           </CardContent>
         </Card>
 
+        {!forEmployee && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">The pay review cycle</CardTitle>
@@ -501,42 +558,57 @@ export default function Playbook() {
             </p>
           </CardContent>
         </Card>
+        )}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Guardrails already enforced</CardTitle>
+          <CardTitle className="text-base">
+            {forEmployee ? "What the process guarantees you" : "Guardrails already enforced"}
+          </CardTitle>
           <CardDescription>These aren't reminders — the system refuses to let them slide.</CardDescription>
         </CardHeader>
         <CardContent className="text-sm space-y-2">
           <Rule>A review cannot be marked complete without an assessment attempt from that period.</Rule>
           <Rule>Performance is rated on the 1–5 scale everywhere; merit follows from that rating.</Rule>
-          <Rule>
-            A manager with 5 or more eligible reports cannot save pay entries above their team budget —
-            the entry must be escalated to the next-level manager and approved first.
-          </Rule>
-          <Rule>Merit and bonus draw from separate budgets; unspent money cannot move between them.</Rule>
-          <Rule>I/C scores are tracked against the Datapath target of {IC_TARGET}.</Rule>
+          {!forEmployee && (
+            <>
+              <Rule>
+                A manager with 5 or more eligible reports cannot save pay entries above their team budget —
+                the entry must be escalated to the next-level manager and approved first.
+              </Rule>
+              <Rule>Merit and bonus draw from separate budgets; unspent money cannot move between them.</Rule>
+              <Rule>I/C scores are tracked against the Datapath target of {IC_TARGET}.</Rule>
+            </>
+          )}
           <Rule>Objectives can only be marked aligned once every one is validated against a category (C1).</Rule>
-          <Rule>A PDR year can only be closed after manager comments are finalized and a score is set.</Rule>
-          <Rule>Only HR or an admin can approve a pay change; managers propose, HR signs off.</Rule>
+          <Rule>
+            Once your objectives are aligned you can't add, edit or delete them — your manager sends them
+            back for revision if something needs to change.
+          </Rule>
+          <Rule>Your pay change is signed off by HR before your manager holds the conversation with you.</Rule>
           <Rule>An outcome can't be shared with the employee while a pay change is still unapproved.</Rule>
           <Rule>Employees only ever see their own review, and only after it's shared.</Rule>
-          <Rule>A contributor can submit once per cycle unless HR explicitly reopens it.</Rule>
+          <Rule>360 feedback is shown to you without names attached.</Rule>
+          {!forEmployee && (
+            <Rule>A contributor can submit once per cycle unless HR explicitly reopens it.</Rule>
+          )}
           <Rule>Every rating, pay and role change is written to the audit log with who and when.</Rule>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Spot reviews</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          For an off-cycle review, create a cycle scoped to that one person's manager (or add the review
-          directly) and set the review type to spot. The same eight steps apply — the assessment
-          requirement still holds, which is what keeps off-cycle raises defensible.
-        </CardContent>
-      </Card>
+      {!forEmployee && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Spot reviews</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            For an off-cycle review, create a cycle scoped to that one person's manager (or add the review
+            directly) and set the review type to spot. The same steps apply — the assessment requirement
+            still holds, which is what keeps off-cycle raises defensible.
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
