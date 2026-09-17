@@ -17,7 +17,6 @@ import {
   formatDistanceToNow,
 } from "date-fns";
 import { formatCompDelta, ratingLabel } from "@/data/mockEmployees";
-import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { AttemptRow } from "@/lib/assessmentDeltas";
