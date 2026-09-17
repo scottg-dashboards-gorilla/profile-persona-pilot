@@ -154,6 +154,7 @@ export default function Overview() {
   const [queuedReminders, setQueuedReminders] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [payTrend, setPayTrend] = useState<PayYear[]>([]);
+  const [activityOpen, setActivityOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -644,44 +645,64 @@ export default function Overview() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Recent activity</CardTitle>
-            <p className="text-xs text-muted-foreground">Latest changes across reviews, assessments and settings.</p>
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <CardTitle className="text-base">Recent activity</CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  {loaded && activity.length > 0
+                    ? `${activity.length} updates across reviews, assessments and settings.`
+                    : "Latest changes across reviews, assessments and settings."}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="shrink-0 gap-1.5"
+                onClick={() => setActivityOpen((v) => !v)}
+                aria-expanded={activityOpen}
+              >
+                {activityOpen ? "Hide" : "Show"}
+                <ChevronDown className={cn("h-4 w-4 transition-transform", activityOpen && "rotate-180")} />
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {activity.map((e) => {
-                const body = (
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{e.who}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {e.what}
-                        {e.extra && <span className="ml-1 font-medium text-foreground">{e.extra}</span>}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(parseISO(e.at), "MMM d, yyyy")} · {formatDistanceToNow(parseISO(e.at), { addSuffix: true })}
-                      </p>
+          {activityOpen && (
+            <CardContent>
+              <ul className="space-y-3">
+                {activity.map((e) => {
+                  const body = (
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{e.who}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {e.what}
+                          {e.extra && <span className="ml-1 font-medium text-foreground">{e.extra}</span>}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(parseISO(e.at), "MMM d, yyyy")} · {formatDistanceToNow(parseISO(e.at), { addSuffix: true })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-                return (
-                  <li key={e.id}>
-                    {e.to ? (
-                      <Link to={e.to} className="block rounded-md p-1 -m-1 hover:bg-muted/60">
-                        {body}
-                      </Link>
-                    ) : (
-                      body
-                    )}
-                  </li>
-                );
-              })}
-              {loaded && activity.length === 0 && (
-                <li className="text-center text-sm text-muted-foreground py-6">No activity yet.</li>
-              )}
-            </ul>
-          </CardContent>
+                  );
+                  return (
+                    <li key={e.id}>
+                      {e.to ? (
+                        <Link to={e.to} className="block rounded-md p-1 -m-1 hover:bg-muted/60">
+                          {body}
+                        </Link>
+                      ) : (
+                        body
+                      )}
+                    </li>
+                  );
+                })}
+                {loaded && activity.length === 0 && (
+                  <li className="text-center text-sm text-muted-foreground py-6">No activity yet.</li>
+                )}
+              </ul>
+            </CardContent>
+          )}
         </Card>
       </div>
     </div>
