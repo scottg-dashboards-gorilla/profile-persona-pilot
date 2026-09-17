@@ -8,6 +8,7 @@ import ThankYouScreen from "@/components/assessment/ThankYouScreen";
 import { toast } from "@/hooks/use-toast";
 import { useRoles } from "@/hooks/useRoles";
 import { classifyTier } from "@/lib/tierClassification";
+import type { PreviousAttempt } from "@/components/assessment/ProgressComparison";
 
 type Screen = "intro" | "questions" | "results";
 
