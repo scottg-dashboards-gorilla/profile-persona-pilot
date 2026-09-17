@@ -544,6 +544,7 @@ export const MERIT_PRINCIPLES = {
   watchOuts: [
     "The team average merit increase target is 5%.",
     "Associates rated 1 (Did Not Meet) receive a 0% merit increase — no salary adjustment.",
+    "Associates rated 2 (Partially Met) can be awarded between 0% and 3%.",
     "Managers cannot exceed the maximum of the merit increase range.",
     "Managers cannot spend more than their approved merit budget (5% of their team's total pay).",
     "For managers with teams of more than 5 associates, entries cannot be saved if the merit spend is higher than the merit budget.",
