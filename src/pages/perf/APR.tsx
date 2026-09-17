@@ -74,7 +74,7 @@ type Row = AprReview & {
 };
 
 const EXPORT_SELECT =
-  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, ic_score, is_executive, exec_payout_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
+  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, ic_score, is_executive, exec_payout_amount, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
 
 type ExportRow = Record<string, string | number | boolean | null>;
 
