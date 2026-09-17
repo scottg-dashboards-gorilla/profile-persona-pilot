@@ -34,6 +34,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { amountFromPercent, formatMoney } from "@/lib/compensation";
 import {
   IC_TARGET,
+  MERIT_AVERAGE_TARGET,
   MERIT_PRINCIPLES,
   RATING_SCALE,
   icAverage,
@@ -181,7 +182,11 @@ export function RatingsGrid({ year }: { year: number }) {
   const spend = useMemo(() => {
     const merit = computed.reduce((s, c) => s + (c.meritAmount ?? 0), 0);
     const icAvg = icAverage(computed.map((c) => c.ic));
-    return { merit, icAvg };
+    const pcts = computed.map((c) => c.meritPct).filter((p): p is number => p != null);
+    const meritAvg = pcts.length
+      ? Math.round((pcts.reduce((s, p) => s + p, 0) / pcts.length) * 100) / 100
+      : null;
+    return { merit, icAvg, meritAvg };
   }, [computed]);
 
   const eligibleCount = rows.length;
@@ -248,12 +253,16 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score and merit.
-              Values outside a range, or spend above budget, cannot be saved.
+              Enter the rating, then the I/C score and merit. 5% is the mid point — an
+              "Achieved" (3) rating can be awarded 5%. The team should average 5%, and
+              values outside a range, or spend above the approved budget, cannot be saved.
             </CardDescription>
           </div>
           <div className="grid gap-1 text-right text-xs">
             <BudgetReadout label="Remaining MERIT USD Budget" remaining={meritBudget - spend.merit} total={meritBudget} over={meritOver} />
+            <div className={cn("font-medium", spend.meritAvg != null && spend.meritAvg > MERIT_AVERAGE_TARGET ? "text-destructive" : "text-muted-foreground")}>
+              Average merit % {spend.meritAvg ?? "—"} <span className="text-muted-foreground">/ {MERIT_AVERAGE_TARGET}% target</span>
+            </div>
             <div className={cn("font-medium", icOver ? "text-destructive" : "text-muted-foreground")}>
               Average I/C Score spend {spend.icAvg ?? "—"} <span className="text-muted-foreground">/ {IC_TARGET}</span>
             </div>
