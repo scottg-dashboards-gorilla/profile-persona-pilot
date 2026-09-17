@@ -125,8 +125,7 @@ function buildPayChangeCsv(rows: ExportRow[], year: number) {
   rows.forEach((r) => {
     const base = Number(r.current_annual_comp ?? 0);
     const merit = Number(r.merit_prorated_amount ?? r.merit_amount ?? 0);
-    const dm = Number(r.dm_amount ?? 0);
-    const increase = merit + dm;
+    const increase = merit;
     const enriched: Record<string, unknown> = {
       ...r,
       rating_label: ratingMeta(r.rating_score as number | null)?.label ?? "",
