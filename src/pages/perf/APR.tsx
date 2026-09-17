@@ -698,8 +698,8 @@ function AnniversaryPanel({
       if (isAdminHr) {
         setPeople(all);
       } else {
-        // Managers only see their own anniversary plus the people they manage
-        // (direct reports and one level below).
+        // Managers only see the people they manage (direct reports and one
+        // level below) — not their own anniversary.
         const meUuid = all.find((e) => e.user_id && e.user_id === auth?.user?.id)?.uuid ?? null;
         if (!meUuid) {
           setPeople([]);
@@ -709,8 +709,8 @@ function AnniversaryPanel({
             ...direct,
             ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid),
           ]);
-          team.add(meUuid);
-          setPeople(all.filter((e) => team.has(e.uuid)));
+          // Managers see only their reports — not their own anniversary.
+          setPeople(all.filter((e) => team.has(e.uuid) && e.uuid !== meUuid));
         }
       }
       setLoading(false);
