@@ -1,0 +1,1 @@
+UPDATE public.assessment_attempts SET employee_uuid = 'dp-tculcasi' WHERE employee_uuid = 'Timothy Culcasi';

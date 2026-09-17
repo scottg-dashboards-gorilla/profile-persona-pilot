@@ -39,6 +39,7 @@ const Index = () => {
   const [screen, setScreen] = useState<Screen>("intro");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [linkedName, setLinkedName] = useState<string | null>(null);
+  const [linkedUuid, setLinkedUuid] = useState<string | null>(null);
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null);
   const [suggestedRoleId, setSuggestedRoleId] = useState<string | null>(null);
 
@@ -61,6 +62,7 @@ const Index = () => {
       if (!emp) return;
       if (employeeUuidParam && emp.uuid !== employeeUuidParam) return; // link is for someone else
       setLinkedName(`${emp.first_name} ${emp.last_name}`.trim());
+      setLinkedUuid(emp.uuid as string);
       setLinkedEmail(emp.email ?? user.email ?? null);
       const title = (emp.title ?? "").toLowerCase();
       if (roles.length) {
@@ -118,7 +120,7 @@ const Index = () => {
       acc[s.dimensionId] = s.normalizedScore;
       return acc;
     }, {});
-    const employee_uuid = employeeUuidParam ?? employeeName;
+    const employee_uuid = linkedUuid ?? employeeUuidParam ?? employeeName;
     let linkedCycleId: string | null = null;
     if (reviewId) {
       const { data } = await supabase
@@ -157,7 +159,7 @@ const Index = () => {
         .update({ assessment_attempt_id: attempt.id })
         .eq("id", reviewId);
     }
-  }, [startTime, completeAssessment, employeeName, role, scores, discProfile, truthfulness]);
+  }, [startTime, completeAssessment, employeeName, role, scores, discProfile, truthfulness, linkedUuid, employeeUuidParam, reviewId, state.answers]);
 
   const handleRestart = useCallback(() => {
     reset();
