@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -33,7 +32,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { amountFromPercent, formatMoney } from "@/lib/compensation";
 import {
-  DM_RANGE,
   IC_TARGET,
   MERIT_PRINCIPLES,
   RATING_SCALE,
@@ -61,9 +59,6 @@ type GridRow = {
   merit_prorated_amount: number | null;
   
   ic_score: number | null;
-  dm_eligible: boolean;
-  dm_percent: number | null;
-  dm_amount: number | null;
   apr_stage: string;
 };
 
@@ -71,27 +66,23 @@ type Draft = {
   rating: string;
   merit: string;
   ic: string;
-  dm: string;
-  dmEligible: boolean;
 };
 
 const SELECT =
-  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, dm_eligible, dm_percent, dm_amount, apr_stage";
+  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, apr_stage";
 
 function toDraft(r: GridRow): Draft {
   return {
     rating: r.rating_score != null ? String(r.rating_score) : "",
     merit: r.merit_percent != null ? String(r.merit_percent) : "",
     ic: r.ic_score != null ? String(r.ic_score) : "",
-    dm: r.dm_percent != null ? String(r.dm_percent) : "",
-    dmEligible: r.dm_eligible,
   };
 }
 
 
 /**
  * The manager's ratings grid — one row per team member, with the performance
- * rating, I/C score, merit and Differentiated Merit entered inline and checked
+ * rating, I/C score and merit entered inline and checked
  * against the allowed ranges and the remaining team budget before saving.
  */
 export function RatingsGrid({ year }: { year: number }) {
@@ -99,7 +90,6 @@ export function RatingsGrid({ year }: { year: number }) {
   const [rows, setRows] = useState<GridRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
-  const [dmBudget, setDmBudget] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -132,10 +122,8 @@ export function RatingsGrid({ year }: { year: number }) {
         merit_budget_amount: bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0),
         
       });
-      setDmBudget(Math.round(bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0) * 0.25));
     } else {
       setBudget(null);
-      setDmBudget(0);
     }
     setLoading(false);
   }, [year]);
@@ -155,12 +143,10 @@ export function RatingsGrid({ year }: { year: number }) {
       const iRange = icRange(score);
       const meritPct = d.merit === "" ? null : Number(d.merit);
       const ic = d.ic === "" ? null : Number(d.ic);
-      const dmPct = d.dm === "" ? null : Number(d.dm);
       const comp = r.current_annual_comp ?? 0;
       const meritAmount = meritPct != null ? amountFromPercent(comp, meritPct) : null;
       const proration = focalPointMeritEligibility(r.hire_date, year);
       const prorated = meritAmount != null ? Math.round(meritAmount * proration.prorationFactor) : null;
-      const dmAmount = dmPct != null && d.dmEligible ? amountFromPercent(comp, dmPct) : null;
       return {
         row: r,
         draft: d,
@@ -169,34 +155,29 @@ export function RatingsGrid({ year }: { year: number }) {
         iRange,
         meritPct,
         ic,
-        dmPct,
         meritAmount,
         prorated,
         proration,
-        dmAmount,
         meritOk: withinRange(meritPct, mRange),
         icOk: withinRange(ic, iRange),
-        dmOk: dmPct == null ? null : dmPct >= DM_RANGE.min && dmPct <= DM_RANGE.max,
       };
     });
   }, [rows, drafts, year]);
 
   const spend = useMemo(() => {
     const merit = computed.reduce((s, c) => s + (c.prorated ?? 0), 0);
-    const dm = computed.reduce((s, c) => s + (c.dmAmount ?? 0), 0);
     const icAvg = icAverage(computed.map((c) => c.ic));
-    return { merit, dm, icAvg };
+    return { merit, icAvg };
   }, [computed]);
 
   const eligibleCount = rows.length;
   const gateEnforced = eligibleCount >= 5 && !!budget;
   const meritBudget = budget?.merit_budget_amount ?? 0;
   const meritOver = gateEnforced && spend.merit > meritBudget;
-  const dmOver = dmBudget > 0 && spend.dm > dmBudget;
   const icOver =
     gateEnforced && spend.icAvg != null && spend.icAvg > IC_TARGET;
   const rangeBreaches = computed.filter(
-    (c) => c.meritOk === false || c.icOk === false || c.dmOk === false,
+    (c) => c.meritOk === false || c.icOk === false,
   ).length;
 
   const blocked = meritOver || icOver || rangeBreaches > 0;
@@ -206,9 +187,7 @@ export function RatingsGrid({ year }: { year: number }) {
     return (
       o.rating !== c.draft.rating ||
       o.merit !== c.draft.merit ||
-      o.ic !== c.draft.ic ||
-      o.dm !== c.draft.dm ||
-      o.dmEligible !== c.draft.dmEligible
+      o.ic !== c.draft.ic
     );
   });
 
@@ -236,9 +215,6 @@ export function RatingsGrid({ year }: { year: number }) {
           merit_amount: c.meritAmount,
           merit_prorated_amount: c.prorated,
           ic_score: c.ic,
-          dm_eligible: c.draft.dmEligible,
-          dm_percent: c.dmPct,
-          dm_amount: c.dmAmount,
         })
         .eq("id", c.row.id);
       if (error) {
@@ -259,13 +235,12 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score, merit and Differentiated Merit.
+              Enter the rating, then the I/C score and merit.
               Values outside a range, or spend above budget, cannot be saved.
             </CardDescription>
           </div>
           <div className="grid gap-1 text-right text-xs">
             <BudgetReadout label="Remaining MERIT USD Budget" remaining={meritBudget - spend.merit} total={meritBudget} over={meritOver} />
-            <BudgetReadout label="Remaining DM USD Budget" remaining={dmBudget - spend.dm} total={dmBudget} over={dmOver} />
             <div className={cn("font-medium", icOver ? "text-destructive" : "text-muted-foreground")}>
               Average I/C Score spend {spend.icAvg ?? "—"} <span className="text-muted-foreground">/ {IC_TARGET}</span>
             </div>
@@ -292,7 +267,6 @@ export function RatingsGrid({ year }: { year: number }) {
                     </TableHead>
                     <TableHead colSpan={4} className="text-center bg-muted">I/C SCORE</TableHead>
                     <TableHead colSpan={5} className="text-center bg-muted/60">MERIT</TableHead>
-                    <TableHead colSpan={3} className="text-center bg-muted">DIFFERENTIATED MERIT</TableHead>
                   </TableRow>
                   <TableRow>
                     <TableHead className="text-right">Min</TableHead>
@@ -304,9 +278,7 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead className="text-right">%</TableHead>
                     <TableHead className="text-center">Check</TableHead>
                     <TableHead className="text-right">Amount / Prorated</TableHead>
-                    <TableHead className="text-center">Eligibility</TableHead>
-                    <TableHead className="text-right">Min – Max</TableHead>
-                    <TableHead className="text-right">% / Amount</TableHead>
+
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -371,33 +343,6 @@ export function RatingsGrid({ year }: { year: number }) {
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Checkbox
-                            checked={c.draft.dmEligible}
-                            onCheckedChange={(v) => set(c.row.id, { dmEligible: !!v, dm: v ? c.draft.dm : "" })}
-                          />
-                          <span className="text-[11px] text-muted-foreground">
-                            {c.draft.dmEligible ? "YES" : "NO"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right text-muted-foreground">
-                        {DM_RANGE.min.toFixed(2)} – {DM_RANGE.max.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Input
-                          type="number"
-                          step="0.1"
-                          className={cn("h-8 w-20 text-right text-xs", c.dmOk === false && "border-destructive")}
-                          value={c.draft.dm}
-                          disabled={!c.draft.dmEligible}
-                          onChange={(e) => set(c.row.id, { dm: e.target.value })}
-                        />
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
-                          {formatMoney(c.dmAmount)}
-                        </div>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -412,7 +357,6 @@ export function RatingsGrid({ year }: { year: number }) {
                 </div>
                 <div className="mt-2 space-y-3">
                   <Bar label="Merit" budget={meritBudget} spend={spend.merit} />
-                  <Bar label="Differentiated merit" budget={dmBudget} spend={spend.dm} />
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
                   <div className="font-semibold text-muted-foreground">I/C budget ({rows.length} emps)</div>

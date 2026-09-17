@@ -74,7 +74,7 @@ type Row = AprReview & {
 };
 
 const EXPORT_SELECT =
-  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, ic_score, is_executive, exec_payout_amount, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
+  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, is_executive, exec_payout_amount, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
 
 type ExportRow = Record<string, string | number | boolean | null>;
 
@@ -91,9 +91,6 @@ const EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "merit_percent", label: "Merit %" },
   { key: "merit_amount", label: "Merit amount" },
   { key: "merit_prorated_amount", label: "Merit amount (prorated)" },
-  { key: "dm_eligible", label: "Differentiated award eligible" },
-  { key: "dm_percent", label: "Differentiated award %" },
-  { key: "dm_amount", label: "Differentiated award amount" },
   { key: "new_annual_comp", label: "New annual pay" },
   { key: "increase_percent", label: "Total increase %" },
   { key: "ic_score", label: "I/C score" },
@@ -128,8 +125,7 @@ function buildPayChangeCsv(rows: ExportRow[], year: number) {
   rows.forEach((r) => {
     const base = Number(r.current_annual_comp ?? 0);
     const merit = Number(r.merit_prorated_amount ?? r.merit_amount ?? 0);
-    const dm = Number(r.dm_amount ?? 0);
-    const increase = merit + dm;
+    const increase = merit;
     const enriched: Record<string, unknown> = {
       ...r,
       rating_label: ratingMeta(r.rating_score as number | null)?.label ?? "",

@@ -82,7 +82,7 @@ export const PMP_ROLES: { id: string; label: string; points: string[] }[] = [
     label: "People Managers",
     points: [
       "Act as owners: write feedback and assign a performance rating on the Datapath 5-point scale.",
-      "Recognise people using manager discretion for merit, I/C score, differentiated merit and differentiated LTI where applicable.",
+      "Recognise people using manager discretion for merit and I/C score where applicable.",
       "Stay within budget by differentiating the % increases across their team members.",
       "Have continuous dialogue with their team — feedback throughout the year, not just at year end.",
     ],
@@ -669,8 +669,6 @@ export const IC_RANGES: Record<RatingScore, { min: number; max: number }> = {
   1: { min: 0, max: 50 },
 };
 
-/** Differentiated Merit (DM) — an extra award on top of merit, for eligible associates only. */
-export const DM_RANGE = { min: 0, max: 3.5 };
 
 export function meritRange(score: number | null | undefined) {
   return score != null && score >= 1 && score <= 5 ? MERIT_RANGES[score as RatingScore] : null;
