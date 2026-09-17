@@ -13,6 +13,7 @@ interface IntroScreenProps {
   onBegin: (name: string, role: string) => void;
   lockedName?: string | null;
   lockedEmail?: string | null;
+  suggestedRoleId?: string | null;
   onResume: (saved: SavedProgress) => void;
 }
 
@@ -39,10 +40,17 @@ const competencyAreas = [
   },
 ];
 
-const IntroScreen = ({ onBegin, onResume, lockedName, lockedEmail }: IntroScreenProps) => {
+const IntroScreen = ({ onBegin, onResume, lockedName, lockedEmail, suggestedRoleId }: IntroScreenProps) => {
   const [name, setName] = useState("");
   const { roles } = useRoles();
   const [role, setRole] = useState<string>(DEFAULT_ROLE);
+
+  // Pre-select the role suggested from the signed-in person's job title.
+  useEffect(() => {
+    if (suggestedRoleId && roles.some((r) => r.id === suggestedRoleId)) {
+      setRole(suggestedRoleId);
+    }
+  }, [suggestedRoleId, roles]);
   const savedDrafts = useMemo(() => getAllSavedProgress(), []);
   // If the typed name matches a saved draft, offer that person's draft.
   const matchedDraft = useMemo(() => {
