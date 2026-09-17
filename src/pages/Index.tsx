@@ -67,6 +67,33 @@ const Index = () => {
       setLinkedName(`${emp.first_name} ${emp.last_name}`.trim());
       setLinkedUuid(emp.uuid as string);
       setLinkedEmail(emp.email ?? user.email ?? null);
+      // Their most recent assessment becomes the baseline for the comparison.
+      const { data: last } = await supabase
+        .from("assessment_attempts")
+        .select("taken_at, technical_scores")
+        .eq("employee_uuid", emp.uuid as string)
+        .order("taken_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (last?.technical_scores) {
+        const raw = last.technical_scores as Record<string, unknown>;
+        const scoresMap: Record<string, number> = {};
+        for (const [id, val] of Object.entries(raw)) {
+          const num =
+            typeof val === "number"
+              ? val
+              : typeof val === "object" && val !== null
+                ? Number(
+                    (val as { normalizedScore?: number; score?: number }).normalizedScore ??
+                      (val as { score?: number }).score,
+                  )
+                : NaN;
+          if (Number.isFinite(num)) scoresMap[id] = num;
+        }
+        if (Object.keys(scoresMap).length > 0) {
+          setPrevious({ taken_at: last.taken_at as string, scores: scoresMap });
+        }
+      }
       const title = (emp.title ?? "").toLowerCase();
       if (roles.length) {
         const match = roles.find((r) => {
