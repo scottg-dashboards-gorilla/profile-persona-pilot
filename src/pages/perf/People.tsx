@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Search, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type EmpRow = {
   uuid: string;
@@ -14,9 +15,13 @@ type EmpRow = {
   email: string | null;
   title: string | null;
   department: string | null;
+  manager_uuid: string | null;
+  user_id: string | null;
 };
 
 export default function People() {
+  const { has, unconfigured } = usePermissions();
+  const isAdminHr = unconfigured || has("admin") || has("hr");
   const [rows, setRows] = useState<EmpRow[]>([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -25,13 +30,26 @@ export default function People() {
     (async () => {
       const { data } = await supabase
         .from("employees")
-        .select("uuid,first_name,last_name,email,title,department")
+        .select("uuid,first_name,last_name,email,title,department,manager_uuid,user_id")
         .eq("terminated", false)
         .order("first_name", { ascending: true });
-      setRows((data ?? []) as EmpRow[]);
+      let list = (data ?? []) as EmpRow[];
+      if (!isAdminHr) {
+        // Managers see only the people they manage (direct reports and one level below) — not themselves.
+        const { data: authData } = await supabase.auth.getUser();
+        const uid = authData.user?.id;
+        const me = list.find((r) => r.user_id === uid);
+        if (me) {
+          const direct = new Set(list.filter((r) => r.manager_uuid === me.uuid).map((r) => r.uuid));
+          const skip = new Set(list.filter((r) => r.manager_uuid && direct.has(r.manager_uuid)).map((r) => r.uuid));
+          const team = new Set([...direct, ...skip]);
+          list = list.filter((r) => team.has(r.uuid));
+        }
+      }
+      setRows(list);
       setLoading(false);
     })();
-  }, []);
+  }, [isAdminHr]);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
