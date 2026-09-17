@@ -105,10 +105,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
 
   useEffect(() => {
     if (!review) return;
-    setRating(review.overall_rating ?? "meets");
-    setScoreOverride(review.rating_score ?? null);
     setMethod(((review.aggregation_method as AggregationMethod) ?? "mean"));
-    setAutoSuggest(!review.overall_rating);
     setPromotion(review.promotion ?? false);
     setNewTitle(review.new_title ?? "");
     setNotes(review.notes ?? "");
@@ -155,9 +152,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     collab: aggregate(submitted, "rating_collaboration", method),
     impact: aggregate(submitted, "rating_impact", method),
   };
-  const suggestedBucket = ratingBucket(breakdown.overall);
-  const effectiveRating = autoSuggest && suggestedBucket ? suggestedBucket : rating;
-  const scoreValue = scoreOverride ?? scoreFromLegacy(effectiveRating) ?? 3;
+
 
   if (!review) return null;
 
@@ -190,8 +185,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
       .update({
         status: "completed",
         completed_date: today(),
-        overall_rating: ratingBand(scoreValue) ?? effectiveRating,
-        rating_score: scoreValue,
         promotion,
         new_title: promotion ? newTitle || null : null,
         notes: notes || null,
