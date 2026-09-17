@@ -106,6 +106,8 @@ export default function MyReview() {
   const [krs, setKrs] = useState<Kr[]>([]);
   const [saving, setSaving] = useState(false);
   const [pdrScores, setPdrScores] = useState<PdrScore[]>([]);
+  const [myGoals, setMyGoals] = useState<PdrObjective[]>([]);
+  const [goalYear, setGoalYear] = useState<number | null>(null);
   const { roles } = usePermissions();
   const canScore = roles.includes("admin") || roles.includes("hr");
 
