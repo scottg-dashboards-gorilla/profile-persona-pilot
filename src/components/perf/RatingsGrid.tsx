@@ -192,11 +192,10 @@ export function RatingsGrid({ year }: { year: number }) {
   const gateEnforced = eligibleCount >= 5 && !!budget;
   const meritBudget = budget?.merit_budget_amount ?? 0;
   const meritOver = gateEnforced && spend.merit > meritBudget;
-  const dmOver = dmBudget > 0 && spend.dm > dmBudget;
   const icOver =
     gateEnforced && spend.icAvg != null && spend.icAvg > IC_TARGET;
   const rangeBreaches = computed.filter(
-    (c) => c.meritOk === false || c.icOk === false || c.dmOk === false,
+    (c) => c.meritOk === false || c.icOk === false,
   ).length;
 
   const blocked = meritOver || icOver || rangeBreaches > 0;
