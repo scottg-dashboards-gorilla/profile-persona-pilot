@@ -277,6 +277,15 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
 
   async function addObjective() {
     if (!form || !newTitle.trim() || !newDescription.trim()) return;
+    const isMilestone = newMeasure === "milestone";
+    if (!isMilestone && !newTarget.trim()) {
+      toast({
+        title: "Target needed",
+        description: "Choose what you're measuring and the target you're aiming for.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy("add");
     const { error } = await supabase.from("pdr_objectives").insert({
       form_id: form.id,
@@ -284,6 +293,10 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       title: newTitle.trim(),
       description: newDescription.trim(),
       sort_order: objectives.length,
+      measure_type: newMeasure,
+      start_value: isMilestone ? 0 : Number(newStart || 0),
+      target_value: isMilestone ? 100 : Number(newTarget),
+      unit: newMeasure === "number" && newUnit.trim() ? newUnit.trim() : null,
     });
     setBusy(null);
     if (error) {
@@ -292,6 +305,9 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     }
     setNewTitle("");
     setNewDescription("");
+    setNewTarget("");
+    setNewStart("0");
+    setNewUnit("");
     await load();
   }
 
