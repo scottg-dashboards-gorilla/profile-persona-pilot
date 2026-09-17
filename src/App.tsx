@@ -24,6 +24,7 @@ import OrgRollups from "./pages/perf/OrgRollups";
 import CompanyPerformance from "./pages/perf/CompanyPerformance";
 import AuditLog from "./pages/perf/AuditLog";
 import MyReview from "./pages/perf/MyReview";
+import MyProfile from "./pages/perf/MyProfile";
 import Playbook from "./pages/perf/Playbook";
 import PDR from "./pages/perf/PDR";
 import APR from "./pages/perf/APR";
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/people" element={<People />} />
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
             <Route path="/me" element={<EmployeeOnly><MyReview /></EmployeeOnly>} />
+            <Route path="/profile" element={<MyProfile />} />
             <Route path="/playbook" element={<Playbook />} />
             <Route path="/cycles" element={<RequireArea area="cycles"><Cycles /></RequireArea>} />
             <Route path="/tasks" element={<TaskTracker />} />
