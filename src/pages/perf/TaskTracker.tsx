@@ -245,7 +245,8 @@ export default function TaskTracker() {
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight">Task Tracker</h1>
           <p className="text-sm text-muted-foreground">
-            A daily kanban board — drag a card between columns as the day moves on.
+            Your own action board — add as many tasks as you like, one-off or repeating daily, weekly or
+            monthly, and drag a card between columns as work moves on.
           </p>
         </div>
         <div className="flex items-end gap-2">
