@@ -71,7 +71,7 @@ const Index = () => {
     setEmployeeName(effectiveName);
     setStartTime(Date.now());
     setScreen("questions");
-  }, [setEmployeeName, setStartTime, setRole, roles]);
+  }, [setEmployeeName, setStartTime, setRole, roles, linkedName]);
 
   const handleResume = useCallback((saved: SavedProgress) => {
     restoreProgress(saved);
@@ -150,7 +150,14 @@ const Index = () => {
   }, [reset]);
 
   if (screen === "intro") {
-    return <IntroScreen onBegin={handleBegin} onResume={handleResume} />;
+    return (
+      <IntroScreen
+        onBegin={handleBegin}
+        onResume={handleResume}
+        lockedName={linkedName}
+        lockedEmail={linkedEmail}
+      />
+    );
   }
 
   if (screen === "questions") {
