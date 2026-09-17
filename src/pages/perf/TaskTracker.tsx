@@ -121,6 +121,10 @@ export default function TaskTracker() {
   const [myName, setMyName] = useState<string>("");
   const [myUserId, setMyUserId] = useState<string>("");
   const [who, setWho] = useState<string>("");
+  // How far back the board looks. Defaults to the last 30 days.
+  const [range, setRange] = useState<"30" | "90" | "365" | "custom" | "all">("30");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [dragId, setDragId] = useState<string | null>(null);
   const [over, setOver] = useState<TaskStatus | null>(null);
@@ -204,11 +208,16 @@ export default function TaskTracker() {
       setComments([]);
       return;
     }
-    const { data } = await supabase
-      .from("daily_tasks")
-      .select("*")
-      .eq("employee_uuid", who)
-      .order("sort_order");
+    let q = supabase.from("daily_tasks").select("*").eq("employee_uuid", who);
+    if (range === "custom") {
+      if (from) q = q.gte("created_at", `${from}T00:00:00.000Z`);
+      if (to) q = q.lte("created_at", `${to}T23:59:59.999Z`);
+    } else if (range !== "all") {
+      const since = new Date();
+      since.setDate(since.getDate() - Number(range));
+      q = q.gte("created_at", since.toISOString());
+    }
+    const { data } = await q.order("sort_order");
     const rows = (data ?? []) as Task[];
     setTasks(rows);
     if (rows.length) {
@@ -221,7 +230,7 @@ export default function TaskTracker() {
     } else {
       setComments([]);
     }
-  }, [who]);
+  }, [who, range, from, to]);
 
   useEffect(() => {
     loadTasks();
@@ -388,6 +397,38 @@ export default function TaskTracker() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+          <div className="w-44">
+            <Select value={range} onValueChange={(v) => setRange(v as typeof range)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">Last 30 days</SelectItem>
+                <SelectItem value="90">Last 90 days</SelectItem>
+                <SelectItem value="365">Last year</SelectItem>
+                <SelectItem value="custom">Custom dates</SelectItem>
+                <SelectItem value="all">All data</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {range === "custom" && (
+            <div className="flex items-end gap-2">
+              <Input
+                type="date"
+                className="w-[150px]"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                aria-label="From date"
+              />
+              <Input
+                type="date"
+                className="w-[150px]"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                aria-label="To date"
+              />
             </div>
           )}
           <Button onClick={() => openNew("todo")} disabled={!who}>
