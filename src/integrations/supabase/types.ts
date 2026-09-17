@@ -1838,6 +1838,19 @@ export type Database = {
       resolve_candidate_token: { Args: { _token: string }; Returns: Json }
       resolve_review_token: { Args: { _token: string }; Returns: Json }
       roles_configured: { Args: never; Returns: boolean }
+      save_my_assessment_attempt: {
+        Args: {
+          _disc_primary: string
+          _disc_scores: Json
+          _employee_uuid: string
+          _raw_answers: Json
+          _review_id: string
+          _technical_scores: Json
+          _tier: string
+          _truthfulness: number
+        }
+        Returns: string
+      }
       submit_candidate_assessment: {
         Args: {
           _disc_profile: Json
