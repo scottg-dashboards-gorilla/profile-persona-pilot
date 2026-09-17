@@ -118,16 +118,20 @@ export default function MyReview() {
   const [concernNote, setConcernNote] = useState("");
 
   const [yearFilter, setYearFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   const active = reviews.find((r) => r.status !== "completed") ?? null;
   const years = Array.from(
     new Set(reviews.map((r) => new Date(r.scheduled_date).getFullYear())),
   ).sort((a, b) => b - a);
-  const released = reviews
-    .filter((r) => r.released_at)
-    .filter(
-      (r) => yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter),
-    );
+  const typeOptions = Array.from(new Set(reviews.map((r) => r.review_cycle))).sort();
+  const inFilter = (r: Review) =>
+    (yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter)) &&
+    (typeFilter === "all" || r.review_cycle === typeFilter);
+  const released = reviews.filter((r) => r.released_at && inFilter(r));
+  // Everything that isn't a released outcome: the open review plus completed ones being finalised.
+  const pendingHistory = reviews.filter((r) => !r.released_at && inFilter(r));
+  const hasHistory = reviews.length > 0;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -580,39 +584,45 @@ export default function MyReview() {
         </>
       )}
 
-      {reviews.some((r) => r.status === "completed" && !r.released_at) && (
-        <Card>
-          <CardContent className="p-4 text-sm text-muted-foreground flex items-center gap-2">
-            <Lock className="h-4 w-4 shrink-0" />
-            A completed review is being finalised. You'll see the outcome here once your manager shares
-            it.
-          </CardContent>
-        </Card>
-      )}
 
-      {reviews.some((r) => r.released_at) && (
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-sm font-medium">Your review outcomes</div>
-          <Select value={yearFilter} onValueChange={setYearFilter}>
-            <SelectTrigger className="w-[140px] h-8 text-xs">
-              <SelectValue placeholder="All years" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All years</SelectItem>
-              {years.map((y) => (
-                <SelectItem key={y} value={String(y)}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {hasHistory && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm font-medium">Your review history</div>
+          <div className="flex items-center gap-2">
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[170px] h-8 text-xs">
+                <SelectValue placeholder="All review types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All review types</SelectItem>
+                {typeOptions.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={yearFilter} onValueChange={setYearFilter}>
+              <SelectTrigger className="w-[140px] h-8 text-xs">
+                <SelectValue placeholder="All years" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All years</SelectItem>
+                {years.map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       )}
 
-      {released.length === 0 && reviews.some((r) => r.released_at) && (
+      {released.length === 0 && pendingHistory.length === 0 && hasHistory && (
         <Card>
           <CardContent className="p-4 text-sm text-muted-foreground">
-            No review outcomes for {yearFilter}.
+            No reviews match those filters.
           </CardContent>
         </Card>
       )}
@@ -783,6 +793,32 @@ export default function MyReview() {
                   </div>
                 )}
               </>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+
+      {pendingHistory.map((r) => (
+        <Card key={r.id}>
+          <CardContent className="p-4 flex flex-wrap items-center gap-3 text-sm">
+            <StatusPill
+              tone={computeReviewTone(
+                r.status as "scheduled" | "in_progress" | "completed" | "cancelled",
+                r.scheduled_date,
+              )}
+            />
+            <div className="flex-1 min-w-[10rem]">
+              <div className="font-medium">{r.review_cycle}</div>
+              <div className="text-xs text-muted-foreground">
+                {r.completed_date
+                  ? `Completed ${format(parseISO(r.completed_date), "MMM d, yyyy")}`
+                  : `Scheduled ${format(parseISO(r.scheduled_date), "MMM d, yyyy")}`}
+              </div>
+            </div>
+            {r.status === "completed" && !r.released_at && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5" /> Being finalised
+              </span>
             )}
           </CardContent>
         </Card>
