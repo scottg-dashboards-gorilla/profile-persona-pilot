@@ -326,10 +326,14 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setBusy("midself");
     for (const o of objectives) {
       const comment = midObj[o.id];
-      if (comment == null) continue;
+      const figure = midVal[o.id];
+      if (comment == null && figure == null) continue;
       const { error } = await supabase
         .from("pdr_objectives")
-        .update({ midyear_employee_comment: comment.trim() || null })
+        .update({
+          midyear_employee_comment: comment?.trim() || null,
+          current_value: figure == null || figure.trim() === "" ? null : Number(figure),
+        })
         .eq("id", o.id);
       if (error) {
         setBusy(null);
