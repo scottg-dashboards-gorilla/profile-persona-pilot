@@ -244,7 +244,70 @@ export type PdrObjective = {
   current_value: number | null;
   /** Free text unit shown next to numbers, e.g. "tickets", "days". */
   unit: string | null;
+  /** Whether this is a project, an ongoing KPI, or a simple target. */
+  goal_kind: GoalKind;
+  /** The window the goal runs over. */
+  start_date: string | null;
+  end_date: string | null;
 };
+
+export type GoalKind = "project" | "kpi" | "target";
+
+export const GOAL_KINDS: { id: GoalKind; label: string; blurb: string }[] = [
+  {
+    id: "project",
+    label: "Project",
+    blurb: "A piece of work with a start and a finish — e.g. roll out the new NOC monitoring stack.",
+  },
+  {
+    id: "kpi",
+    label: "KPI",
+    blurb: "A measure tracked over a period — e.g. keep first-response within SLA at 95%.",
+  },
+  {
+    id: "target",
+    label: "Simple target",
+    blurb: "A single number to hit by a date — e.g. complete 6 training sessions.",
+  },
+];
+
+export function goalKindLabel(kind: GoalKind | null | undefined) {
+  return GOAL_KINDS.find((k) => k.id === kind)?.label ?? "KPI";
+}
+
+/** Where a goal sits against its own dates, so managers can see what's late. */
+export function goalWindowStatus(
+  o: { start_date: string | null; end_date: string | null; current_value: number | null; measure_type: GoalMeasureType; start_value: number; target_value: number | null },
+  today: Date = new Date(),
+): { label: string; tone: string } {
+  const achieved = goalAchievementPercent(o);
+  if (achieved != null && achieved >= 100) return { label: "Achieved", tone: "bg-emerald-100 text-emerald-800" };
+  const end = o.end_date ? new Date(o.end_date) : null;
+  const start = o.start_date ? new Date(o.start_date) : null;
+  if (end && end < today) return { label: "Past due", tone: "bg-red-100 text-red-800" };
+  if (end) {
+    const days = Math.ceil((end.getTime() - today.getTime()) / 86_400_000);
+    if (days <= 30) return { label: `Due in ${days} day${days === 1 ? "" : "s"}`, tone: "bg-amber-100 text-amber-900" };
+  }
+  if (start && start > today) return { label: "Not started", tone: "bg-muted text-muted-foreground" };
+  return { label: "In progress", tone: "bg-indigo-100 text-indigo-800" };
+}
+
+/** Average achievement across a set of goals — the figure managers weigh against merit. */
+export function goalsSummary(objectives: PdrObjective[]) {
+  const scored = objectives
+    .map((o) => goalAchievementPercent(o))
+    .filter((p): p is number => p != null);
+  const average = scored.length
+    ? Math.round(scored.reduce((s, p) => s + p, 0) / scored.length)
+    : null;
+  return {
+    total: objectives.length,
+    tracked: scored.length,
+    achieved: scored.filter((p) => p >= 100).length,
+    average,
+  };
+}
 
 export type GoalMeasureType = "percentage" | "number" | "currency" | "milestone";
 
