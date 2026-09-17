@@ -266,8 +266,8 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score and merit. 5% is the mid point — an
-              "Achieved" (3) rating can be awarded 5%. A rating of 1 receives 0% — no
+              Enter the rating, then the I/C score and merit. 5% is the mid point — a
+              3 (Overall Met) rating can be awarded 4–6%. A rating of 1 receives 0% — no
               increase, and a rating of 2 (Partially Met) can be awarded between 0% and
               3%. The team should average 5%, and values outside a range, or spend
               above the approved budget, cannot be saved.
