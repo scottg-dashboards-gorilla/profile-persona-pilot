@@ -469,6 +469,9 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setEditStart(String(o.start_value ?? 0));
     setEditTarget(o.target_value == null ? "" : String(o.target_value));
     setEditUnit(o.unit ?? "");
+    setEditKind((o.goal_kind ?? "kpi") as GoalKind);
+    setEditStartDate(o.start_date ?? "");
+    setEditEndDate(o.end_date ?? "");
   }
 
   async function saveEdit() {
