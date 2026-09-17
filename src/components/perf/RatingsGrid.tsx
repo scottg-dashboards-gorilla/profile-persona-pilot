@@ -33,7 +33,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { amountFromPercent, formatMoney } from "@/lib/compensation";
 import {
-  DM_RANGE,
   IC_TARGET,
   MERIT_PRINCIPLES,
   RATING_SCALE,

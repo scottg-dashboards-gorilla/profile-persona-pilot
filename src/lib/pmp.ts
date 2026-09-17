@@ -82,7 +82,7 @@ export const PMP_ROLES: { id: string; label: string; points: string[] }[] = [
     label: "People Managers",
     points: [
       "Act as owners: write feedback and assign a performance rating on the Datapath 5-point scale.",
-      "Recognise people using manager discretion for merit, I/C score, differentiated merit and differentiated LTI where applicable.",
+      "Recognise people using manager discretion for merit and I/C score where applicable.",
       "Stay within budget by differentiating the % increases across their team members.",
       "Have continuous dialogue with their team — feedback throughout the year, not just at year end.",
     ],
