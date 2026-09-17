@@ -132,10 +132,8 @@ export function RatingsGrid({ year }: { year: number }) {
         merit_budget_amount: bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0),
         
       });
-      setDmBudget(Math.round(bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0) * 0.25));
     } else {
       setBudget(null);
-      setDmBudget(0);
     }
     setLoading(false);
   }, [year]);
