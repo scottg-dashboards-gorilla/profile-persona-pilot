@@ -180,12 +180,8 @@ export default function TaskTracker() {
     if (isAdminHr) {
       visible = all;
     } else if (isManager && mine) {
-      const direct = all.filter((e) => e.manager_uuid === mine.uuid).map((e) => e.uuid);
-      const team = new Set([
-        mine.uuid,
-        ...direct,
-        ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid),
-      ]);
+      // Direct reports only — a manager's team is the people who report to them.
+      const team = new Set([mine.uuid, ...all.filter((e) => e.manager_uuid === mine.uuid).map((e) => e.uuid)]);
       visible = all.filter((e) => team.has(e.uuid));
     } else if (mine) {
       visible = [mine];

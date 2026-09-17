@@ -35,15 +35,12 @@ export default function People() {
         .order("first_name", { ascending: true });
       let list = (data ?? []) as EmpRow[];
       if (!isAdminHr) {
-        // Managers see only the people they manage (direct reports and one level below) — not themselves.
+        // Managers see only their direct reports — not themselves.
         const { data: authData } = await supabase.auth.getUser();
         const uid = authData.user?.id;
         const me = list.find((r) => r.user_id === uid);
         if (me) {
-          const direct = new Set(list.filter((r) => r.manager_uuid === me.uuid).map((r) => r.uuid));
-          const skip = new Set(list.filter((r) => r.manager_uuid && direct.has(r.manager_uuid)).map((r) => r.uuid));
-          const team = new Set([...direct, ...skip]);
-          list = list.filter((r) => team.has(r.uuid));
+          list = list.filter((r) => r.manager_uuid === me.uuid && r.uuid !== me.uuid);
         }
       }
       setRows(list);
