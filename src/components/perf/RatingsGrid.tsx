@@ -61,7 +61,7 @@ type GridRow = {
   merit_percent: number | null;
   merit_amount: number | null;
   merit_prorated_amount: number | null;
-  bonus_eligible: boolean;
+  
   ic_score: number | null;
   dm_eligible: boolean;
   dm_percent: number | null;
@@ -85,7 +85,7 @@ type Draft = {
 };
 
 const SELECT =
-  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, bonus_eligible, ic_score, dm_eligible, dm_percent, dm_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, apr_stage";
+  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, dm_eligible, dm_percent, dm_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, apr_stage";
 
 function toDraft(r: GridRow): Draft {
   return {
@@ -134,7 +134,7 @@ export function RatingsGrid({ year }: { year: number }) {
       setBudget({
         ...bs[0],
         merit_budget_amount: bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0),
-        bonus_budget_amount: bs.reduce((s, b) => s + (b.bonus_budget_amount ?? 0), 0),
+        
       });
       setDmBudget(Math.round(bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0) * 0.25));
       setEquityBudget(bs.reduce((s, b) => s + (b.equity_budget_amount ?? 0), 0));
@@ -202,7 +202,7 @@ export function RatingsGrid({ year }: { year: number }) {
     const dm = computed.reduce((s, c) => s + (c.dmAmount ?? 0), 0);
     const equity = computed.reduce((s, c) => s + (c.eqValue ?? 0), 0);
     const shares = computed.reduce((s, c) => s + (c.eqShares ?? 0), 0);
-    const icAvg = icAverage(computed.filter((c) => c.row.bonus_eligible).map((c) => c.ic));
+    const icAvg = icAverage(computed.map((c) => c.ic));
     return { merit, dm, equity, shares, icAvg };
   }, [computed]);
 
@@ -392,7 +392,7 @@ export function RatingsGrid({ year }: { year: number }) {
                           type="number"
                           className={cn("h-8 w-20 text-right text-xs", c.icOk === false && "border-destructive")}
                           value={c.draft.ic}
-                          disabled={!c.row.bonus_eligible || c.score == null}
+                          disabled={c.score == null}
                           onChange={(e) => set(c.row.id, { ic: e.target.value })}
                         />
                       </TableCell>
@@ -493,7 +493,7 @@ export function RatingsGrid({ year }: { year: number }) {
                   <Bar label="Share awards" budget={equityBudget} spend={spend.equity} />
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
-                  <div className="font-semibold text-muted-foreground">I/C budget ({rows.filter((r) => r.bonus_eligible).length} emps)</div>
+                  <div className="font-semibold text-muted-foreground">I/C budget ({rows.length} emps)</div>
                   <div className="text-right">Target {IC_TARGET.toFixed(2)}</div>
                   <div className={cn("text-right font-medium", icOver && "text-destructive")}>
                     Actual {spend.icAvg?.toFixed(2) ?? "0.00"}
