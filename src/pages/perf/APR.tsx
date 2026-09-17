@@ -33,6 +33,7 @@ import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
+  ChevronDown,
   Download,
   Handshake,
   Loader2,
