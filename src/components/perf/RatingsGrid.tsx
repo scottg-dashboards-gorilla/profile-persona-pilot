@@ -124,6 +124,9 @@ export function RatingsGrid({ year }: { year: number }) {
           const mine = new Set((team ?? []).map((t) => t.uuid as string));
           list = list.filter((r) => mine.has(r.employee_uuid));
         }
+      } else if (!isAdminHr) {
+        // No staff record matched: never fall back to showing everyone.
+        list = [];
       }
     } else if (!isAdminHr) {
       list = [];
