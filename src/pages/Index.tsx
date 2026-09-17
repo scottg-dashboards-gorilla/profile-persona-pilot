@@ -171,6 +171,7 @@ const Index = () => {
         onResume={handleResume}
         lockedName={linkedName}
         lockedEmail={linkedEmail}
+        suggestedRoleId={suggestedRoleId}
       />
     );
   }
