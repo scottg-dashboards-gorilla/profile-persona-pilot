@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
+import { GoalsPanel, GoalsSummaryLine } from "@/components/perf/GoalsPanel";
+import { goalsSummary, type PdrObjective } from "@/lib/pmp";
 import {
   Select,
   SelectContent,
