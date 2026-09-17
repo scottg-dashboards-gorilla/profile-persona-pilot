@@ -255,7 +255,8 @@ export function RatingsGrid({ year }: { year: number }) {
             <CardDescription>
               Enter the rating, then the I/C score and merit. 5% is the mid point — an
               "Achieved" (3) rating can be awarded 5%. A rating of 1 receives 0% — no
-              increase. The team should average 5%, and values outside a range, or spend
+              increase, and a rating of 2 (Partially Met) can be awarded between 0% and
+              3%. The team should average 5%, and values outside a range, or spend
               above the approved budget, cannot be saved.
             </CardDescription>
           </div>
@@ -348,14 +349,19 @@ export function RatingsGrid({ year }: { year: number }) {
                         {c.score === 1 ? (
                           <div className="text-xs font-medium text-muted-foreground">0% — no increase</div>
                         ) : (
-                        <Input
-                          type="number"
-                          step="0.1"
-                          className={cn("h-8 w-20 text-right text-xs", c.meritOk === false && "border-destructive")}
-                          value={c.draft.merit}
-                          disabled={c.score == null}
-                          onChange={(e) => set(c.row.id, { merit: e.target.value })}
-                        />
+                          <div className="flex flex-col items-end gap-0.5">
+                            <Input
+                              type="number"
+                              step="0.1"
+                              className={cn("h-8 w-20 text-right text-xs", c.meritOk === false && "border-destructive")}
+                              value={c.draft.merit}
+                              disabled={c.score == null}
+                              onChange={(e) => set(c.row.id, { merit: e.target.value })}
+                            />
+                            {c.score === 2 && (
+                              <div className="text-[10px] text-muted-foreground">0–3% range</div>
+                            )}
+                          </div>
                         )}
                       </TableCell>
                       <TableCell className="text-center"><CheckMark ok={c.meritOk} /></TableCell>
