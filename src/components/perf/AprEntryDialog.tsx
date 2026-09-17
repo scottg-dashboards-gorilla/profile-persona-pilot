@@ -46,8 +46,6 @@ export type AprReview = {
   merit_percent: number | null;
   merit_amount: number | null;
   ic_score: number | null;
-  is_executive: boolean;
-  exec_payout_amount: number | null;
   apr_stage: string;
   escalation_status: string;
   escalation_note: string | null;
@@ -68,7 +66,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   const [score, setScore] = useState<string>("3");
   const [meritPercent, setMeritPercent] = useState("");
   const [ic, setIc] = useState("");
-  const [execPayout, setExecPayout] = useState("");
   const [note, setNote] = useState("");
   const [pdrScore, setPdrScore] = useState<number | null>(null);
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
@@ -80,7 +77,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
     setScore(String(review.rating_score ?? 3));
     setMeritPercent(review.merit_percent?.toString() ?? "");
     setIc(review.ic_score?.toString() ?? "");
-    setExecPayout(review.exec_payout_amount?.toString() ?? "");
     setNote(review.escalation_note ?? "");
     setBlockedMsg(null);
   }, [review]);
@@ -159,7 +155,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       comp_adjustment_amount: meritPercent === "" ? null : meritAmount,
       comp_adjustment_percent: meritPercent === "" ? null : meritPct,
       ic_score: ic === "" ? null : Number(ic),
-      exec_payout_amount: review.is_executive && execPayout !== "" ? Number(execPayout) : null,
       escalation_note: note || null,
     };
     if (escalate) {
@@ -252,13 +247,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
           </div>
 
 
-          {review.is_executive && (
-            <div className="grid gap-2">
-              <Label>Executive pay-out</Label>
-              <Input type="number" value={execPayout} onChange={(e) => setExecPayout(e.target.value)} placeholder="0" />
-              <p className="text-xs text-muted-foreground">Executives only.</p>
-            </div>
-          )}
 
           <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-1">
             <div className="font-medium">Team budget</div>
