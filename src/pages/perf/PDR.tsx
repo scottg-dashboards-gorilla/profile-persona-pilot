@@ -145,6 +145,35 @@ export default function PDR() {
     toast({ title: "PDR started", description: `${emp.first_name} can now draft their objectives.` });
   }
 
+  /** Admin/HR only: start an objective setting cycle for everyone who doesn't have one yet. */
+  async function addEveryone() {
+    const existing = new Set(forms.map((f) => f.employee_uuid));
+    const missing = employees.filter((e) => !existing.has(e.uuid));
+    if (missing.length === 0) {
+      toast({ title: "Everyone is already added", description: `All staff have a FY${year} objective setting.` });
+      return;
+    }
+    setAddingAll(true);
+    const { error } = await supabase.from("pdr_forms").insert(
+      missing.map((e) => ({
+        employee_uuid: e.uuid,
+        employee_name: `${e.first_name} ${e.last_name}`,
+        fiscal_year: year,
+      })),
+    );
+    setAddingAll(false);
+    if (error) {
+      toast({ title: "Couldn't add everyone", description: error.message, variant: "destructive" });
+      return;
+    }
+    await load();
+    toast({
+      title: "Everyone added",
+      description: `${missing.length} people can now draft their FY${year} objectives.`,
+    });
+  }
+
+
   return (
     <div className="space-y-5">
       <header className="flex items-start justify-between gap-3 flex-wrap">
