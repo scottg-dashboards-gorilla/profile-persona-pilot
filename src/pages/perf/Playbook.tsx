@@ -549,38 +549,52 @@ export default function Playbook() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Guardrails already enforced</CardTitle>
+          <CardTitle className="text-base">
+            {forEmployee ? "What the process guarantees you" : "Guardrails already enforced"}
+          </CardTitle>
           <CardDescription>These aren't reminders — the system refuses to let them slide.</CardDescription>
         </CardHeader>
         <CardContent className="text-sm space-y-2">
           <Rule>A review cannot be marked complete without an assessment attempt from that period.</Rule>
           <Rule>Performance is rated on the 1–5 scale everywhere; merit follows from that rating.</Rule>
-          <Rule>
-            A manager with 5 or more eligible reports cannot save pay entries above their team budget —
-            the entry must be escalated to the next-level manager and approved first.
-          </Rule>
-          <Rule>Merit and bonus draw from separate budgets; unspent money cannot move between them.</Rule>
-          <Rule>I/C scores are tracked against the Datapath target of {IC_TARGET}.</Rule>
+          {!forEmployee && (
+            <>
+              <Rule>
+                A manager with 5 or more eligible reports cannot save pay entries above their team budget —
+                the entry must be escalated to the next-level manager and approved first.
+              </Rule>
+              <Rule>Merit and bonus draw from separate budgets; unspent money cannot move between them.</Rule>
+              <Rule>I/C scores are tracked against the Datapath target of {IC_TARGET}.</Rule>
+            </>
+          )}
           <Rule>Objectives can only be marked aligned once every one is validated against a category (C1).</Rule>
-          <Rule>A PDR year can only be closed after manager comments are finalized and a score is set.</Rule>
-          <Rule>Only HR or an admin can approve a pay change; managers propose, HR signs off.</Rule>
+          <Rule>
+            Once your objectives are aligned you can't add, edit or delete them — your manager sends them
+            back for revision if something needs to change.
+          </Rule>
+          <Rule>Your pay change is signed off by HR before your manager holds the conversation with you.</Rule>
           <Rule>An outcome can't be shared with the employee while a pay change is still unapproved.</Rule>
           <Rule>Employees only ever see their own review, and only after it's shared.</Rule>
-          <Rule>A contributor can submit once per cycle unless HR explicitly reopens it.</Rule>
+          <Rule>360 feedback is shown to you without names attached.</Rule>
+          {!forEmployee && (
+            <Rule>A contributor can submit once per cycle unless HR explicitly reopens it.</Rule>
+          )}
           <Rule>Every rating, pay and role change is written to the audit log with who and when.</Rule>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Spot reviews</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          For an off-cycle review, create a cycle scoped to that one person's manager (or add the review
-          directly) and set the review type to spot. The same eight steps apply — the assessment
-          requirement still holds, which is what keeps off-cycle raises defensible.
-        </CardContent>
-      </Card>
+      {!forEmployee && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Spot reviews</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            For an off-cycle review, create a cycle scoped to that one person's manager (or add the review
+            directly) and set the review type to spot. The same steps apply — the assessment requirement
+            still holds, which is what keeps off-cycle raises defensible.
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
