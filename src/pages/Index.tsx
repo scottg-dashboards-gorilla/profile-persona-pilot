@@ -120,44 +120,37 @@ const Index = () => {
       acc[s.dimensionId] = s.normalizedScore;
       return acc;
     }, {});
-    const employee_uuid = linkedUuid ?? employeeUuidParam ?? employeeName;
-    let linkedCycleId: string | null = null;
-    if (reviewId) {
-      const { data } = await supabase
-        .from("performance_reviews")
-        .select("cycle_id")
-        .eq("id", reviewId)
-        .maybeSingle();
-      linkedCycleId = (data?.cycle_id as string | null) ?? null;
-    }
-    const { data: attempt, error: attemptErr } = await supabase
-      .from("assessment_attempts")
-      .insert({
-        employee_uuid,
-        review_id: reviewId,
-        cycle_id: linkedCycleId,
-        submitted_at: new Date().toISOString(),
-        disc_scores: {
+    // Filed against the signed-in person's staff record so it always lands on
+    // their own review page (works even if the tab was opened separately).
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { error: attemptErr } = await supabase.rpc("save_my_assessment_attempt", {
+        _employee_uuid: linkedUuid ?? employeeUuidParam,
+        _review_id: reviewId,
+        _disc_scores: {
           D: discProfile.D,
           I: discProfile.I,
           S: discProfile.S,
           C: discProfile.C,
+          primaryType: discProfile.primaryType,
+          secondaryType: discProfile.secondaryType,
         } as unknown as any,
-        disc_primary: discProfile.primaryType,
-        tier: tier.tier,
-        technical_scores: technical_scores as unknown as any,
-        truthfulness_score: truthfulness?.score ?? null,
-        raw_answers: state.answers as unknown as any,
-      })
-      .select("id")
-      .single();
-    if (attemptErr) {
-      console.error("Failed to save attempt:", attemptErr);
-    } else if (attempt && reviewId) {
-      await supabase
-        .from("performance_reviews")
-        .update({ assessment_attempt_id: attempt.id })
-        .eq("id", reviewId);
+        _disc_primary: discProfile.primaryType,
+        _tier: tier.tier,
+        _technical_scores: technical_scores as unknown as any,
+        _truthfulness: truthfulness?.score ?? null,
+        _raw_answers: state.answers as unknown as any,
+      });
+      if (attemptErr) {
+        console.error("Failed to save attempt:", attemptErr);
+        toast({
+          title: "Couldn't file your result",
+          description: "Your answers were recorded but not attached to your record. Please tell HR.",
+          variant: "destructive",
+        });
+      }
     }
   }, [startTime, completeAssessment, employeeName, role, scores, discProfile, truthfulness, linkedUuid, employeeUuidParam, reviewId, state.answers]);
 
