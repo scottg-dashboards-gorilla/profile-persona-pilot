@@ -478,6 +478,7 @@ export default function Playbook() {
             </span>
           ))}
         </div>
+        </>
       )}
 
       <div className="space-y-3">
