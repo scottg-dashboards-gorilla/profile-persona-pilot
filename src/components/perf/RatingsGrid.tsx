@@ -304,9 +304,7 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead className="text-right">%</TableHead>
                     <TableHead className="text-center">Check</TableHead>
                     <TableHead className="text-right">Amount / Prorated</TableHead>
-                    <TableHead className="text-center">Eligibility</TableHead>
-                    <TableHead className="text-right">Min – Max</TableHead>
-                    <TableHead className="text-right">% / Amount</TableHead>
+
                   </TableRow>
                 </TableHeader>
                 <TableBody>
