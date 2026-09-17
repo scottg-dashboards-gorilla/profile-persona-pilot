@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, Search, Workflow } from "lucide-react";
+import { Loader2, Plus, Search, Users, Workflow } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PDR_STAGES, pdrProgress, pdrStageLabel, type PdrForm, type PdrObjective, type PdrStage } from "@/lib/pmp";
@@ -52,6 +52,7 @@ export default function PDR() {
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [addingAll, setAddingAll] = useState(false);
   const [newEmp, setNewEmp] = useState("");
 
   const load = useCallback(async () => {
@@ -144,6 +145,35 @@ export default function PDR() {
     toast({ title: "PDR started", description: `${emp.first_name} can now draft their objectives.` });
   }
 
+  /** Admin/HR only: start an objective setting cycle for everyone who doesn't have one yet. */
+  async function addEveryone() {
+    const existing = new Set(forms.map((f) => f.employee_uuid));
+    const missing = employees.filter((e) => !existing.has(e.uuid));
+    if (missing.length === 0) {
+      toast({ title: "Everyone is already added", description: `All staff have a FY${year} objective setting.` });
+      return;
+    }
+    setAddingAll(true);
+    const { error } = await supabase.from("pdr_forms").insert(
+      missing.map((e) => ({
+        employee_uuid: e.uuid,
+        employee_name: `${e.first_name} ${e.last_name}`,
+        fiscal_year: year,
+      })),
+    );
+    setAddingAll(false);
+    if (error) {
+      toast({ title: "Couldn't add everyone", description: error.message, variant: "destructive" });
+      return;
+    }
+    await load();
+    toast({
+      title: "Everyone added",
+      description: `${missing.length} people can now draft their FY${year} objectives.`,
+    });
+  }
+
+
   return (
     <div className="space-y-5">
       <header className="flex items-start justify-between gap-3 flex-wrap">
@@ -216,6 +246,12 @@ export default function PDR() {
                   Start
                 </Button>
               </>
+            )}
+            {isAdminHr && employees.length > 0 && (
+              <Button variant="outline" onClick={addEveryone} disabled={addingAll}>
+                {addingAll ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Users className="h-4 w-4 mr-1" />}
+                Add all employees
+              </Button>
             )}
           </div>
         </CardHeader>

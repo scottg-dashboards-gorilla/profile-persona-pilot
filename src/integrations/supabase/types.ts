@@ -1063,9 +1063,6 @@ export type Database = {
           current_annual_comp: number | null
           cycle_id: string | null
           department: string | null
-          dm_amount: number | null
-          dm_eligible: boolean
-          dm_percent: number | null
           employee_ack_at: string | null
           employee_ack_comment: string | null
           employee_email: string | null
@@ -1140,9 +1137,6 @@ export type Database = {
           current_annual_comp?: number | null
           cycle_id?: string | null
           department?: string | null
-          dm_amount?: number | null
-          dm_eligible?: boolean
-          dm_percent?: number | null
           employee_ack_at?: string | null
           employee_ack_comment?: string | null
           employee_email?: string | null
@@ -1217,9 +1211,6 @@ export type Database = {
           current_annual_comp?: number | null
           cycle_id?: string | null
           department?: string | null
-          dm_amount?: number | null
-          dm_eligible?: boolean
-          dm_percent?: number | null
           employee_ack_at?: string | null
           employee_ack_comment?: string | null
           employee_email?: string | null
