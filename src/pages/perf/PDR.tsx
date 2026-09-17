@@ -87,7 +87,7 @@ export default function PDR() {
       const direct = all.filter((e) => e.manager_uuid === meUuid).map((e) => e.uuid);
       const team = new Set([...direct, ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid)]);
       setEmployees(all.filter((e) => team.has(e.uuid)));
-      visible = [meUuid, ...team];
+      visible = [...team];
     } else {
       setEmployees([]);
       visible = meUuid ? [meUuid] : [];
