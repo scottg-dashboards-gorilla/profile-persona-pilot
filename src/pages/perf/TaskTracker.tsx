@@ -19,11 +19,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
-import { format, isBefore, parseISO, startOfToday } from "date-fns";
-import { CheckCircle2, ListTodo, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { format, formatDistanceToNow, isBefore, parseISO, startOfToday } from "date-fns";
+import {
+  CheckCircle2,
+  ListTodo,
+  Loader2,
+  MessageSquare,
+  Pencil,
+  Plus,
+  Send,
+  Trash2,
+} from "lucide-react";
 
 type Task = {
   id: string;
@@ -34,11 +48,21 @@ type Task = {
   priority: string;
   due_date: string | null;
   cadence: string;
+  color: string;
   sort_order: number;
   completed_at: string | null;
 };
 
 type TaskStatus = "todo" | "in_progress" | "blocked" | "done";
+
+type Comment = {
+  id: string;
+  task_id: string;
+  author_id: string;
+  author_name: string;
+  body: string;
+  created_at: string;
+};
 
 type Emp = {
   uuid: string;
@@ -71,6 +95,19 @@ const priorityTone: Record<string, string> = {
   high: "bg-red-100 text-red-800 border-red-200",
 };
 
+// Manager color tags — the meaning is up to the manager (e.g. red = drop everything).
+const COLORS: { value: string; label: string; dot: string; stripe: string }[] = [
+  { value: "none", label: "No color", dot: "bg-transparent border border-dashed border-slate-300", stripe: "" },
+  { value: "red", label: "Red — top priority", dot: "bg-red-500", stripe: "border-l-4 border-l-red-500" },
+  { value: "amber", label: "Amber — important", dot: "bg-amber-400", stripe: "border-l-4 border-l-amber-400" },
+  { value: "green", label: "Green — on track", dot: "bg-emerald-500", stripe: "border-l-4 border-l-emerald-500" },
+  { value: "blue", label: "Blue — when time allows", dot: "bg-sky-500", stripe: "border-l-4 border-l-sky-500" },
+  { value: "purple", label: "Purple — development", dot: "bg-violet-500", stripe: "border-l-4 border-l-violet-500" },
+];
+
+const colorStripe = (v: string) => COLORS.find((c) => c.value === v)?.stripe ?? "";
+const colorDot = (v: string) => COLORS.find((c) => c.value === v)?.dot ?? COLORS[0].dot;
+
 export default function TaskTracker() {
   const { toast } = useToast();
   const { has, unconfigured } = usePermissions();
@@ -78,8 +115,11 @@ export default function TaskTracker() {
   const isManager = has("manager");
 
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [people, setPeople] = useState<Emp[]>([]);
   const [meUuid, setMeUuid] = useState<string | null>(null);
+  const [myName, setMyName] = useState<string>("");
+  const [myUserId, setMyUserId] = useState<string>("");
   const [who, setWho] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [dragId, setDragId] = useState<string | null>(null);
@@ -95,6 +135,10 @@ export default function TaskTracker() {
     cadence: "once",
     status: "todo" as TaskStatus,
   });
+
+  const [commentTask, setCommentTask] = useState<Task | null>(null);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [posting, setPosting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -125,6 +169,8 @@ export default function TaskTracker() {
       }
     }
     setMeUuid(mine?.uuid ?? null);
+    setMyName(mine ? `${mine.first_name} ${mine.last_name}` : (auth?.user?.email ?? "You"));
+    setMyUserId(auth?.user?.id ?? "");
 
     let visible: Emp[] = [];
     if (isAdminHr) {
@@ -155,6 +201,7 @@ export default function TaskTracker() {
   const loadTasks = useCallback(async () => {
     if (!who) {
       setTasks([]);
+      setComments([]);
       return;
     }
     const { data } = await supabase
@@ -162,7 +209,18 @@ export default function TaskTracker() {
       .select("*")
       .eq("employee_uuid", who)
       .order("sort_order");
-    setTasks((data ?? []) as Task[]);
+    const rows = (data ?? []) as Task[];
+    setTasks(rows);
+    if (rows.length) {
+      const { data: cmts } = await supabase
+        .from("task_comments")
+        .select("*")
+        .in("task_id", rows.map((t) => t.id))
+        .order("created_at");
+      setComments((cmts ?? []) as Comment[]);
+    } else {
+      setComments([]);
+    }
   }, [who]);
 
   useEffect(() => {
@@ -175,8 +233,20 @@ export default function TaskTracker() {
     return map;
   }, [tasks]);
 
+  const commentCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    comments.forEach((c) => {
+      map[c.task_id] = (map[c.task_id] ?? 0) + 1;
+    });
+    return map;
+  }, [comments]);
+
   const doneToday = byStatus.done.length;
   const openCount = tasks.length - doneToday;
+
+  // Manager tools (comment + color code) apply when looking at someone else's board.
+  const viewingOwn = who === meUuid;
+  const canManageBoard = !viewingOwn && (isAdminHr || isManager) && !!who;
 
   function openNew(status: TaskStatus) {
     setEditing(null);
@@ -244,6 +314,15 @@ export default function TaskTracker() {
     }
   }
 
+  async function setColor(id: string, color: string) {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, color } : t)));
+    const { error } = await supabase.from("daily_tasks").update({ color }).eq("id", id);
+    if (error) {
+      toast({ title: "Could not set the color", description: error.message, variant: "destructive" });
+      loadTasks();
+    }
+  }
+
   async function remove(id: string) {
     const { error } = await supabase.from("daily_tasks").delete().eq("id", id);
     if (error) {
@@ -251,9 +330,37 @@ export default function TaskTracker() {
       return;
     }
     setTasks((prev) => prev.filter((t) => t.id !== id));
+    setComments((prev) => prev.filter((c) => c.task_id !== id));
+  }
+
+  async function postComment() {
+    if (!commentTask || !commentDraft.trim()) return;
+    setPosting(true);
+    const { error } = await supabase.from("task_comments").insert({
+      task_id: commentTask.id,
+      author_name: myName,
+      body: commentDraft.trim(),
+    });
+    setPosting(false);
+    if (error) {
+      toast({ title: "Could not post the comment", description: error.message, variant: "destructive" });
+      return;
+    }
+    setCommentDraft("");
+    loadTasks();
+  }
+
+  async function removeComment(id: string) {
+    const { error } = await supabase.from("task_comments").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Could not delete the comment", description: error.message, variant: "destructive" });
+      return;
+    }
+    setComments((prev) => prev.filter((c) => c.id !== id));
   }
 
   const selected = people.find((p) => p.uuid === who);
+  const thread = commentTask ? comments.filter((c) => c.task_id === commentTask.id) : [];
 
   return (
     <div className="space-y-6">
@@ -261,8 +368,8 @@ export default function TaskTracker() {
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight">Task Tracker</h1>
           <p className="text-sm text-muted-foreground">
-            Your own action board — add as many tasks as you like, one-off or repeating daily, weekly or
-            monthly, and drag a card between columns as work moves on.
+            Your day-to-day kanban board — add tasks as they come and drag cards across as work moves
+            on. Your manager can comment on your cards and color-code what to prioritize.
           </p>
         </div>
         <div className="flex items-end gap-2">
@@ -358,17 +465,59 @@ export default function TaskTracker() {
                 {byStatus[col.key].map((t) => {
                   const overdue =
                     t.due_date && t.status !== "done" && isBefore(parseISO(t.due_date), startOfToday());
+                  const count = commentCounts[t.id] ?? 0;
                   return (
                     <div
                       key={t.id}
                       draggable
                       onDragStart={() => setDragId(t.id)}
                       onDragEnd={() => setDragId(null)}
-                      className="cursor-grab rounded-lg border bg-card p-3 shadow-sm active:cursor-grabbing"
+                      className={`cursor-grab rounded-lg border bg-card p-3 shadow-sm active:cursor-grabbing ${colorStripe(t.color)}`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="text-sm font-medium leading-snug">{t.title}</div>
                         <div className="flex shrink-0 gap-1">
+                          {canManageBoard && (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button size="icon" variant="ghost" className="h-7 w-7" title="Color code">
+                                  <span className={`h-3.5 w-3.5 rounded-full ${colorDot(t.color)}`} />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-52 p-1" align="end">
+                                <p className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                                  Color-code this task
+                                </p>
+                                {COLORS.map((c) => (
+                                  <button
+                                    key={c.value}
+                                    className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent ${t.color === c.value ? "bg-accent" : ""}`}
+                                    onClick={() => setColor(t.id, c.value)}
+                                  >
+                                    <span className={`h-3 w-3 rounded-full ${c.dot}`} />
+                                    {c.label}
+                                  </button>
+                                ))}
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="relative h-7 w-7"
+                            title="Comments"
+                            onClick={() => {
+                              setCommentTask(t);
+                              setCommentDraft("");
+                            }}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            {count > 0 && (
+                              <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-semibold text-primary-foreground">
+                                {count}
+                              </span>
+                            )}
+                          </Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(t)}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
@@ -487,6 +636,62 @@ export default function TaskTracker() {
               {editing ? "Save" : "Add task"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!commentTask} onOpenChange={(open) => !open && setCommentTask(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Comments — {commentTask?.title}</DialogTitle>
+            <DialogDescription>
+              Managers use this thread to give input on the task; the owner can reply here too.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-72 space-y-3 overflow-y-auto pr-1">
+            {thread.length === 0 ? (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                No comments yet — start the conversation.
+              </p>
+            ) : (
+              thread.map((c) => (
+                <div key={c.id} className="rounded-lg border bg-muted/40 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium">
+                      {c.author_name}
+                      {c.author_id === myUserId && (
+                        <span className="ml-1 text-xs font-normal text-muted-foreground">(you)</span>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      {formatDistanceToNow(parseISO(c.created_at), { addSuffix: true })}
+                      {(c.author_id === myUserId || isAdminHr) && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6"
+                          onClick={() => removeComment(c.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </span>
+                  </div>
+                  <p className="mt-1 whitespace-pre-wrap text-sm">{c.body}</p>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="flex items-end gap-2">
+            <Textarea
+              placeholder="Write a comment…"
+              value={commentDraft}
+              onChange={(e) => setCommentDraft(e.target.value)}
+              className="min-h-16"
+            />
+            <Button onClick={postComment} disabled={posting || !commentDraft.trim()}>
+              {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
