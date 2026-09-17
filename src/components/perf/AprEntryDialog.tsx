@@ -67,8 +67,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   const [saving, setSaving] = useState(false);
   const [score, setScore] = useState<string>("3");
   const [meritPercent, setMeritPercent] = useState("");
-  const [bonusEligible, setBonusEligible] = useState(false);
-  const [bonus, setBonus] = useState("");
   const [ic, setIc] = useState("");
   const [execPayout, setExecPayout] = useState("");
   const [note, setNote] = useState("");
