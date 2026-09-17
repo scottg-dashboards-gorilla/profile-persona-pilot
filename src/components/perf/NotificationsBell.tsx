@@ -19,34 +19,16 @@ type Ping = {
 };
 
 /**
- * Header bell showing what the signed-in person still has pending, with a count badge.
+ * Header bell showing what still needs action, tailored to the view the person is in:
+ * employee view = their own items, manager view = their team, admin view = company-wide.
  */
 export function NotificationsBell() {
   const [loading, setLoading] = useState(true);
   const [pings, setPings] = useState<Ping[]>([]);
+  const { viewMode, loading: permsLoading } = usePermissions();
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const loadEmployee = useCallback(async (uuid: string) => {
     const out: Ping[] = [];
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setPings([]);
-      setLoading(false);
-      return;
-    }
-    const { data: emp } = await supabase
-      .from("employees")
-      .select("uuid")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (!emp) {
-      setPings([]);
-      setLoading(false);
-      return;
-    }
-    const uuid = emp.uuid as string;
     const year = new Date().getFullYear();
     const today = new Date().toISOString().slice(0, 10);
 
@@ -166,16 +148,296 @@ export function NotificationsBell() {
         href: "/tasks",
       });
     }
-
-    setPings(out);
-    setLoading(false);
+    return out;
   }, []);
 
+  /** Manager view: only items about the people who report directly to this person. */
+  const loadManager = useCallback(async (uuid: string) => {
+    const out: Ping[] = [];
+    const year = new Date().getFullYear();
+    const today = new Date().toISOString().slice(0, 10);
+
+    const { data: team } = await supabase
+      .from("employees")
+      .select("uuid, first_name, last_name, hire_date")
+      .eq("manager_uuid", uuid);
+    const reports = (team ?? []).filter((e) => e.uuid !== uuid);
+    if (!reports.length) return out;
+    const ids = reports.map((e) => e.uuid as string);
+    const nameOf = (id: string) => {
+      const e = reports.find((r) => r.uuid === id);
+      return e ? `${e.first_name} ${e.last_name}` : "A team member";
+    };
+
+    const [{ data: revs }, { data: forms }, { data: tasks }] = await Promise.all([
+      supabase
+        .from("performance_reviews")
+        .select(
+          "id, employee_uuid, employee_name, review_cycle, status, scheduled_date, released_at, comp_approval_status, pay_pushback_status, escalation_status, assessment_attempt_id",
+        )
+        .in("employee_uuid", ids),
+      supabase
+        .from("pdr_forms")
+        .select(
+          "id, employee_uuid, objectives_submitted_at, objectives_approved_at, midyear_self_submitted_at, midyear_manager_submitted_at, self_input_submitted_at, manager_input_submitted_at",
+        )
+        .in("employee_uuid", ids)
+        .eq("fiscal_year", year),
+      supabase.from("daily_tasks").select("id, employee_uuid, status").in("employee_uuid", ids).eq("status", "blocked"),
+    ]);
+
+    const reviews = revs ?? [];
+    const openReviews = reviews.filter((r) => r.status !== "completed" && r.status !== "cancelled");
+    const overdue = openReviews.filter((r) => r.scheduled_date && r.scheduled_date < today);
+    if (overdue.length) {
+      out.push({
+        id: "mgr-overdue",
+        title: `${overdue.length} team review${overdue.length === 1 ? "" : "s"} overdue`,
+        detail: "Past the scheduled date and still waiting on your rating.",
+        href: "/reviews",
+      });
+    }
+    const toRate = openReviews.filter((r) => !overdue.includes(r));
+    if (toRate.length) {
+      out.push({
+        id: "mgr-open",
+        title: `${toRate.length} review${toRate.length === 1 ? "" : "s"} waiting on you`,
+        detail: "Ratings and pay proposals for your team.",
+        href: "/reviews",
+      });
+    }
+    const noAssessment = openReviews.filter((r) => !r.assessment_attempt_id);
+    if (noAssessment.length) {
+      out.push({
+        id: "mgr-assessment",
+        title: `${noAssessment.length} team member${noAssessment.length === 1 ? "" : "s"} without an assessment`,
+        detail: "Their review can't be completed until it's on file.",
+        href: "/reviews",
+      });
+    }
+    const concerns = reviews.filter((r) => !["none", "resolved"].includes(r.pay_pushback_status ?? "none"));
+    for (const r of concerns) {
+      out.push({
+        id: `mgr-concern-${r.id}`,
+        title: `${r.employee_name ?? nameOf(r.employee_uuid as string)} raised a pay concern`,
+        detail: "Add the detail behind the pushback so HR can decide.",
+        href: `/reviews/${r.id}`,
+      });
+    }
+    const approved = reviews.filter((r) => r.comp_approval_status === "approved" && !r.released_at);
+    if (approved.length) {
+      out.push({
+        id: "mgr-release",
+        title: `${approved.length} outcome${approved.length === 1 ? "" : "s"} approved to share`,
+        detail: "HR signed off the pay change — hold the conversation and share it.",
+        href: "/reviews",
+      });
+    }
+
+    const pdr = forms ?? [];
+    const toAlign = pdr.filter((f) => f.objectives_submitted_at && !f.objectives_approved_at);
+    if (toAlign.length) {
+      out.push({
+        id: "mgr-align",
+        title: `${toAlign.length} set${toAlign.length === 1 ? "" : "s"} of objectives to align`,
+        detail: "Your team submitted objectives and are waiting on your sign-off.",
+        href: "/pdr",
+      });
+    }
+    const midToComment = pdr.filter((f) => f.midyear_self_submitted_at && !f.midyear_manager_submitted_at);
+    if (midToComment.length) {
+      out.push({
+        id: "mgr-mid",
+        title: `${midToComment.length} mid-year review${midToComment.length === 1 ? "" : "s"} to comment on`,
+        detail: "Add your comment under each objective they wrote about.",
+        href: "/pdr",
+      });
+    }
+    const yearToComment = pdr.filter((f) => f.self_input_submitted_at && !f.manager_input_submitted_at);
+    if (yearToComment.length) {
+      out.push({
+        id: "mgr-year",
+        title: `${yearToComment.length} year-end input${yearToComment.length === 1 ? "" : "s"} to respond to`,
+        detail: "Your team submitted their year-end input.",
+        href: "/pdr",
+      });
+    }
+
+    const missingPdr = reports.filter((e) => !pdr.some((f) => f.employee_uuid === e.uuid));
+    if (missingPdr.length) {
+      out.push({
+        id: "mgr-nopdr",
+        title: `${missingPdr.length} team member${missingPdr.length === 1 ? "" : "s"} without ${year} objectives`,
+        detail: "No objectives are on file for them this year.",
+        href: "/pdr",
+      });
+    }
+
+    // Anniversaries due within three weeks or already passed this year.
+    const now = new Date();
+    const soon: string[] = [];
+    const passed: string[] = [];
+    for (const e of reports) {
+      if (!e.hire_date) continue;
+      const hire = new Date(e.hire_date as string);
+      const next = new Date(now.getFullYear(), hire.getMonth(), hire.getDate());
+      const days = Math.round((next.getTime() - now.getTime()) / 86400000);
+      if (days < 0 && days > -60) passed.push(e.uuid as string);
+      else if (days >= 0 && days <= 21) soon.push(e.uuid as string);
+    }
+    if (passed.length) {
+      out.push({
+        id: "mgr-anniv-passed",
+        title: `${passed.length} pay review anniversar${passed.length === 1 ? "y has" : "ies have"} passed`,
+        detail: "Open their pay review to catch up.",
+        href: "/apr",
+      });
+    }
+    if (soon.length) {
+      out.push({
+        id: "mgr-anniv-soon",
+        title: `${soon.length} pay review${soon.length === 1 ? "" : "s"} due in 3 weeks`,
+        detail: "Anniversaries coming up for your team.",
+        href: "/apr",
+      });
+    }
+
+    const blockedTasks = tasks ?? [];
+    if (blockedTasks.length) {
+      out.push({
+        id: "mgr-blocked",
+        title: `${blockedTasks.length} team task${blockedTasks.length === 1 ? "" : "s"} blocked`,
+        detail: "Someone on your team is stuck and flagged it.",
+        href: "/tasks",
+      });
+    }
+
+    return out;
+  }, []);
+
+  /** Admin/HR view: company-wide items that only HR or an admin can clear. */
+  const loadAdmin = useCallback(async () => {
+    const out: Ping[] = [];
+    const today = new Date().toISOString().slice(0, 10);
+    const [{ data: revs }, { count: queued }] = await Promise.all([
+      supabase
+        .from("performance_reviews")
+        .select(
+          "id, status, scheduled_date, released_at, employee_ack_at, comp_approval_status, pay_pushback_status, escalation_status, reviewer_uuid, cycle_id, assessment_attempt_id",
+        ),
+      supabase.from("review_reminders").select("id", { count: "exact", head: true }).eq("status", "queued"),
+    ]);
+    const reviews = revs ?? [];
+    const add = (id: string, n: number, title: string, detail: string, href: string) => {
+      if (n > 0) out.push({ id, title: `${n} ${title}`, detail, href });
+    };
+
+    add(
+      "adm-approval",
+      reviews.filter((r) => r.status === "completed" && r.comp_approval_status !== "approved").length,
+      "pay change(s) waiting on HR approval",
+      "Nothing can be shared with an employee until this is signed off.",
+      "/reviews",
+    );
+    add(
+      "adm-escalation",
+      reviews.filter((r) => r.escalation_status === "pending").length,
+      "escalation(s) to decide",
+      "Managers have asked HR to look at over-budget proposals.",
+      "/reviews",
+    );
+    add(
+      "adm-concern",
+      reviews.filter((r) => !["none", "resolved"].includes(r.pay_pushback_status ?? "none")).length,
+      "pay concern(s) open",
+      "Employees are waiting on an HR decision.",
+      "/reviews",
+    );
+    add(
+      "adm-release",
+      reviews.filter((r) => r.comp_approval_status === "approved" && !r.released_at).length,
+      "approved outcome(s) not yet shared",
+      "Approved but still not released to the employee.",
+      "/reviews",
+    );
+    add(
+      "adm-ack",
+      reviews.filter((r) => r.released_at && !r.employee_ack_at).length,
+      "outcome(s) not confirmed",
+      "Shared with employees but not yet acknowledged.",
+      "/reviews",
+    );
+    add(
+      "adm-overdue",
+      reviews.filter((r) => r.status !== "completed" && r.status !== "cancelled" && r.scheduled_date && r.scheduled_date < today)
+        .length,
+      "review(s) overdue",
+      "Past their scheduled date across the company.",
+      "/reviews",
+    );
+    add(
+      "adm-reviewer",
+      reviews.filter((r) => r.status !== "completed" && !r.reviewer_uuid).length,
+      "review(s) without a reviewer",
+      "Nobody is assigned to complete them.",
+      "/reviews",
+    );
+    add(
+      "adm-cycle",
+      reviews.filter((r) => !r.cycle_id).length,
+      "review(s) not in a cycle",
+      "They won't roll up into cycle progress.",
+      "/cycles",
+    );
+    add("adm-reminders", queued ?? 0, "reminder(s) queued to send", "Waiting to go out to employees and reviewers.", "/reviews");
+
+    return out;
+  }, []);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setPings([]);
+      setLoading(false);
+      return;
+    }
+    try {
+      if (viewMode === "admin") {
+        setPings(await loadAdmin());
+      } else {
+        const { data: emp } = await supabase
+          .from("employees")
+          .select("uuid")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!emp) {
+          setPings([]);
+        } else if (viewMode === "manager") {
+          setPings(await loadManager(emp.uuid as string));
+        } else {
+          setPings(await loadEmployee(emp.uuid as string));
+        }
+      }
+    } catch {
+      setPings([]);
+    }
+    setLoading(false);
+  }, [viewMode, loadAdmin, loadEmployee, loadManager]);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    if (!permsLoading) load();
+  }, [load, permsLoading]);
 
   const count = pings.length;
+  const heading =
+    viewMode === "admin"
+      ? "Needs HR or admin action"
+      : viewMode === "manager"
+        ? "Needs your action as a manager"
+        : "What's pending for you";
 
   return (
     <DropdownMenu onOpenChange={(o) => o && load()}>
@@ -194,7 +456,7 @@ export function NotificationsBell() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>What's pending for you</span>
+          <span>{heading}</span>
           {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
