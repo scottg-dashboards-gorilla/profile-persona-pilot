@@ -287,8 +287,13 @@ export default function APR() {
       </header>
 
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Stat label="Merit planned" value={formatMoney(totals.merit)} icon={Wallet} />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Stat
+          label={isHr ? "Merit planned · 5% of pay" : "Merit planned · 5% of team pay"}
+          value={formatMoney(totals.pool)}
+          icon={Wallet}
+        />
+        <Stat label="Merit entered so far" value={formatMoney(totals.merit)} icon={Wallet} />
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">
