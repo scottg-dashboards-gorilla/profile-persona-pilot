@@ -987,18 +987,23 @@ export type Database = {
           cascaded_from_manager: boolean
           category: string
           created_at: string
+          current_value: number | null
           description: string | null
           form_id: string
           id: string
           manager_comment: string | null
           manager_validated: boolean
+          measure_type: string
           midyear_employee_comment: string | null
           midyear_manager_comment: string | null
           progress_percent: number
           setting_manager_comment: string | null
           sort_order: number
+          start_value: number
           status: string
+          target_value: number | null
           title: string
+          unit: string | null
           updated_at: string
           weight: number
         }
@@ -1006,18 +1011,23 @@ export type Database = {
           cascaded_from_manager?: boolean
           category: string
           created_at?: string
+          current_value?: number | null
           description?: string | null
           form_id: string
           id?: string
           manager_comment?: string | null
           manager_validated?: boolean
+          measure_type?: string
           midyear_employee_comment?: string | null
           midyear_manager_comment?: string | null
           progress_percent?: number
           setting_manager_comment?: string | null
           sort_order?: number
+          start_value?: number
           status?: string
+          target_value?: number | null
           title: string
+          unit?: string | null
           updated_at?: string
           weight?: number
         }
@@ -1025,18 +1035,23 @@ export type Database = {
           cascaded_from_manager?: boolean
           category?: string
           created_at?: string
+          current_value?: number | null
           description?: string | null
           form_id?: string
           id?: string
           manager_comment?: string | null
           manager_validated?: boolean
+          measure_type?: string
           midyear_employee_comment?: string | null
           midyear_manager_comment?: string | null
           progress_percent?: number
           setting_manager_comment?: string | null
           sort_order?: number
+          start_value?: number
           status?: string
+          target_value?: number | null
           title?: string
+          unit?: string | null
           updated_at?: string
           weight?: number
         }
