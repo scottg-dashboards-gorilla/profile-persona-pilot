@@ -33,7 +33,6 @@ const primary: Item[] = [
   { title: "Pay review cycle", url: "/apr", icon: Wallet, area: "apr" },
   { title: "Reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
   { title: "Team's Assessment", url: "/people", icon: Users, area: "reviews" },
-  { title: "Cycles", url: "/cycles", icon: CalendarRange, area: "cycles" },
   { title: "Task Tracker", url: "/tasks", icon: ListTodo },
   { title: "My review", url: "/me", icon: UserSquare2, employeeOnly: true },
   { title: "Company performance", url: "/company", icon: Building2, area: "company" },
