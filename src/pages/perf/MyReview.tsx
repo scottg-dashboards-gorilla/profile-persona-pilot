@@ -13,6 +13,13 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatCompDelta } from "@/data/mockEmployees";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -110,8 +117,17 @@ export default function MyReview() {
   const [concernFor, setConcernFor] = useState<string | null>(null);
   const [concernNote, setConcernNote] = useState("");
 
+  const [yearFilter, setYearFilter] = useState<string>("all");
+
   const active = reviews.find((r) => r.status !== "completed") ?? null;
-  const released = reviews.filter((r) => r.released_at);
+  const years = Array.from(
+    new Set(reviews.map((r) => new Date(r.scheduled_date).getFullYear())),
+  ).sort((a, b) => b - a);
+  const released = reviews
+    .filter((r) => r.released_at)
+    .filter(
+      (r) => yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter),
+    );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -570,6 +586,33 @@ export default function MyReview() {
             <Lock className="h-4 w-4 shrink-0" />
             A completed review is being finalised. You'll see the outcome here once your manager shares
             it.
+          </CardContent>
+        </Card>
+      )}
+
+      {reviews.some((r) => r.released_at) && (
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm font-medium">Your review outcomes</div>
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger className="w-[140px] h-8 text-xs">
+              <SelectValue placeholder="All years" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All years</SelectItem>
+              {years.map((y) => (
+                <SelectItem key={y} value={String(y)}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {released.length === 0 && reviews.some((r) => r.released_at) && (
+        <Card>
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            No review outcomes for {yearFilter}.
           </CardContent>
         </Card>
       )}
