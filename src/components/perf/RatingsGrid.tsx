@@ -101,7 +101,16 @@ export function RatingsGrid({ year }: { year: number }) {
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
   const [dmBudget, setDmBudget] = useState(0);
   const [loading, setLoading] = useState(true);
-...
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [{ data }, { data: budgets }] = await Promise.all([
+      supabase.from("performance_reviews").select(SELECT).eq("fiscal_year", year).order("employee_name"),
+      supabase.from("manager_budgets").select("*").eq("fiscal_year", year),
+    ]);
+    const list = (data ?? []) as unknown as GridRow[];
+    setRows(list);
     const next: Record<string, Draft> = {};
     list.forEach((r) => (next[r.id] = toDraft(r)));
     setDrafts(next);
