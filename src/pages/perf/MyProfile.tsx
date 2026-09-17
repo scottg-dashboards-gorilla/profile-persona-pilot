@@ -30,6 +30,8 @@ export default function MyProfile() {
     department: string | null;
   } | null>(null);
   const [reports, setReports] = useState(0);
+  const [reportRows, setReportRows] = useState<EmployeeRow[]>([]);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -60,12 +62,14 @@ export default function MyProfile() {
           .maybeSingle();
         setManager(mgr ?? null);
       }
-      const { count } = await supabase
+      const { data: reps } = await supabase
         .from("employees")
-        .select("uuid", { count: "exact", head: true })
+        .select("uuid, first_name, last_name, email, department, title, manager_uuid, hire_date, payment_unit")
         .eq("manager_uuid", row.uuid)
-        .eq("terminated", false);
-      setReports(count ?? 0);
+        .eq("terminated", false)
+        .order("first_name");
+      setReportRows((reps as EmployeeRow[]) ?? []);
+      setReports(reps?.length ?? 0);
       setLoading(false);
     })();
   }, []);
