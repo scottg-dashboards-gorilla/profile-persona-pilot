@@ -230,7 +230,7 @@ export default function TaskTracker() {
     } else {
       setComments([]);
     }
-  }, [who]);
+  }, [who, range, from, to]);
 
   useEffect(() => {
     loadTasks();
@@ -397,6 +397,38 @@ export default function TaskTracker() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+          <div className="w-44">
+            <Select value={range} onValueChange={(v) => setRange(v as typeof range)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">Last 30 days</SelectItem>
+                <SelectItem value="90">Last 90 days</SelectItem>
+                <SelectItem value="365">Last year</SelectItem>
+                <SelectItem value="custom">Custom dates</SelectItem>
+                <SelectItem value="all">All data</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {range === "custom" && (
+            <div className="flex items-end gap-2">
+              <Input
+                type="date"
+                className="w-[150px]"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                aria-label="From date"
+              />
+              <Input
+                type="date"
+                className="w-[150px]"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                aria-label="To date"
+              />
             </div>
           )}
           <Button onClick={() => openNew("todo")} disabled={!who}>
