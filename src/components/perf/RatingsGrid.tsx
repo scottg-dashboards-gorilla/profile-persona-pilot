@@ -36,7 +36,6 @@ import {
   IC_TARGET,
   MERIT_PRINCIPLES,
   RATING_SCALE,
-  focalPointMeritEligibility,
   icAverage,
   icRange,
   meritRange,
@@ -57,7 +56,6 @@ type GridRow = {
   rating_score: number | null;
   merit_percent: number | null;
   merit_amount: number | null;
-  merit_prorated_amount: number | null;
   
   ic_score: number | null;
   apr_stage: string;
@@ -70,7 +68,7 @@ type Draft = {
 };
 
 const SELECT =
-  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, ic_score, apr_stage";
+  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, ic_score, apr_stage";
 
 function toDraft(r: GridRow): Draft {
   return {
@@ -165,8 +163,6 @@ export function RatingsGrid({ year }: { year: number }) {
       const ic = d.ic === "" ? null : Number(d.ic);
       const comp = r.current_annual_comp ?? 0;
       const meritAmount = meritPct != null ? amountFromPercent(comp, meritPct) : null;
-      const proration = focalPointMeritEligibility(r.hire_date, year);
-      const prorated = meritAmount != null ? Math.round(meritAmount * proration.prorationFactor) : null;
       return {
         row: r,
         draft: d,
@@ -176,8 +172,6 @@ export function RatingsGrid({ year }: { year: number }) {
         meritPct,
         ic,
         meritAmount,
-        prorated,
-        proration,
         meritOk: withinRange(meritPct, mRange),
         icOk: withinRange(ic, iRange),
       };
@@ -185,7 +179,7 @@ export function RatingsGrid({ year }: { year: number }) {
   }, [rows, drafts, year]);
 
   const spend = useMemo(() => {
-    const merit = computed.reduce((s, c) => s + (c.prorated ?? 0), 0);
+    const merit = computed.reduce((s, c) => s + (c.meritAmount ?? 0), 0);
     const icAvg = icAverage(computed.map((c) => c.ic));
     return { merit, icAvg };
   }, [computed]);
@@ -233,7 +227,6 @@ export function RatingsGrid({ year }: { year: number }) {
           overall_rating: ratingBand(c.score) ?? undefined,
           merit_percent: c.meritPct,
           merit_amount: c.meritAmount,
-          merit_prorated_amount: c.prorated,
           ic_score: c.ic,
         })
         .eq("id", c.row.id);
@@ -297,7 +290,7 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead className="text-right">Max %</TableHead>
                     <TableHead className="text-right">%</TableHead>
                     <TableHead className="text-center">Check</TableHead>
-                    <TableHead className="text-right">Amount / Prorated</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
 
                   </TableRow>
                 </TableHeader>
@@ -308,9 +301,6 @@ export function RatingsGrid({ year }: { year: number }) {
                         <div className="font-medium text-sm">{c.row.employee_name}</div>
                         <div className="text-[11px] text-muted-foreground">
                           {c.row.title ?? c.row.department ?? "—"}
-                          {c.proration.prorationFactor < 1 && (
-                            <> · {c.proration.eligible ? "prorated" : "too new"}</>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell className="bg-primary/5">
@@ -350,18 +340,13 @@ export function RatingsGrid({ year }: { year: number }) {
                           step="0.1"
                           className={cn("h-8 w-20 text-right text-xs", c.meritOk === false && "border-destructive")}
                           value={c.draft.merit}
-                          disabled={c.score == null || !c.proration.eligible}
+                          disabled={c.score == null}
                           onChange={(e) => set(c.row.id, { merit: e.target.value })}
                         />
                       </TableCell>
                       <TableCell className="text-center"><CheckMark ok={c.meritOk} /></TableCell>
                       <TableCell className="text-right whitespace-nowrap">
                         {formatMoney(c.meritAmount)}
-                        {c.prorated != null && c.prorated !== c.meritAmount && (
-                          <div className="text-[11px] text-muted-foreground">
-                            prorated {formatMoney(c.prorated)}
-                          </div>
-                        )}
                       </TableCell>
                     </TableRow>
                   ))}

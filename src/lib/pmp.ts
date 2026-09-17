@@ -585,8 +585,8 @@ export const FOCAL_POINT_ELIGIBILITY: { id: string; label: string; points: strin
     id: "new_hire",
     label: "New Hire",
     points: [
-      "Associates hired on or before October 1 are included and merit increases will be prorated to the number of days worked during the performance year.",
-      "New hires who join after October 1 are considered \"too new\" and do not receive a merit increase until the next merit cycle. That increase reflects a standard full-year merit increase with no pro-ration.",
+      "Pay reviews at Datapath run on each associate's work anniversary, so merit increases are not prorated.",
+      "A new associate's first pay review happens on their first anniversary.",
     ],
   },
   {
@@ -613,34 +613,6 @@ export const FOCAL_POINT_ELIGIBILITY: { id: string; label: string; points: strin
     ],
   },
 ];
-
-/**
- * Focal point eligibility for a hire date within a performance year:
- *  - hired on/before Oct 1  -> included, merit prorated by days worked
- *  - hired after Oct 1      -> too new, no merit this cycle
- */
-export function focalPointMeritEligibility(hireDate: string | null | undefined, fiscalYear: number) {
-  if (!hireDate) return { eligible: true, prorationFactor: 1, reason: "No hire date on record — treated as full year." };
-  const hire = new Date(hireDate);
-  const yearStart = new Date(Date.UTC(fiscalYear, 0, 1));
-  const yearEnd = new Date(Date.UTC(fiscalYear, 11, 31));
-  const cutoff = new Date(Date.UTC(fiscalYear, 9, 1)); // Oct 1
-  if (hire > cutoff) {
-    return { eligible: false, prorationFactor: 0, reason: "Hired after October 1 — too new for this merit cycle." };
-  }
-  if (hire <= yearStart) {
-    return { eligible: true, prorationFactor: 1, reason: "Full performance year worked." };
-  }
-  const dayMs = 86_400_000;
-  const daysWorked = Math.round((yearEnd.getTime() - hire.getTime()) / dayMs) + 1;
-  const daysInYear = Math.round((yearEnd.getTime() - yearStart.getTime()) / dayMs) + 1;
-  const factor = Math.max(0, Math.min(1, daysWorked / daysInYear));
-  return {
-    eligible: true,
-    prorationFactor: Math.round(factor * 1000) / 1000,
-    reason: `Merit prorated to ${daysWorked} of ${daysInYear} days worked.`,
-  };
-}
 
 /** Promotion calibration level per the Dec 1 / Dec 2 rule. */
 export function promotionCalibrationLevel(promotionDate: string | null | undefined, fiscalYear: number): "new" | "prior" | null {
