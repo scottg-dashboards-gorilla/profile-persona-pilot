@@ -420,15 +420,18 @@ export default function Cycles() {
                 rows={2}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Starts</Label>
-                <Input type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-              </div>
-              <div>
-                <Label>Ends (review due date)</Label>
-                <Input type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
-              </div>
+            <div>
+              <Label>Year</Label>
+              <Input
+                type="number"
+                min={2020}
+                max={2100}
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value) || currentYear)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Cycles run annually — this one covers Jan 1 – Dec 31, {year}.
+              </p>
             </div>
             <div>
               <Label>Included review types</Label>
