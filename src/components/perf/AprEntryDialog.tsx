@@ -45,8 +45,6 @@ export type AprReview = {
   rating_score: number | null;
   merit_percent: number | null;
   merit_amount: number | null;
-  bonus_eligible: boolean;
-  bonus_amount: number | null;
   ic_score: number | null;
   is_executive: boolean;
   exec_payout_amount: number | null;
