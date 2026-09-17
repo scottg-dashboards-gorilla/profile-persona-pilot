@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   ArrowRight,
   CheckCircle2,
@@ -18,7 +17,6 @@ import {
   formatDistanceToNow,
 } from "date-fns";
 import { formatCompDelta, ratingLabel } from "@/data/mockEmployees";
-import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { AttemptRow } from "@/lib/assessmentDeltas";
@@ -331,11 +329,6 @@ export default function Overview() {
     return { overdue, dueIn30, inProgress, completedQ, assessedThisYear };
   }, [reviews, open, attempts]);
 
-  const upcoming = useMemo(
-    () => [...open].sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date)).slice(0, 5),
-    [open],
-  );
-
   const nameByUuid = useMemo(() => {
     const m = new Map<string, string>();
     reviews.forEach((r) => m.set(r.employee_uuid, r.employee_name));
@@ -575,58 +568,8 @@ export default function Overview() {
         </Card>
       )}
 
-      {/* Two-column tables */}
-      <div className="grid lg:grid-cols-2 gap-5">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Up next</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Dept</TableHead>
-                  <TableHead>Scheduled</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-12"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {upcoming.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.employee_name}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.department}</TableCell>
-                    <TableCell>{format(parseISO(r.scheduled_date), "MMM d, yyyy")}</TableCell>
-                    <TableCell>
-                      <StatusPill tone={computeReviewTone(r.status as any, r.scheduled_date)} />
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <Link to={`/reviews?focus=${r.id}`} aria-label={`Open ${r.employee_name}`}>
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {loaded && upcoming.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-6">
-                      No upcoming reviews. Schedule one from{" "}
-                      <Link to="/reviews" className="text-primary underline">
-                        Reviews
-                      </Link>
-                      .
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card>
+      {/* Activity */}
+      <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -687,7 +630,7 @@ export default function Overview() {
             </CardContent>
           )}
         </Card>
-      </div>
+
     </div>
   );
 }
