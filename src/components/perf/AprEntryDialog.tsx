@@ -26,6 +26,8 @@ import { useToast } from "@/hooks/use-toast";
 import { formatMoney } from "@/lib/compensation";
 import {
   IC_TARGET,
+  MERIT_AVERAGE_TARGET,
+  MERIT_RANGES,
   RATING_LENSES,
   RATING_SCALE,
   budgetGate,
@@ -134,8 +136,13 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   if (!review) return null;
 
   const comp = Number(review.current_annual_comp ?? 0);
-  const meritPct = meritPercent === "" ? 0 : Number(meritPercent);
-  const meritAmount = Math.round((comp * meritPct) / 100);
+  const scoreNum = Number(score);
+  const meritRange = (MERIT_RANGES as Record<number, { min: number; max: number }>)[scoreNum] ?? null;
+  const meritLocked = !!meritRange && meritRange.max === 0;
+  const effectiveMeritPct = meritLocked ? 0 : meritPct;
+  const meritAmount = Math.round((comp * effectiveMeritPct) / 100);
+  const meritOutOfRange =
+    !!meritRange && !meritLocked && meritPercent !== "" && (meritPct < meritRange.min || meritPct > meritRange.max);
 
   const gate = budgetGate({
     eligibleCount: teamPlanned.eligible,
