@@ -295,7 +295,7 @@ export const APR_STAGES: {
     label: "HR sign-off",
     owner: "HR",
     window: "By 2 weeks before the anniversary",
-    what: "HR checks the rating, merit, bonus and I/C against budget and Datapath pay rules, then signs off the pay outcome. Nothing reaches the employee until this is done.",
+    what: "HR checks the rating, merit and I/C against budget and Datapath pay rules, then signs off the pay outcome. Nothing reaches the employee until this is done.",
   },
   {
     id: "closed",
