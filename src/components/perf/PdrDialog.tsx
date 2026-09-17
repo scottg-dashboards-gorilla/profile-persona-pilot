@@ -284,6 +284,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [editStart, setEditStart] = useState("0");
   const [editTarget, setEditTarget] = useState("");
   const [editUnit, setEditUnit] = useState("");
+  const [newKind, setNewKind] = useState<GoalKind>("kpi");
+  const [newStartDate, setNewStartDate] = useState("");
+  const [newEndDate, setNewEndDate] = useState("");
+  const [editKind, setEditKind] = useState<GoalKind>("kpi");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
   /** Mid-year "where are you now" figure, keyed by objective id. */
   const [midVal, setMidVal] = useState<Record<string, string>>({});
 
