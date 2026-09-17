@@ -13,6 +13,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { usePermissions, type PermissionArea } from "@/hooks/usePermissions";
+import { useViewMode } from "@/hooks/useViewMode";
 
 type Item = {
   title: string;
@@ -22,6 +23,8 @@ type Item = {
   area?: PermissionArea;
   /** Only shown to HR or admin. */
   adminOnly?: boolean;
+  /** Only shown in the employee view. */
+  employeeOnly?: boolean;
 };
 
 const primary: Item[] = [
@@ -32,7 +35,7 @@ const primary: Item[] = [
   { title: "Team's Assessment", url: "/people", icon: Users, area: "reviews" },
   { title: "Cycles", url: "/cycles", icon: CalendarRange, area: "cycles" },
   { title: "Task Tracker", url: "/tasks", icon: ListTodo },
-  { title: "My review", url: "/me", icon: UserSquare2 },
+  { title: "My review", url: "/me", icon: UserSquare2, employeeOnly: true },
   { title: "Company performance", url: "/company", icon: Building2, area: "company" },
   { title: "Compensation", url: "/compensation", icon: DollarSign, area: "compensation" },
   { title: "Salary history", url: "/salary-history", icon: Lock, area: "salary" },
@@ -54,12 +57,14 @@ export function PerfSidebar() {
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { can, has, unconfigured, loading } = usePermissions();
+  const { mode } = useViewMode();
   const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname.startsWith(url));
 
   const visible = (item: Item) => {
     if (loading || unconfigured) return true;
     if (item.adminOnly && !(has("admin") || has("hr"))) return false;
     if (item.area && !can(item.area)) return false;
+    if (item.employeeOnly && (mode === "manager" || mode === "admin")) return false;
     return true;
   };
 
