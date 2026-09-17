@@ -166,7 +166,7 @@ export default function Cycles() {
       const { data, error } = await supabase
         .from("review_cycles")
         .insert({
-          name: name.trim(),
+          name: cycleName,
           description: description.trim() || null,
           starts_at: startsAt,
           ends_at: endsAt,
