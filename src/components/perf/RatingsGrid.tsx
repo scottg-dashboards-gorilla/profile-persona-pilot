@@ -138,6 +138,33 @@ export function RatingsGrid({ year }: { year: number }) {
     const next: Record<string, Draft> = {};
     list.forEach((r) => (next[r.id] = toDraft(r)));
     setDrafts(next);
+    // Goal progress for the same people, so merit can be weighed against what they
+    // actually signed up to deliver.
+    if (list.length > 0) {
+      const { data: forms } = await supabase
+        .from("pdr_forms")
+        .select("id, employee_uuid")
+        .eq("fiscal_year", year)
+        .in("employee_uuid", list.map((r) => r.employee_uuid));
+      const formRows = (forms ?? []) as { id: string; employee_uuid: string }[];
+      if (formRows.length > 0) {
+        const { data: objs } = await supabase
+          .from("pdr_objectives")
+          .select("*")
+          .in("form_id", formRows.map((f) => f.id));
+        const byForm = new Map(formRows.map((f) => [f.id, f.employee_uuid]));
+        const grouped: Record<string, PdrObjective[]> = {};
+        ((objs ?? []) as PdrObjective[]).forEach((o) => {
+          const emp = byForm.get(o.form_id);
+          if (emp) (grouped[emp] ??= []).push(o);
+        });
+        setGoalsByEmp(grouped);
+      } else {
+        setGoalsByEmp({});
+      }
+    } else {
+      setGoalsByEmp({});
+    }
     // Only the budget that belongs to this team counts: a manager sees their own
     // approved pot, HR and admins see the approved pots added together.
     const bs = ((budgets ?? []) as unknown as ManagerBudget[]).filter((b) =>
