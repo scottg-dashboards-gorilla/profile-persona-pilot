@@ -117,14 +117,17 @@ export default function MyReview() {
   const [concernFor, setConcernFor] = useState<string | null>(null);
   const [concernNote, setConcernNote] = useState("");
 
-  const [yearFilter, setYearFilter] = useState<string>("all");
+  const [yearFilter, setYearFilter] = useState<string | null>(null);
 
   const active = reviews.find((r) => r.status !== "completed") ?? null;
   const years = Array.from(
     new Set(reviews.map((r) => new Date(r.scheduled_date).getFullYear())),
   ).sort((a, b) => b - a);
+  // Only years that actually have reviews; defaults to the most recent one.
+  const selectedYear =
+    yearFilter && years.includes(Number(yearFilter)) ? Number(yearFilter) : (years[0] ?? null);
   const inFilter = (r: Review) =>
-    yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter);
+    selectedYear === null || new Date(r.scheduled_date).getFullYear() === selectedYear;
   const released = reviews.filter((r) => r.released_at && inFilter(r));
   // Everything that isn't a released outcome: the open review plus completed ones being finalised.
   const pendingHistory = reviews.filter((r) => !r.released_at && inFilter(r));
@@ -366,12 +369,14 @@ export default function MyReview() {
       {hasHistory && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm font-medium">Your review history</div>
-          <Select value={yearFilter} onValueChange={setYearFilter}>
+          <Select
+            value={selectedYear ? String(selectedYear) : ""}
+            onValueChange={setYearFilter}
+          >
             <SelectTrigger className="w-[140px] h-8 text-xs">
-              <SelectValue placeholder="All years" />
+              <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All years</SelectItem>
               {years.map((y) => (
                 <SelectItem key={y} value={String(y)}>
                   {y}
