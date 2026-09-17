@@ -39,7 +39,7 @@ const competencyAreas = [
   },
 ];
 
-const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
+const IntroScreen = ({ onBegin, onResume, lockedName, lockedEmail }: IntroScreenProps) => {
   const [name, setName] = useState("");
   const { roles } = useRoles();
   const [role, setRole] = useState<string>(DEFAULT_ROLE);
@@ -260,8 +260,8 @@ const IntroScreen = ({ onBegin, onResume }: IntroScreenProps) => {
 
           {/* CTA */}
           <Button
-            onClick={() => onBegin(name.trim(), role)}
-            disabled={!name.trim()}
+            onClick={() => onBegin((lockedName ?? name).trim(), role)}
+            disabled={!(lockedName ?? name).trim()}
             className="w-full h-12 text-base font-semibold gap-2"
             size="lg"
           >
