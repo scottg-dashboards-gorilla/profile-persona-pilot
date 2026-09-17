@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAssessment, clearSavedProgress, type SavedProgress } from "@/hooks/useAssessment";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +38,29 @@ const Index = () => {
 
   const [screen, setScreen] = useState<Screen>("intro");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [linkedName, setLinkedName] = useState<string | null>(null);
+  const [linkedEmail, setLinkedEmail] = useState<string | null>(null);
+
+  // Opened from a signed-in employee's review page: identify them automatically.
+  useEffect(() => {
+    if (!employeeUuidParam) return;
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: emp } = await supabase
+        .from("employees")
+        .select("first_name, last_name, email")
+        .eq("uuid", employeeUuidParam)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (emp) {
+        setLinkedName(`${emp.first_name} ${emp.last_name}`.trim());
+        setLinkedEmail(emp.email ?? user.email ?? null);
+      }
+    })();
+  }, [employeeUuidParam]);
 
   const handleBegin = useCallback((name: string, selectedRoleId: string) => {
     // Starting fresh discards this person's previous draft (others are kept).
