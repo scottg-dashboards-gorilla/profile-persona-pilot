@@ -287,8 +287,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
                 <div>
                   <div className="font-medium">Over budget — this can't be saved as it stands</div>
                   <p className="text-xs">
-                    Reduce the amount, or escalate to the next-level manager with a reason. Unspent merit
-                    cannot fund bonus, and vice versa.
+                    Reduce the amount, or escalate to the next-level manager with a reason.
                   </p>
                 </div>
               </div>
