@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ViewModeProvider } from "@/hooks/useViewMode";
+import { usePermissions } from "@/hooks/usePermissions";
 import { ViewModeBadge, ViewModeMenuSection } from "./ViewModeSwitcher";
 
 const pageTitles: Record<string, string> = {
@@ -31,6 +32,17 @@ const pageTitles: Record<string, string> = {
   "/org": "Org Rollups",
   "/admin/audit": "Audit Log",
 };
+
+function HeaderTitle() {
+  const { pathname } = useLocation();
+  const { viewMode } = usePermissions();
+  const title =
+    pageTitles[pathname] ??
+    Object.entries(pageTitles).find(([k]) => k !== "/" && pathname.startsWith(k))?.[1] ??
+    "Performance";
+  const label = pathname === "/people" && viewMode === "admin" ? "Assessments" : title;
+  return <>{label}</>;
+}
 
 export default function PerfLayout() {
   const { pathname } = useLocation();
@@ -60,10 +72,6 @@ export default function PerfLayout() {
     };
   }, [userId]);
 
-  const title =
-    pageTitles[pathname] ??
-    Object.entries(pageTitles).find(([k]) => k !== "/" && pathname.startsWith(k))?.[1] ??
-    "Performance";
 
   if (loading) {
     return (
@@ -92,7 +100,7 @@ export default function PerfLayout() {
           <div className="flex-1 flex flex-col min-w-0">
             <header className="sticky top-0 z-20 h-14 border-b border-border bg-background/80 backdrop-blur flex items-center gap-3 px-4">
               <SidebarTrigger />
-              <h1 className="text-base font-semibold tracking-tight">{title}</h1>
+              <h1 className="text-base font-semibold tracking-tight"><HeaderTitle /></h1>
               <div className="ml-auto flex items-center gap-3">
                 <ViewModeBadge />
                 <div className="relative hidden md:block">

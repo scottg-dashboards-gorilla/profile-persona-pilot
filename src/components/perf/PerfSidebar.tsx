@@ -13,7 +13,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { usePermissions, type PermissionArea } from "@/hooks/usePermissions";
-import { useViewMode } from "@/hooks/useViewMode";
 
 type Item = {
   title: string;
@@ -25,6 +24,8 @@ type Item = {
   adminOnly?: boolean;
   /** Only shown in the employee view. */
   employeeOnly?: boolean;
+  /** Hidden in the employee view (shown in manager/admin views). */
+  notInEmployeeView?: boolean;
 };
 
 const primary: Item[] = [
@@ -32,7 +33,7 @@ const primary: Item[] = [
   { title: "Objective setting", url: "/pdr", icon: Workflow, area: "pdr" },
   { title: "Pay review cycle", url: "/apr", icon: Wallet, area: "apr" },
   { title: "Reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
-  { title: "Team's Assessment", url: "/people", icon: Users, area: "reviews" },
+  { title: "Team's Assessment", url: "/people", icon: Users, area: "reviews", notInEmployeeView: true },
   { title: "Task Tracker", url: "/tasks", icon: ListTodo },
   { title: "My review", url: "/me", icon: UserSquare2, employeeOnly: true },
   { title: "Company performance", url: "/company", icon: Building2, area: "company" },
@@ -55,8 +56,7 @@ export function PerfSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
-  const { can, has, unconfigured, loading } = usePermissions();
-  const { mode } = useViewMode();
+  const { can, has, unconfigured, loading, viewMode: mode } = usePermissions();
   const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname.startsWith(url));
 
   const visible = (item: Item) => {
@@ -64,8 +64,12 @@ export function PerfSidebar() {
     if (item.adminOnly && !(has("admin") || has("hr"))) return false;
     if (item.area && !can(item.area)) return false;
     if (item.employeeOnly && (mode === "manager" || mode === "admin")) return false;
+    if (item.notInEmployeeView && mode === "employee") return false;
     return true;
   };
+
+  const labelFor = (item: Item) =>
+    item.url === "/people" && mode === "admin" ? "Assessments" : item.title;
 
   const primaryItems = primary.filter(visible);
   const secondaryItems = secondary.filter(visible);
@@ -95,10 +99,10 @@ export function PerfSidebar() {
             <SidebarMenu>
               {primaryItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={labelFor(item)}>
                     <NavLink to={item.url} end={item.url === "/"} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <span>{labelFor(item)}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -112,10 +116,10 @@ export function PerfSidebar() {
             <SidebarMenu>
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={labelFor(item)}>
                     <NavLink to={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <span>{labelFor(item)}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
