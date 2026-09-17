@@ -32,6 +32,17 @@ const pageTitles: Record<string, string> = {
   "/admin/audit": "Audit Log",
 };
 
+function HeaderTitle() {
+  const { pathname } = useLocation();
+  const { mode } = useViewMode();
+  const title =
+    pageTitles[pathname] ??
+    Object.entries(pageTitles).find(([k]) => k !== "/" && pathname.startsWith(k))?.[1] ??
+    "Performance";
+  const label = pathname === "/people" && mode === "admin" ? "Assessments" : title;
+  return <>{label}</>;
+}
+
 export default function PerfLayout() {
   const { pathname } = useLocation();
   const { session, loading, signOut } = useAuth();
