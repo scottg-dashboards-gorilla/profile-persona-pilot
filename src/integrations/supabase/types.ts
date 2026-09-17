@@ -818,7 +818,6 @@ export type Database = {
       }
       manager_budgets: {
         Row: {
-          bonus_budget_amount: number
           created_at: string
           equity_budget_amount: number
           fiscal_year: number
@@ -829,7 +828,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          bonus_budget_amount?: number
           created_at?: string
           equity_budget_amount?: number
           fiscal_year: number
@@ -840,7 +838,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          bonus_budget_amount?: number
           created_at?: string
           equity_budget_amount?: number
           fiscal_year?: number
@@ -1049,8 +1046,6 @@ export type Database = {
           aggregation_method: string
           apr_stage: string
           assessment_attempt_id: string | null
-          bonus_amount: number | null
-          bonus_eligible: boolean
           comp_adjustment_amount: number | null
           comp_adjustment_percent: number | null
           comp_approval_note: string | null
@@ -1133,8 +1128,6 @@ export type Database = {
           aggregation_method?: string
           apr_stage?: string
           assessment_attempt_id?: string | null
-          bonus_amount?: number | null
-          bonus_eligible?: boolean
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
           comp_approval_note?: string | null
@@ -1217,8 +1210,6 @@ export type Database = {
           aggregation_method?: string
           apr_stage?: string
           assessment_attempt_id?: string | null
-          bonus_amount?: number | null
-          bonus_eligible?: boolean
           comp_adjustment_amount?: number | null
           comp_adjustment_percent?: number | null
           comp_approval_note?: string | null
