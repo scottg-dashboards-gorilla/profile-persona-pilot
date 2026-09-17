@@ -623,3 +623,4 @@ function Rule({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
