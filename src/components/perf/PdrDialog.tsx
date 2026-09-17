@@ -221,6 +221,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] = useState<PdrCategory>("faster");
   const [editDescription, setEditDescription] = useState("");
+  const [newMeasure, setNewMeasure] = useState<GoalMeasureType>("percentage");
+  const [newStart, setNewStart] = useState("0");
+  const [newTarget, setNewTarget] = useState("");
+  const [newUnit, setNewUnit] = useState("");
+  const [editMeasure, setEditMeasure] = useState<GoalMeasureType>("percentage");
+  const [editStart, setEditStart] = useState("0");
+  const [editTarget, setEditTarget] = useState("");
+  const [editUnit, setEditUnit] = useState("");
+  /** Mid-year "where are you now" figure, keyed by objective id. */
+  const [midVal, setMidVal] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     if (!formId) return;
