@@ -26,6 +26,8 @@ import { useToast } from "@/hooks/use-toast";
 import { formatMoney } from "@/lib/compensation";
 import {
   IC_TARGET,
+  MERIT_AVERAGE_TARGET,
+  MERIT_RANGES,
   RATING_LENSES,
   RATING_SCALE,
   budgetGate,
@@ -135,7 +137,13 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
   const comp = Number(review.current_annual_comp ?? 0);
   const meritPct = meritPercent === "" ? 0 : Number(meritPercent);
-  const meritAmount = Math.round((comp * meritPct) / 100);
+  const scoreNum = Number(score);
+  const meritRange = (MERIT_RANGES as Record<number, { min: number; max: number }>)[scoreNum] ?? null;
+  const meritLocked = !!meritRange && meritRange.max === 0;
+  const effectiveMeritPct = meritLocked ? 0 : meritPct;
+  const meritAmount = Math.round((comp * effectiveMeritPct) / 100);
+  const meritOutOfRange =
+    !!meritRange && !meritLocked && meritPercent !== "" && (meritPct < meritRange.min || meritPct > meritRange.max);
 
   const gate = budgetGate({
     eligibleCount: teamPlanned.eligible,
@@ -150,10 +158,10 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       fiscal_year: fiscalYear,
       rating_score: Number(score),
       overall_rating: ratingBand(Number(score)),
-      merit_percent: meritPercent === "" ? null : meritPct,
-      merit_amount: meritPercent === "" ? null : meritAmount,
-      comp_adjustment_amount: meritPercent === "" ? null : meritAmount,
-      comp_adjustment_percent: meritPercent === "" ? null : meritPct,
+      merit_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
+      merit_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
+      comp_adjustment_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
+      comp_adjustment_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
       ic_score: ic === "" ? null : Number(ic),
       escalation_note: note || null,
     };
@@ -234,9 +242,33 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label>Merit %</Label>
-              <Input type="number" step="0.1" value={meritPercent} onChange={(e) => setMeritPercent(e.target.value)} placeholder="0" />
+              {meritLocked ? (
+                <div className="flex h-10 items-center rounded-md border bg-muted/50 px-3 text-sm font-medium">
+                  0% — no increase
+                </div>
+              ) : (
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={meritPercent}
+                  onChange={(e) => setMeritPercent(e.target.value)}
+                  placeholder="0"
+                  aria-invalid={meritOutOfRange}
+                />
+              )}
+              {meritRange && !meritLocked && (
+                <p className={`text-xs ${meritOutOfRange ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                  {meritOutOfRange
+                    ? `Rating ${scoreNum} allows ${meritRange.min}–${meritRange.max}%.`
+                    : `Range for rating ${scoreNum}: ${meritRange.min}–${meritRange.max}%.`}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
-                {meritPercent === "" ? "No merit entered" : `${formatMoney(meritAmount)} on ${formatMoney(comp)}`}
+                {meritLocked || meritPercent === ""
+                  ? meritLocked
+                    ? `${formatMoney(0)} on ${formatMoney(comp)}`
+                    : "No merit entered"
+                  : `${formatMoney(meritAmount)} on ${formatMoney(comp)}`}
               </p>
             </div>
             <div className="grid gap-2">
@@ -297,7 +329,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
               <ArrowUpRight className="h-4 w-4 mr-1" /> Escalate
             </Button>
           )}
-          <Button onClick={() => save(false)} disabled={saving || gate.blocked}>
+          <Button onClick={() => save(false)} disabled={saving || gate.blocked || meritOutOfRange}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
             Save entry
           </Button>
