@@ -255,7 +255,7 @@ export function RatingsGrid({ year }: { year: number }) {
       }
     }
     setSaving(false);
-    toast({ title: "Entries saved", description: `${computed.length} team member(s)` });
+    toast({ title: "Entries saved", description: `${changed.length} team member(s)` });
     await load();
   }
 
