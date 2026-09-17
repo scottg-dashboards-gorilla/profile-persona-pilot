@@ -383,6 +383,8 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setNewTarget("");
     setNewStart("0");
     setNewUnit("");
+    setNewStartDate("");
+    setNewEndDate("");
     await load();
   }
 
