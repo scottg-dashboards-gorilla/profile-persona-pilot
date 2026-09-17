@@ -9,3 +9,5 @@
 - [x] APR: managers see/manage only their reports' pay review cycles, not their own (anniversary panel + reviews list + team ratings grid)
 
 - [x] Admin option to add all employees to an objective setting (PDR) cycle
+
+- Manager view: Merit planned tile should show 5% of direct reports total salary; manager merit budgets set to 5%.
