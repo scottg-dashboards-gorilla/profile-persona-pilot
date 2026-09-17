@@ -100,24 +100,11 @@ export function RatingsGrid({ year }: { year: number }) {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
   const [dmBudget, setDmBudget] = useState(0);
-  const [equityBudget, setEquityBudget] = useState(0);
-  const [sharePrice, setSharePrice] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    const [{ data }, { data: budgets }] = await Promise.all([
-      supabase.from("performance_reviews").select(SELECT).eq("fiscal_year", year).order("employee_name"),
-      supabase.from("manager_budgets").select("*").eq("fiscal_year", year),
-    ]);
-    const list = (data ?? []) as unknown as GridRow[];
-    setRows(list);
+...
     const next: Record<string, Draft> = {};
     list.forEach((r) => (next[r.id] = toDraft(r)));
     setDrafts(next);
-    const priced = list.find((r) => (r.equity_price_per_share ?? 0) > 0);
-    setSharePrice(priced ? String(priced.equity_price_per_share) : "");
     const bs = (budgets ?? []) as unknown as ManagerBudget[];
     if (bs.length > 0) {
       setBudget({
@@ -126,11 +113,9 @@ export function RatingsGrid({ year }: { year: number }) {
         
       });
       setDmBudget(Math.round(bs.reduce((s, b) => s + (b.merit_budget_amount ?? 0), 0) * 0.25));
-      setEquityBudget(bs.reduce((s, b) => s + (b.equity_budget_amount ?? 0), 0));
     } else {
       setBudget(null);
       setDmBudget(0);
-      setEquityBudget(0);
     }
     setLoading(false);
   }, [year]);
