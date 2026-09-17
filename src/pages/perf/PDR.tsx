@@ -57,7 +57,7 @@ export default function PDR() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: f }, { data: emps }, { data: auth }] = await Promise.all([
+    const [{ data: f }, { data: emps }, { data: auth }, { data: allYears }] = await Promise.all([
       supabase.from("pdr_forms").select("*").eq("fiscal_year", year).order("employee_name"),
       supabase
         .from("employees")
@@ -65,7 +65,16 @@ export default function PDR() {
         .eq("terminated", false)
         .order("first_name"),
       supabase.auth.getUser(),
+      supabase.from("pdr_forms").select("fiscal_year"),
     ]);
+    // Keep every year that has objectives on file selectable, so history stays reachable.
+    setYears(() => {
+      const set = new Set<number>([thisYear + 1, thisYear, thisYear - 1]);
+      ((allYears ?? []) as { fiscal_year: number }[]).forEach((r) => {
+        if (r.fiscal_year) set.add(r.fiscal_year);
+      });
+      return [...set].sort((a, b) => b - a);
+    });
     // Who can this person start a PDR for? Admin/HR: anyone. Manager: their own
     // team (direct reports and one level below). Employee: nobody.
     const all = (emps ?? []) as Emp[];
