@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { ViewModeProvider, useViewMode } from "@/hooks/useViewMode";
+import { ViewModeProvider } from "@/hooks/useViewMode";
+import { usePermissions } from "@/hooks/usePermissions";
 import { ViewModeBadge, ViewModeMenuSection } from "./ViewModeSwitcher";
 
 const pageTitles: Record<string, string> = {
@@ -39,7 +40,7 @@ function HeaderTitle() {
     pageTitles[pathname] ??
     Object.entries(pageTitles).find(([k]) => k !== "/" && pathname.startsWith(k))?.[1] ??
     "Performance";
-  const label = pathname === "/people" && mode === "admin" ? "Assessments" : title;
+  const label = pathname === "/people" && viewMode === "admin" ? "Assessments" : title;
   return <>{label}</>;
 }
 

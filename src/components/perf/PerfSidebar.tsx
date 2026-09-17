@@ -56,8 +56,7 @@ export function PerfSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
-  const { can, has, unconfigured, loading } = usePermissions();
-  const { mode } = useViewMode();
+  const { can, has, unconfigured, loading, viewMode: mode } = usePermissions();
   const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname.startsWith(url));
 
   const visible = (item: Item) => {
