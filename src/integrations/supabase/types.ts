@@ -489,6 +489,7 @@ export type Database = {
       }
       daily_tasks: {
         Row: {
+          cadence: string
           completed_at: string | null
           created_at: string
           created_by: string | null
@@ -503,6 +504,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cadence?: string
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -517,6 +519,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cadence?: string
           completed_at?: string | null
           created_at?: string
           created_by?: string | null

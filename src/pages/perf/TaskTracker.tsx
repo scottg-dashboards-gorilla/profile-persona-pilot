@@ -33,6 +33,7 @@ type Task = {
   status: TaskStatus;
   priority: string;
   due_date: string | null;
+  cadence: string;
   sort_order: number;
   completed_at: string | null;
 };
@@ -54,6 +55,15 @@ const COLUMNS: { key: TaskStatus; label: string; hint: string }[] = [
   { key: "blocked", label: "Blocked", hint: "Waiting on someone or something" },
   { key: "done", label: "Done", hint: "Finished today" },
 ];
+
+const CADENCES: { value: string; label: string }[] = [
+  { value: "once", label: "One-off" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+];
+
+const cadenceLabel = (v: string) => CADENCES.find((c) => c.value === v)?.label ?? v;
 
 const priorityTone: Record<string, string> = {
   low: "bg-slate-100 text-slate-700 border-slate-200",
@@ -82,6 +92,7 @@ export default function TaskTracker() {
     detail: "",
     priority: "medium",
     due_date: format(new Date(), "yyyy-MM-dd"),
+    cadence: "once",
     status: "todo" as TaskStatus,
   });
 
@@ -158,6 +169,7 @@ export default function TaskTracker() {
       detail: "",
       priority: "medium",
       due_date: format(new Date(), "yyyy-MM-dd"),
+      cadence: "once",
       status,
     });
     setDialogOpen(true);
@@ -170,6 +182,7 @@ export default function TaskTracker() {
       detail: t.detail ?? "",
       priority: t.priority,
       due_date: t.due_date ?? "",
+      cadence: t.cadence ?? "once",
       status: t.status,
     });
     setDialogOpen(true);
@@ -183,6 +196,7 @@ export default function TaskTracker() {
       detail: form.detail.trim() || null,
       priority: form.priority,
       due_date: form.due_date || null,
+      cadence: form.cadence,
       status: form.status,
       completed_at: form.status === "done" ? new Date().toISOString() : null,
     };
@@ -231,7 +245,8 @@ export default function TaskTracker() {
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight">Task Tracker</h1>
           <p className="text-sm text-muted-foreground">
-            A daily kanban board — drag a card between columns as the day moves on.
+            Your own action board — add as many tasks as you like, one-off or repeating daily, weekly or
+            monthly, and drag a card between columns as work moves on.
           </p>
         </div>
         <div className="flex items-end gap-2">
@@ -346,6 +361,9 @@ export default function TaskTracker() {
                         <Badge variant="outline" className={priorityTone[t.priority]}>
                           {t.priority}
                         </Badge>
+                        {t.cadence && t.cadence !== "once" && (
+                          <Badge variant="outline">{cadenceLabel(t.cadence)}</Badge>
+                        )}
                         {t.due_date && (
                           <Badge
                             variant="outline"
@@ -378,7 +396,8 @@ export default function TaskTracker() {
           <DialogHeader>
             <DialogTitle>{editing ? "Edit task" : "New task"}</DialogTitle>
             <DialogDescription>
-              Short, daily tasks work best — one thing you can finish today.
+              Add anything you're working on — a one-off action, or something that repeats daily,
+              weekly or monthly.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -424,6 +443,18 @@ export default function TaskTracker() {
                 onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
               />
             </div>
+            <Select value={form.cadence} onValueChange={(v) => setForm((f) => ({ ...f, cadence: v }))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CADENCES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
