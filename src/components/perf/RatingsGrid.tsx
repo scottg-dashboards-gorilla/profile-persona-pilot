@@ -136,8 +136,6 @@ export function RatingsGrid({ year }: { year: number }) {
   const set = (id: string, patch: Partial<Draft>) =>
     setDrafts((d) => ({ ...d, [id]: { ...d[id], ...patch } }));
 
-  const price = sharePrice === "" ? null : Number(sharePrice);
-
   const computed = useMemo(() => {
     return rows.map((r) => {
       const d = drafts[r.id] ?? toDraft(r);
@@ -152,9 +150,6 @@ export function RatingsGrid({ year }: { year: number }) {
       const proration = focalPointMeritEligibility(r.hire_date, year);
       const prorated = meritAmount != null ? Math.round(meritAmount * proration.prorationFactor) : null;
       const dmAmount = dmPct != null && d.dmEligible ? amountFromPercent(comp, dmPct) : null;
-      const eqRange = equityRange(score);
-      const eqPct = d.eq === "" || !d.eqEligible ? null : Number(d.eq);
-      const award = equityAward({ salary: comp, percent: eqPct, pricePerShare: price });
       return {
         row: r,
         draft: d,
@@ -168,17 +163,12 @@ export function RatingsGrid({ year }: { year: number }) {
         prorated,
         proration,
         dmAmount,
-        eqRange,
-        eqPct,
-        eqValue: award.value,
-        eqShares: award.shares,
         meritOk: withinRange(meritPct, mRange),
         icOk: withinRange(ic, iRange),
         dmOk: dmPct == null ? null : dmPct >= DM_RANGE.min && dmPct <= DM_RANGE.max,
-        eqOk: withinRange(eqPct, eqRange),
       };
     });
-  }, [rows, drafts, year, price]);
+  }, [rows, drafts, year]);
 
   const spend = useMemo(() => {
     const merit = computed.reduce((s, c) => s + (c.prorated ?? 0), 0);
