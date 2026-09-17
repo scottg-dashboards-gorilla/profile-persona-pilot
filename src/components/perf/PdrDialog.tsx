@@ -637,6 +637,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                       placeholder="How will it be measured?"
                     />
                   </div>
+                  <GoalTargetFields
+                    measure={newMeasure}
+                    start={newStart}
+                    target={newTarget}
+                    unit={newUnit}
+                    onMeasure={setNewMeasure}
+                    onStart={setNewStart}
+                    onTarget={setNewTarget}
+                    onUnit={setNewUnit}
+                  />
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground rounded-md border border-dashed p-3">
