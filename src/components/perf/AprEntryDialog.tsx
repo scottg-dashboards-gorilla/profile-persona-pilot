@@ -72,7 +72,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   const [note, setNote] = useState("");
   const [pdrScore, setPdrScore] = useState<number | null>(null);
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
-  const [teamPlanned, setTeamPlanned] = useState({ merit: 0, bonus: 0, eligible: 0 });
+  const [teamPlanned, setTeamPlanned] = useState({ merit: 0, eligible: 0 });
   const [blockedMsg, setBlockedMsg] = useState<string | null>(null);
 
   useEffect(() => {
