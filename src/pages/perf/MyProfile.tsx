@@ -139,18 +139,46 @@ export default function MyProfile() {
               </div>
             </div>
           ))}
-          {reports > 0 && (
-            <div className="flex items-start gap-3">
-              <Users className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Line manager / Supervisor</CardTitle>
+          <CardDescription>The person you report to</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {manager ? (
+            <>
               <div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Direct reports
-                </div>
                 <div className="text-sm font-medium">
-                  {reports} {reports === 1 ? "person" : "people"}
+                  {manager.first_name} {manager.last_name}
+                </div>
+                <div className="text-xs text-muted-foreground">{manager.title ?? "—"}</div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Mail className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Work email
+                  </div>
+                  <div className="text-sm font-medium">{manager.email ?? "—"}</div>
                 </div>
               </div>
-            </div>
+              <div className="flex items-start gap-3">
+                <Building2 className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Department
+                  </div>
+                  <div className="text-sm font-medium">{manager.department ?? "—"}</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No line manager is set on your record yet — HR can add one.
+            </p>
           )}
         </CardContent>
       </Card>
