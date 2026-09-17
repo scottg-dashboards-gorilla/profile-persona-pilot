@@ -454,7 +454,8 @@ export default function Playbook() {
       )}
 
       {!forEmployee && (
-  <div className="grid gap-4 sm:grid-cols-2">
+        <>
+        <div className="grid gap-4 sm:grid-cols-2">
           {PMP_ROLES.map((r) => (
             <Card key={r.id}>
               <CardHeader className="pb-2">
