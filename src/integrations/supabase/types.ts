@@ -822,7 +822,6 @@ export type Database = {
       manager_budgets: {
         Row: {
           created_at: string
-          equity_budget_amount: number
           fiscal_year: number
           id: string
           manager_uuid: string
@@ -832,7 +831,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          equity_budget_amount?: number
           fiscal_year: number
           id?: string
           manager_uuid: string
@@ -842,7 +840,6 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          equity_budget_amount?: number
           fiscal_year?: number
           id?: string
           manager_uuid?: string
@@ -1074,11 +1071,6 @@ export type Database = {
           employee_email: string | null
           employee_name: string
           employee_uuid: string
-          equity_eligible: boolean
-          equity_percent: number | null
-          equity_price_per_share: number | null
-          equity_shares: number | null
-          equity_value: number | null
           escalated_to_uuid: string | null
           escalation_decided_at: string | null
           escalation_note: string | null
@@ -1156,11 +1148,6 @@ export type Database = {
           employee_email?: string | null
           employee_name: string
           employee_uuid: string
-          equity_eligible?: boolean
-          equity_percent?: number | null
-          equity_price_per_share?: number | null
-          equity_shares?: number | null
-          equity_value?: number | null
           escalated_to_uuid?: string | null
           escalation_decided_at?: string | null
           escalation_note?: string | null
@@ -1238,11 +1225,6 @@ export type Database = {
           employee_email?: string | null
           employee_name?: string
           employee_uuid?: string
-          equity_eligible?: boolean
-          equity_percent?: number | null
-          equity_price_per_share?: number | null
-          equity_shares?: number | null
-          equity_value?: number | null
           escalated_to_uuid?: string | null
           escalation_decided_at?: string | null
           escalation_note?: string | null

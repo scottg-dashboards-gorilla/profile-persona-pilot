@@ -109,7 +109,18 @@ export function RatingsGrid({ year }: { year: number }) {
       supabase.from("performance_reviews").select(SELECT).eq("fiscal_year", year).order("employee_name"),
       supabase.from("manager_budgets").select("*").eq("fiscal_year", year),
     ]);
-    const list = (data ?? []) as unknown as GridRow[];
+    let list = (data ?? []) as unknown as GridRow[];
+    // This grid is for the team — the signed-in person's own review never appears.
+    const { data: authData } = await supabase.auth.getUser();
+    const uid = authData.user?.id;
+    if (uid) {
+      const { data: me } = await supabase
+        .from("employees")
+        .select("uuid")
+        .eq("user_id", uid)
+        .maybeSingle();
+      if (me?.uuid) list = list.filter((r) => r.employee_uuid !== me.uuid);
+    }
     setRows(list);
     const next: Record<string, Draft> = {};
     list.forEach((r) => (next[r.id] = toDraft(r)));
