@@ -756,9 +756,35 @@ export default function MyReview() {
                       <span className="w-9 text-right text-xs font-medium">
                         {Math.round(Number(score) || 0)}%
                       </span>
+                      {prevAttempt?.technical_scores?.[name] != null &&
+                        (() => {
+                          const then = Number(prevAttempt.technical_scores[name]) || 0;
+                          const now = Number(score) || 0;
+                          const d = Math.round(now - then);
+                          return (
+                            <span
+                              className={
+                                "w-16 text-right text-[11px] " +
+                                (d > 3
+                                  ? "text-emerald-600"
+                                  : d < -3
+                                    ? "text-destructive"
+                                    : "text-muted-foreground")
+                              }
+                            >
+                              {d > 3 ? `+${d} up` : d < -3 ? `${d} down` : "same"}
+                            </span>
+                          );
+                        })()}
                     </div>
                   ))}
                 </div>
+              )}
+              {prevAttempt?.submitted_at && (
+                <p className="text-xs text-muted-foreground">
+                  Compared with your assessment on{" "}
+                  {format(parseISO(prevAttempt.submitted_at), "MMM d, yyyy")}.
+                </p>
               )}
             </div>
           ) : (
