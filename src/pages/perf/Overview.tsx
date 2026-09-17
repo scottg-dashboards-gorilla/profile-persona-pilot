@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { AttemptRow } from "@/lib/assessmentDeltas";
 import { Link } from "react-router-dom";
+import { BudgetApproval } from "@/components/perf/BudgetApproval";
 import {
   Bar,
   CartesianGrid,
@@ -409,6 +410,8 @@ export default function Overview() {
         </p>
       </div>
 
+
+      <BudgetApproval year={new Date().getFullYear()} />
 
       {/* Needs your attention */}
       <Card>
