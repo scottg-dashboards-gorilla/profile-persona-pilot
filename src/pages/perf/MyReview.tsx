@@ -13,6 +13,13 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatCompDelta } from "@/data/mockEmployees";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -110,8 +117,17 @@ export default function MyReview() {
   const [concernFor, setConcernFor] = useState<string | null>(null);
   const [concernNote, setConcernNote] = useState("");
 
+  const [yearFilter, setYearFilter] = useState<string>("all");
+
   const active = reviews.find((r) => r.status !== "completed") ?? null;
-  const released = reviews.filter((r) => r.released_at);
+  const years = Array.from(
+    new Set(reviews.map((r) => new Date(r.scheduled_date).getFullYear())),
+  ).sort((a, b) => b - a);
+  const released = reviews
+    .filter((r) => r.released_at)
+    .filter(
+      (r) => yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter),
+    );
 
   const load = useCallback(async () => {
     setLoading(true);
