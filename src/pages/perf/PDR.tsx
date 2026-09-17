@@ -45,6 +45,7 @@ export default function PDR() {
   const canManage = isAdminHr || isManager;
 
   const [year, setYear] = useState(thisYear);
+  const [years, setYears] = useState<number[]>([thisYear + 1, thisYear, thisYear - 1]);
   const [forms, setForms] = useState<PdrForm[]>([]);
   const [objectives, setObjectives] = useState<Record<string, PdrObjective[]>>({});
   const [employees, setEmployees] = useState<Emp[]>([]);
