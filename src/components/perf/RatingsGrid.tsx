@@ -248,7 +248,7 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score, merit, Differentiated Merit and the share award.
+              Enter the rating, then the I/C score, merit and Differentiated Merit.
               Values outside a range, or spend above budget, cannot be saved.
             </CardDescription>
           </div>
@@ -282,7 +282,6 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead colSpan={4} className="text-center bg-muted">I/C SCORE</TableHead>
                     <TableHead colSpan={5} className="text-center bg-muted/60">MERIT</TableHead>
                     <TableHead colSpan={3} className="text-center bg-muted">DIFFERENTIATED MERIT</TableHead>
-                    <TableHead colSpan={4} className="text-center bg-muted/60">SHARE AWARD</TableHead>
                   </TableRow>
                   <TableRow>
                     <TableHead className="text-right">Min</TableHead>
