@@ -557,10 +557,10 @@ export const TEAM_SCORE_METRICS: { id: string; label: string; weight: number }[]
   { id: "cash_flow", label: "Cash Flow", weight: 10 },
 ];
 
-export const BONUS_PRINCIPLES = {
-  teamScore: "The Team Score is based on four key metrics — Net Revenue, NOPBT, Relative Competitive Performance and Cash Flow — and can range from 0–200% of the bonus target.",
+export const TEAM_SCORE_PRINCIPLES = {
+  teamScore: "The Team Score is based on four key metrics — Net Revenue, NOPBT, Relative Competitive Performance and Cash Flow — and can range from 0–200% of target.",
   qualitative: "A qualitative review can adjust the 100% team score by +/- 15 points.",
-  icScore: "The Individual Contribution (I/C) Score is based on individual performance and can range from 0–150% of the bonus target.",
+  icScore: "The Individual Contribution (I/C) Score is based on individual performance and can range from 0–150%.",
   teamScoreMin: 0,
   teamScoreMax: 200,
   icMin: 0,
@@ -568,14 +568,14 @@ export const BONUS_PRINCIPLES = {
   qualitativeSwing: 15,
 };
 
-/** I/C score rules — the lever managers use to differentiate bonus payouts. */
+/** I/C score rules — how managers recognise individual contribution. */
 export const IC_PRINCIPLES = {
-  what: "The I/C score allows managers to differentiate bonus payouts for bonus eligible employees.",
-  eligibility: "Bonus eligible associates as per local policy.",
+  what: "The I/C score allows managers to recognise individual contribution across their team.",
+  eligibility: "All associates as per local policy.",
   watchOuts: [
-    "The I/C Score is a multiplier of the overall team score, impacting the payout for each employee — allowing greater differentiation based on individual performance as per our strong pay-for-performance culture.",
+    "The I/C Score reflects individual performance against the overall team score — allowing greater differentiation as per our strong pay-for-performance culture.",
     "Managers cannot exceed the maximum of the I/C Score range.",
-    "For managers with teams of more than 5 bonus eligible associates, entries cannot be saved if the I/C Score average for the team is above budget.",
+    "For managers with teams of more than 5 associates, entries cannot be saved if the I/C Score average for the team is above budget.",
     `I/C Score average target is ${IC_TARGET}.`,
   ],
 };
