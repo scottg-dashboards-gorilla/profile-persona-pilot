@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Search, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type EmpRow = {
   uuid: string;
@@ -14,6 +15,8 @@ type EmpRow = {
   email: string | null;
   title: string | null;
   department: string | null;
+  manager_uuid: string | null;
+  user_id: string | null;
 };
 
 export default function People() {
