@@ -205,7 +205,7 @@ export default function PDR() {
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
             <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {[thisYear + 1, thisYear, thisYear - 1, thisYear - 2].map((y) => (
+              {years.map((y) => (
                 <SelectItem key={y} value={String(y)}>FY{y}</SelectItem>
               ))}
             </SelectContent>
