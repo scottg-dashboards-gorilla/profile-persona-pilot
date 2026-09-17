@@ -60,10 +60,6 @@ export default function PerfLayout() {
     };
   }, [userId]);
 
-  const title =
-    pageTitles[pathname] ??
-    Object.entries(pageTitles).find(([k]) => k !== "/" && pathname.startsWith(k))?.[1] ??
-    "Performance";
 
   if (loading) {
     return (
