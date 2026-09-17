@@ -1644,6 +1644,11 @@ export type Database = {
           employee_uuid: string
           growth: string | null
           id: string
+          manager_replied_at: string | null
+          manager_reply_challenges: string | null
+          manager_reply_growth: string | null
+          manager_reply_support: string | null
+          manager_reply_wins: string | null
           review_id: string
           submitted_at: string | null
           support_needed: string | null
@@ -1656,6 +1661,11 @@ export type Database = {
           employee_uuid: string
           growth?: string | null
           id?: string
+          manager_replied_at?: string | null
+          manager_reply_challenges?: string | null
+          manager_reply_growth?: string | null
+          manager_reply_support?: string | null
+          manager_reply_wins?: string | null
           review_id: string
           submitted_at?: string | null
           support_needed?: string | null
@@ -1668,6 +1678,11 @@ export type Database = {
           employee_uuid?: string
           growth?: string | null
           id?: string
+          manager_replied_at?: string | null
+          manager_reply_challenges?: string | null
+          manager_reply_growth?: string | null
+          manager_reply_support?: string | null
+          manager_reply_wins?: string | null
           review_id?: string
           submitted_at?: string | null
           support_needed?: string | null

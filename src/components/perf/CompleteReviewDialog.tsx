@@ -102,8 +102,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [rating, setRating] = useState<string>("meets");
   const [scoreOverride, setScoreOverride] = useState<number | null>(null);
   const [autoSuggest, setAutoSuggest] = useState(true);
-  const [compAmount, setCompAmount] = useState<string>("");
-  const [effectiveDate, setEffectiveDate] = useState<string>(today());
   const [promotion, setPromotion] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [notes, setNotes] = useState("");
@@ -115,8 +113,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
     setScoreOverride(review.rating_score ?? null);
     setMethod(((review.aggregation_method as AggregationMethod) ?? "mean"));
     setAutoSuggest(!review.overall_rating);
-    setCompAmount(review.comp_adjustment_amount?.toString() ?? "");
-    setEffectiveDate(review.comp_effective_date ?? today());
     setPromotion(review.promotion ?? false);
     setNewTitle(review.new_title ?? "");
     setNotes(review.notes ?? "");
@@ -171,10 +167,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
 
   const wasShared = !!review.released_at;
 
-  const baseComp = Number(review.current_annual_comp ?? 0);
-  const amountNum = compAmount === "" ? null : Number(compAmount);
-  const pct = amountNum != null && baseComp > 0 ? (amountNum / baseComp) * 100 : null;
-
   async function handleSave() {
     if (!currentAttempt) {
       toast({
@@ -204,9 +196,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         completed_date: today(),
         overall_rating: ratingBand(scoreValue) ?? effectiveRating,
         rating_score: scoreValue,
-        comp_adjustment_amount: amountNum,
-        comp_adjustment_percent: pct != null ? Number(pct.toFixed(2)) : null,
-        comp_effective_date: amountNum != null ? effectiveDate : null,
         promotion,
         new_title: promotion ? newTitle || null : null,
         notes: notes || null,
@@ -243,12 +232,13 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
         <DialogHeader>
           <DialogTitle>Complete review · {review.employee_name}</DialogTitle>
           <DialogDescription>
-            Record the outcome. This marks the review complete and stores comp and promotion details.
+            Comment on what the employee shared, set the rating, and mark the review complete.
+            Pay is handled separately in the Pay review cycle.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
-          <SelfAssessmentPanel reviewId={review.id} />
+          <SelfAssessmentPanel reviewId={review.id} canReply />
           <AssessmentDelta
 
             current={currentAttempt}
@@ -341,34 +331,6 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
                 {autoSuggest ? "Pick a rating to override." : "Manager override active."}
               </p>
             )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2">
-              <Label>Comp adjustment ($/year)</Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                value={compAmount}
-                onChange={(e) => setCompAmount(e.target.value)}
-                placeholder="0"
-              />
-              {pct != null && (
-                <p className="text-xs text-muted-foreground">
-                  {pct >= 0 ? "+" : ""}
-                  {pct.toFixed(2)}% of current {baseComp ? `$${baseComp.toLocaleString()}` : "comp"}
-                </p>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <Label>Effective date</Label>
-              <Input
-                type="date"
-                value={effectiveDate}
-                onChange={(e) => setEffectiveDate(e.target.value)}
-                disabled={amountNum == null}
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-2">
