@@ -65,7 +65,7 @@ const statusTone: Record<string, string> = {
   archived: "bg-slate-100 text-slate-500 border-slate-200",
 };
 
-const iso = (d: Date) => d.toISOString().slice(0, 10);
+
 
 export default function Cycles() {
   const { toast } = useToast();
@@ -420,7 +420,7 @@ export default function Cycles() {
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. FY26 Annual Reviews"
+                placeholder={`e.g. ${year} Annual Cycle`}
               />
             </div>
             <div>
