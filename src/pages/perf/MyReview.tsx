@@ -120,6 +120,35 @@ export default function MyReview() {
   const [yearFilter, setYearFilter] = useState<string | null>(null);
 
   const active = reviews.find((r) => r.status !== "completed") ?? null;
+
+  // Things the employee still needs to do, shown as a banner at the top.
+  type Todo = { id: string; title: string; detail: string };
+  const todos: Todo[] = [];
+  if (active && !assessment?.submitted_at) {
+    todos.push({
+      id: "self",
+      title: "Finish your self-assessment",
+      detail: `Your ${active.review_cycle} is open — share your wins, challenges and where you need support below.`,
+    });
+  }
+  const ackDue = reviews.filter((r) => r.released_at && !r.employee_ack_at);
+  for (const r of ackDue) {
+    todos.push({
+      id: `ack-${r.id}`,
+      title: "Confirm you've received your outcome",
+      detail: `Your ${r.review_cycle} outcome was shared with you — confirm receipt below.`,
+    });
+  }
+  if (!attempt) {
+    todos.push({
+      id: "assessment",
+      title: "Take your assessment",
+      detail: "Your assessment result feeds into your review — open it below and complete it before your review.",
+    });
+  }
+  const concernOpen = reviews.find(
+    (r) => r.pay_pushback_status === "manager" || r.pay_pushback_status === "hr",
+  );
   const years = Array.from(
     new Set(reviews.map((r) => new Date(r.scheduled_date).getFullYear())),
   ).sort((a, b) => b - a);
