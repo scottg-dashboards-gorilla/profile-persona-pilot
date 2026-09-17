@@ -88,8 +88,8 @@ function toDraft(r: GridRow): Draft {
  */
 export function RatingsGrid({ year }: { year: number }) {
   const { toast } = useToast();
-  const { has, unconfigured } = usePermissions();
-  const isAdminHr = unconfigured || has("admin") || has("hr");
+  const { has, unconfigured, viewMode } = usePermissions();
+  const isAdminHr = (unconfigured && viewMode === "admin") || has("admin") || has("hr");
   const [rows, setRows] = useState<GridRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
