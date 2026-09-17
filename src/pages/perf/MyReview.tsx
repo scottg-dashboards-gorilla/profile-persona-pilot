@@ -118,16 +118,20 @@ export default function MyReview() {
   const [concernNote, setConcernNote] = useState("");
 
   const [yearFilter, setYearFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   const active = reviews.find((r) => r.status !== "completed") ?? null;
   const years = Array.from(
     new Set(reviews.map((r) => new Date(r.scheduled_date).getFullYear())),
   ).sort((a, b) => b - a);
-  const released = reviews
-    .filter((r) => r.released_at)
-    .filter(
-      (r) => yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter),
-    );
+  const typeOptions = Array.from(new Set(reviews.map((r) => r.review_cycle))).sort();
+  const inFilter = (r: Review) =>
+    (yearFilter === "all" || new Date(r.scheduled_date).getFullYear() === Number(yearFilter)) &&
+    (typeFilter === "all" || r.review_cycle === typeFilter);
+  const released = reviews.filter((r) => r.released_at && inFilter(r));
+  // Past reviews that aren't released yet (being finalised, or still open from earlier periods).
+  const pendingHistory = reviews.filter((r) => !r.released_at && r.id !== active?.id && inFilter(r));
+  const hasHistory = reviews.some((r) => r.id !== active?.id);
 
   const load = useCallback(async () => {
     setLoading(true);
