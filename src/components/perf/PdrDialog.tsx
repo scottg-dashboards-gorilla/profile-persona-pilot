@@ -347,6 +347,14 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       });
       return;
     }
+    if (!newEndDate) {
+      toast({
+        title: "Date needed",
+        description: "Set the date this goal should be finished or reviewed by.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy("add");
     const { error } = await supabase.from("pdr_objectives").insert({
       form_id: form.id,
@@ -358,6 +366,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       start_value: isMilestone ? 0 : Number(newStart || 0),
       target_value: isMilestone ? 100 : Number(newTarget),
       unit: newMeasure === "number" && newUnit.trim() ? newUnit.trim() : null,
+      goal_kind: newKind,
+      start_date: newStartDate || null,
+      end_date: newEndDate,
+      // A goal set by the manager is theirs, and counts as aligned straight away.
+      cascaded_from_manager: canManage,
+      manager_validated: canManage,
     });
     setBusy(null);
     if (error) {
