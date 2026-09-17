@@ -68,7 +68,7 @@ const Index = () => {
     clearSavedProgress(effectiveName);
     const cfg = roles.find((r) => r.id === selectedRoleId);
     setRole(selectedRoleId, cfg?.dimensions);
-    setEmployeeName(name);
+    setEmployeeName(effectiveName);
     setStartTime(Date.now());
     setScreen("questions");
   }, [setEmployeeName, setStartTime, setRole, roles]);
