@@ -546,6 +546,7 @@ export default function Playbook() {
             </p>
           </CardContent>
         </Card>
+        )}
       </div>
 
       <Card>
