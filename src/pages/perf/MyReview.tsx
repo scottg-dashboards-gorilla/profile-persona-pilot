@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
+import { GoalsPanel, GoalsSummaryLine } from "@/components/perf/GoalsPanel";
+import { goalsSummary, type PdrObjective } from "@/lib/pmp";
 import {
   Select,
   SelectContent,
@@ -106,6 +108,8 @@ export default function MyReview() {
   const [krs, setKrs] = useState<Kr[]>([]);
   const [saving, setSaving] = useState(false);
   const [pdrScores, setPdrScores] = useState<PdrScore[]>([]);
+  const [myGoals, setMyGoals] = useState<PdrObjective[]>([]);
+  const [goalYear, setGoalYear] = useState<number | null>(null);
   const { roles } = usePermissions();
   const canScore = roles.includes("admin") || roles.includes("hr");
 
@@ -221,7 +225,23 @@ export default function MyReview() {
       .select("id, fiscal_year, year_end_score, score_recorded_at, comments_finalized_at, stage")
       .eq("employee_uuid", (emp as Employee).uuid)
       .order("fiscal_year", { ascending: false });
-    setPdrScores((pdrRows ?? []) as PdrScore[]);
+    const pdrList = (pdrRows ?? []) as PdrScore[];
+    setPdrScores(pdrList);
+    // The goals from this person's most recent objective setting, with their
+    // manager's comments, so everything sits on one page.
+    const latestForm = pdrList[0] ?? null;
+    if (latestForm) {
+      const { data: objs } = await supabase
+        .from("pdr_objectives")
+        .select("*")
+        .eq("form_id", latestForm.id)
+        .order("sort_order");
+      setMyGoals((objs ?? []) as PdrObjective[]);
+      setGoalYear(latestForm.fiscal_year);
+    } else {
+      setMyGoals([]);
+      setGoalYear(null);
+    }
 
     const open = reviewList.find((r) => r.status !== "completed");
     if (open) {
@@ -660,6 +680,34 @@ export default function MyReview() {
           </CardContent>
         </Card>
       ))}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" /> Your goals
+            {goalYear && <Badge variant="outline" className="text-[10px]">FY{goalYear}</Badge>}
+          </CardTitle>
+          <CardDescription>
+            The projects, KPIs and targets you and your manager signed off, with their comments and how
+            far each one has come.{" "}
+            {goalsSummary(myGoals).average != null && (
+              <span className="font-medium text-foreground">
+                Average progress {goalsSummary(myGoals).average}%.
+              </span>
+            )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <GoalsSummaryLine objectives={myGoals} />
+          <GoalsPanel
+            objectives={myGoals}
+            emptyText="No goals set yet — open Objective setting to draft them with your manager."
+          />
+          <Button asChild size="sm" variant="outline">
+            <Link to="/pdr">Open objective setting</Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {pdrScores.length > 0 && (
         <Card>

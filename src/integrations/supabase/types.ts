@@ -989,7 +989,9 @@ export type Database = {
           created_at: string
           current_value: number | null
           description: string | null
+          end_date: string | null
           form_id: string
+          goal_kind: string
           id: string
           manager_comment: string | null
           manager_validated: boolean
@@ -999,6 +1001,7 @@ export type Database = {
           progress_percent: number
           setting_manager_comment: string | null
           sort_order: number
+          start_date: string | null
           start_value: number
           status: string
           target_value: number | null
@@ -1013,7 +1016,9 @@ export type Database = {
           created_at?: string
           current_value?: number | null
           description?: string | null
+          end_date?: string | null
           form_id: string
+          goal_kind?: string
           id?: string
           manager_comment?: string | null
           manager_validated?: boolean
@@ -1023,6 +1028,7 @@ export type Database = {
           progress_percent?: number
           setting_manager_comment?: string | null
           sort_order?: number
+          start_date?: string | null
           start_value?: number
           status?: string
           target_value?: number | null
@@ -1037,7 +1043,9 @@ export type Database = {
           created_at?: string
           current_value?: number | null
           description?: string | null
+          end_date?: string | null
           form_id?: string
+          goal_kind?: string
           id?: string
           manager_comment?: string | null
           manager_validated?: boolean
@@ -1047,6 +1055,7 @@ export type Database = {
           progress_percent?: number
           setting_manager_comment?: string | null
           sort_order?: number
+          start_date?: string | null
           start_value?: number
           status?: string
           target_value?: number | null

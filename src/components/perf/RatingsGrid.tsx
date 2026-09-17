@@ -42,7 +42,9 @@ import {
   meritRange,
   ratingBand,
   withinRange,
+  goalsSummary,
   type ManagerBudget,
+  type PdrObjective,
 } from "@/lib/pmp";
 import { cn } from "@/lib/utils";
 
@@ -96,6 +98,8 @@ export function RatingsGrid({ year }: { year: number }) {
   const [pendingBudget, setPendingBudget] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  /** Goals for each person shown, keyed by employee uuid. */
+  const [goalsByEmp, setGoalsByEmp] = useState<Record<string, PdrObjective[]>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -138,6 +142,33 @@ export function RatingsGrid({ year }: { year: number }) {
     const next: Record<string, Draft> = {};
     list.forEach((r) => (next[r.id] = toDraft(r)));
     setDrafts(next);
+    // Goal progress for the same people, so merit can be weighed against what they
+    // actually signed up to deliver.
+    if (list.length > 0) {
+      const { data: forms } = await supabase
+        .from("pdr_forms")
+        .select("id, employee_uuid")
+        .eq("fiscal_year", year)
+        .in("employee_uuid", list.map((r) => r.employee_uuid));
+      const formRows = (forms ?? []) as { id: string; employee_uuid: string }[];
+      if (formRows.length > 0) {
+        const { data: objs } = await supabase
+          .from("pdr_objectives")
+          .select("*")
+          .in("form_id", formRows.map((f) => f.id));
+        const byForm = new Map(formRows.map((f) => [f.id, f.employee_uuid]));
+        const grouped: Record<string, PdrObjective[]> = {};
+        ((objs ?? []) as PdrObjective[]).forEach((o) => {
+          const emp = byForm.get(o.form_id);
+          if (emp) (grouped[emp] ??= []).push(o);
+        });
+        setGoalsByEmp(grouped);
+      } else {
+        setGoalsByEmp({});
+      }
+    } else {
+      setGoalsByEmp({});
+    }
     // Only the budget that belongs to this team counts: a manager sees their own
     // approved pot, HR and admins see the approved pots added together.
     const bs = ((budgets ?? []) as unknown as ManagerBudget[]).filter((b) =>
@@ -312,6 +343,7 @@ export function RatingsGrid({ year }: { year: number }) {
                 <TableHeader>
                   <TableRow>
                     <TableHead rowSpan={2} className="align-bottom">Employee</TableHead>
+                    <TableHead rowSpan={2} className="align-bottom w-[140px]">Goal progress</TableHead>
                     <TableHead rowSpan={2} className="align-bottom w-[150px] bg-primary/10">
                       Performance Rating
                     </TableHead>
@@ -340,6 +372,39 @@ export function RatingsGrid({ year }: { year: number }) {
                         <div className="text-[11px] text-muted-foreground">
                           {c.row.title ?? c.row.department ?? "—"}
                         </div>
+                      </TableCell>
+                      <TableCell className="align-middle">
+                        {(() => {
+                          const objs = goalsByEmp[c.row.employee_uuid] ?? [];
+                          const s = goalsSummary(objs);
+                          if (s.total === 0) {
+                            return <span className="text-[11px] text-muted-foreground">No goals set</span>;
+                          }
+                          return (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="cursor-help">
+                                  <div className="font-medium">
+                                    {s.average == null ? "—" : `${s.average}%`}
+                                  </div>
+                                  <div className="text-[11px] text-muted-foreground">
+                                    {s.achieved}/{s.total} achieved
+                                  </div>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs space-y-1">
+                                {objs.map((o) => (
+                                  <div key={o.id} className="text-[11px]">
+                                    {o.title} —{" "}
+                                    {goalsSummary([o]).average == null
+                                      ? "no progress recorded"
+                                      : `${goalsSummary([o]).average}%`}
+                                  </div>
+                                ))}
+                              </TooltipContent>
+                            </Tooltip>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="bg-primary/5">
                         <Select

@@ -20,9 +20,13 @@ import { format, parseISO } from "date-fns";
 import {
   PDR_CATEGORIES,
   GOAL_MEASURE_TYPES,
+  GOAL_KINDS,
   c1Passed,
   formatGoalValue,
   goalAchievementPercent,
+  goalKindLabel,
+  goalWindowStatus,
+  type GoalKind,
   type GoalMeasureType,
   type PdrCategory,
   type PdrForm,
@@ -37,29 +41,80 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-/** Target type, starting point and target value for a measurable goal. */
+/** Goal kind, dates, target type, starting point and target value for a measurable goal. */
 function GoalTargetFields({
+  kind,
+  startDate,
+  endDate,
   measure,
   start,
   target,
   unit,
+  onKind,
+  onStartDate,
+  onEndDate,
   onMeasure,
   onStart,
   onTarget,
   onUnit,
 }: {
+  kind: GoalKind;
+  startDate: string;
+  endDate: string;
   measure: GoalMeasureType;
   start: string;
   target: string;
   unit: string;
+  onKind: (v: GoalKind) => void;
+  onStartDate: (v: string) => void;
+  onEndDate: (v: string) => void;
   onMeasure: (v: GoalMeasureType) => void;
   onStart: (v: string) => void;
   onTarget: (v: string) => void;
   onUnit: (v: string) => void;
 }) {
   const chosen = GOAL_MEASURE_TYPES.find((m) => m.id === measure);
+  const chosenKind = GOAL_KINDS.find((k) => k.id === kind);
   return (
     <div className="grid gap-2 rounded-md bg-muted/40 p-2">
+      <div className="flex items-end gap-2 flex-wrap">
+        <div className="grid gap-1">
+          <Label className="text-[10px] uppercase text-muted-foreground">Type of goal *</Label>
+          <Select value={kind} onValueChange={(v) => onKind(v as GoalKind)}>
+            <SelectTrigger className="h-9 w-[170px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {GOAL_KINDS.map((k) => (
+                <SelectItem key={k.id} value={k.id}>
+                  {k.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid gap-1">
+          <Label className="text-[10px] uppercase text-muted-foreground">Start date</Label>
+          <Input
+            className="w-[145px]"
+            type="date"
+            value={startDate}
+            onChange={(e) => onStartDate(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-1">
+          <Label className="text-[10px] uppercase text-muted-foreground">
+            {kind === "project" ? "Finish by" : "Review by"} *
+          </Label>
+          <Input
+            className="w-[145px]"
+            type="date"
+            value={endDate}
+            onChange={(e) => onEndDate(e.target.value)}
+          />
+        </div>
+      </div>
+      <p className="text-[11px] text-muted-foreground">{chosenKind?.blurb}</p>
       <div className="flex items-end gap-2 flex-wrap">
         <div className="grid gap-1">
           <Label className="text-[10px] uppercase text-muted-foreground">What are you measuring? *</Label>
@@ -229,6 +284,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
   const [editStart, setEditStart] = useState("0");
   const [editTarget, setEditTarget] = useState("");
   const [editUnit, setEditUnit] = useState("");
+  const [newKind, setNewKind] = useState<GoalKind>("kpi");
+  const [newStartDate, setNewStartDate] = useState("");
+  const [newEndDate, setNewEndDate] = useState("");
+  const [editKind, setEditKind] = useState<GoalKind>("kpi");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
   /** Mid-year "where are you now" figure, keyed by objective id. */
   const [midVal, setMidVal] = useState<Record<string, string>>({});
 
@@ -286,6 +347,14 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       });
       return;
     }
+    if (!newEndDate) {
+      toast({
+        title: "Date needed",
+        description: "Set the date this goal should be finished or reviewed by.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy("add");
     const { error } = await supabase.from("pdr_objectives").insert({
       form_id: form.id,
@@ -297,6 +366,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       start_value: isMilestone ? 0 : Number(newStart || 0),
       target_value: isMilestone ? 100 : Number(newTarget),
       unit: newMeasure === "number" && newUnit.trim() ? newUnit.trim() : null,
+      goal_kind: newKind,
+      start_date: newStartDate || null,
+      end_date: newEndDate,
+      // A goal set by the manager is theirs, and counts as aligned straight away.
+      cascaded_from_manager: canManage,
+      manager_validated: canManage,
     });
     setBusy(null);
     if (error) {
@@ -308,6 +383,8 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setNewTarget("");
     setNewStart("0");
     setNewUnit("");
+    setNewStartDate("");
+    setNewEndDate("");
     await load();
   }
 
@@ -392,6 +469,9 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
     setEditStart(String(o.start_value ?? 0));
     setEditTarget(o.target_value == null ? "" : String(o.target_value));
     setEditUnit(o.unit ?? "");
+    setEditKind((o.goal_kind ?? "kpi") as GoalKind);
+    setEditStartDate(o.start_date ?? "");
+    setEditEndDate(o.end_date ?? "");
   }
 
   async function saveEdit() {
@@ -410,6 +490,9 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       start_value: isMilestone ? 0 : Number(editStart || 0),
       target_value: isMilestone ? 100 : Number(editTarget),
       unit: editMeasure === "number" && editUnit.trim() ? editUnit.trim() : null,
+      goal_kind: editKind,
+      start_date: editStartDate || null,
+      end_date: editEndDate || null,
     });
     setBusy(null);
     setEditingId(null);
@@ -485,10 +568,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           />
                         </div>
                         <GoalTargetFields
+                          kind={editKind}
+                          startDate={editStartDate}
+                          endDate={editEndDate}
                           measure={editMeasure}
                           start={editStart}
                           target={editTarget}
                           unit={editUnit}
+                          onKind={setEditKind}
+                          onStartDate={setEditStartDate}
+                          onEndDate={setEditEndDate}
                           onMeasure={setEditMeasure}
                           onStart={setEditStart}
                           onTarget={setEditTarget}
@@ -514,9 +603,17 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           <Badge variant="outline" className="uppercase text-[10px]">
                             {PDR_CATEGORIES.find((c) => c.id === o.category)?.label ?? o.category}
                           </Badge>
+                          <Badge variant="outline" className="text-[10px]">
+                            {goalKindLabel(o.goal_kind)}
+                          </Badge>
                           <span className="text-sm font-medium flex-1 min-w-[180px]">{o.title}</span>
+                          <Badge className={cn("text-[10px]", goalWindowStatus(o).tone)}>
+                            {goalWindowStatus(o).label}
+                          </Badge>
                           {o.cascaded_from_manager && (
-                            <Badge variant="secondary" className="text-[10px]">Cascaded</Badge>
+                            <Badge variant="secondary" className="text-[10px]">
+                              {canManage ? "Set by manager" : "Set by your manager"}
+                            </Badge>
                           )}
                           <Badge
                             className={cn(
@@ -529,6 +626,12 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                         </div>
                         {o.description && (
                           <p className="text-xs text-muted-foreground">{o.description}</p>
+                        )}
+                        {(o.start_date || o.end_date) && (
+                          <p className="text-[11px] text-muted-foreground">
+                            {o.start_date ? format(parseISO(o.start_date), "MMM d, yyyy") : "No start date"} →{" "}
+                            {o.end_date ? format(parseISO(o.end_date), "MMM d, yyyy") : "no end date"}
+                          </p>
                         )}
                         {o.target_value != null && (
                           <div className="flex items-center gap-2 flex-wrap text-xs">
@@ -638,10 +741,16 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                     />
                   </div>
                   <GoalTargetFields
+                    kind={newKind}
+                    startDate={newStartDate}
+                    endDate={newEndDate}
                     measure={newMeasure}
                     start={newStart}
                     target={newTarget}
                     unit={newUnit}
+                    onKind={setNewKind}
+                    onStartDate={setNewStartDate}
+                    onEndDate={setNewEndDate}
                     onMeasure={setNewMeasure}
                     onStart={setNewStart}
                     onTarget={setNewTarget}
