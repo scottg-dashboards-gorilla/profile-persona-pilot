@@ -114,7 +114,10 @@ export default function TaskTracker() {
       visible = [mine];
     }
     setPeople(visible);
-    setWho((prev) => prev || mine?.uuid || visible[0]?.uuid || "");
+    // Keep the selection valid when the view changes (employee view drops the team).
+    setWho((prev) =>
+      prev && visible.some((e) => e.uuid === prev) ? prev : mine?.uuid || visible[0]?.uuid || "",
+    );
     setLoading(false);
   }, [isAdminHr, isManager]);
 
