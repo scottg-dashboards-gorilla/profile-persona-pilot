@@ -490,6 +490,9 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
       start_value: isMilestone ? 0 : Number(editStart || 0),
       target_value: isMilestone ? 100 : Number(editTarget),
       unit: editMeasure === "number" && editUnit.trim() ? editUnit.trim() : null,
+      goal_kind: editKind,
+      start_date: editStartDate || null,
+      end_date: editEndDate || null,
     });
     setBusy(null);
     setEditingId(null);
