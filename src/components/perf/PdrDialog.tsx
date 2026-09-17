@@ -603,9 +603,17 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
                           <Badge variant="outline" className="uppercase text-[10px]">
                             {PDR_CATEGORIES.find((c) => c.id === o.category)?.label ?? o.category}
                           </Badge>
+                          <Badge variant="outline" className="text-[10px]">
+                            {goalKindLabel(o.goal_kind)}
+                          </Badge>
                           <span className="text-sm font-medium flex-1 min-w-[180px]">{o.title}</span>
+                          <Badge className={cn("text-[10px]", goalWindowStatus(o).tone)}>
+                            {goalWindowStatus(o).label}
+                          </Badge>
                           {o.cascaded_from_manager && (
-                            <Badge variant="secondary" className="text-[10px]">Cascaded</Badge>
+                            <Badge variant="secondary" className="text-[10px]">
+                              {canManage ? "Set by manager" : "Set by your manager"}
+                            </Badge>
                           )}
                           <Badge
                             className={cn(
