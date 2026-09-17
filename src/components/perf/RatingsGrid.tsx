@@ -155,12 +155,10 @@ export function RatingsGrid({ year }: { year: number }) {
       const iRange = icRange(score);
       const meritPct = d.merit === "" ? null : Number(d.merit);
       const ic = d.ic === "" ? null : Number(d.ic);
-      const dmPct = d.dm === "" ? null : Number(d.dm);
       const comp = r.current_annual_comp ?? 0;
       const meritAmount = meritPct != null ? amountFromPercent(comp, meritPct) : null;
       const proration = focalPointMeritEligibility(r.hire_date, year);
       const prorated = meritAmount != null ? Math.round(meritAmount * proration.prorationFactor) : null;
-      const dmAmount = dmPct != null && d.dmEligible ? amountFromPercent(comp, dmPct) : null;
       return {
         row: r,
         draft: d,
@@ -169,14 +167,11 @@ export function RatingsGrid({ year }: { year: number }) {
         iRange,
         meritPct,
         ic,
-        dmPct,
         meritAmount,
         prorated,
         proration,
-        dmAmount,
         meritOk: withinRange(meritPct, mRange),
         icOk: withinRange(ic, iRange),
-        dmOk: dmPct == null ? null : dmPct >= DM_RANGE.min && dmPct <= DM_RANGE.max,
       };
     });
   }, [rows, drafts, year]);
