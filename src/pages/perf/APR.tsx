@@ -691,19 +691,12 @@ function AnniversaryPanel({
       if (isAdminHr) {
         setPeople(all);
       } else {
-        // Managers only see the people they manage (direct reports and one
-        // level below) — not their own anniversary.
+        // Managers only see their direct reports — not their own anniversary.
         const meUuid = all.find((e) => e.user_id && e.user_id === auth?.user?.id)?.uuid ?? null;
         if (!meUuid) {
           setPeople([]);
         } else {
-          const direct = all.filter((e) => e.manager_uuid === meUuid).map((e) => e.uuid);
-          const team = new Set([
-            ...direct,
-            ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid),
-          ]);
-          // Managers see only their reports — not their own anniversary.
-          setPeople(all.filter((e) => team.has(e.uuid) && e.uuid !== meUuid));
+          setPeople(all.filter((e) => e.manager_uuid === meUuid && e.uuid !== meUuid));
         }
       }
       setLoading(false);
