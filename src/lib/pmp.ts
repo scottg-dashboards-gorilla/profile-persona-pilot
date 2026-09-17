@@ -281,7 +281,7 @@ export const APR_STAGES: {
     label: "Manager entry",
     owner: "Manager",
     window: "3 weeks before the anniversary",
-    what: "Review self input, assign the 1–5 rating, then enter merit %, bonus, I/C score and any executive pay-out.",
+    what: "Review self input, assign the 1–5 rating, then enter merit %, I/C score and any executive pay-out.",
   },
   {
     id: "escalated",
