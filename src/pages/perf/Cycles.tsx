@@ -148,7 +148,18 @@ export default function Cycles() {
   );
 
   async function createCycle() {
-    if (!name.trim()) return;
+    const cycleName = name.trim() || `${year} Annual Cycle`;
+    const duplicate = cycles.some(
+      (c) => parseISO(c.starts_at).getFullYear() === year,
+    );
+    if (duplicate) {
+      toast({
+        title: `${year} already has a cycle`,
+        description: "Cycles are annual — edit the existing cycle for that year instead.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
     let cycleId: string | null = null;
     try {
