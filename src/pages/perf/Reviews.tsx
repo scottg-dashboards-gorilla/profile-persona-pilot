@@ -66,7 +66,21 @@ export default function Reviews() {
     if (error) {
       toast({ title: "Couldn't load reviews", description: error.message, variant: "destructive" });
     } else {
-      setRows((data ?? []) as ReviewRow[]);
+      let list = (data ?? []) as ReviewRow[];
+      if (!isAdminHr) {
+        // Managers manage their team's reviews only — never their own.
+        const { data: authData } = await supabase.auth.getUser();
+        const uid = authData.user?.id;
+        if (uid) {
+          const { data: me } = await supabase
+            .from("employees")
+            .select("uuid")
+            .eq("user_id", uid)
+            .maybeSingle();
+          if (me?.uuid) list = list.filter((r) => r.employee_uuid !== me.uuid);
+        }
+      }
+      setRows(list);
       const ids = (data ?? []).map((r: any) => r.id);
       if (ids.length > 0) {
         const [{ data: atts }, { data: sas }, { data: cs }] = await Promise.all([
