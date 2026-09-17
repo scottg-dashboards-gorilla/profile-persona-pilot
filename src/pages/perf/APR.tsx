@@ -537,7 +537,7 @@ type Mgr = { uuid: string; name: string; reports: number };
 function ManagerBudgets({ year }: { year: number }) {
   const { toast } = useToast();
   const [mgrs, setMgrs] = useState<Mgr[]>([]);
-  const [budgets, setBudgets] = useState<Record<string, { merit: string; equity: string }>>({});
+  const [budgets, setBudgets] = useState<Record<string, { merit: string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -557,11 +557,10 @@ function ManagerBudgets({ year }: { year: number }) {
       })
       .sort((a, b2) => b2.reports - a.reports);
     setMgrs(managers);
-    const map: Record<string, { merit: string; equity: string }> = {};
-    ((b ?? []) as { manager_uuid: string; merit_budget_amount: number; equity_budget_amount: number | null }[]).forEach((row) => {
+    const map: Record<string, { merit: string }> = {};
+    ((b ?? []) as { manager_uuid: string; merit_budget_amount: number }[]).forEach((row) => {
       map[row.manager_uuid] = {
         merit: String(row.merit_budget_amount ?? 0),
-        equity: String(row.equity_budget_amount ?? 0),
       };
     });
     setBudgets(map);
