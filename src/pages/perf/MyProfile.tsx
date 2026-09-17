@@ -102,7 +102,18 @@ export default function MyProfile() {
     );
   }
 
-  const fields = [
+  const fields: {
+    icon: typeof Briefcase;
+    label: string;
+    value: string;
+    sub?: string;
+  }[] = [
+    {
+      icon: Users,
+      label: "Line manager / Supervisor",
+      value: manager ? `${manager.first_name} ${manager.last_name}` : "—",
+      sub: manager?.title ?? undefined,
+    },
     { icon: Briefcase, label: "Job title", value: me.title ?? "—" },
     { icon: Building2, label: "Department", value: me.department ?? "—" },
     { icon: Mail, label: "Work email", value: me.email ?? "—" },
