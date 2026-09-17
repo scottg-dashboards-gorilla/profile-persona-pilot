@@ -179,7 +179,7 @@ export function NotificationsBell() {
       supabase
         .from("pdr_forms")
         .select(
-          "id, employee_uuid, objectives_submitted_at, objectives_approved_at, midyear_self_submitted_at, midyear_manager_submitted_at, self_input_submitted_at, manager_input_submitted_at",
+          "id, employee_uuid, objectives_submitted_at, objectives_approved_at, midyear_self_submitted_at, midyear_manager_submitted_at, self_input_submitted_at, comments_finalized_at",
         )
         .in("employee_uuid", ids)
         .eq("fiscal_year", year),
@@ -253,7 +253,7 @@ export function NotificationsBell() {
         href: "/pdr",
       });
     }
-    const yearToComment = pdr.filter((f) => f.self_input_submitted_at && !f.manager_input_submitted_at);
+    const yearToComment = pdr.filter((f) => f.self_input_submitted_at && !f.comments_finalized_at);
     if (yearToComment.length) {
       out.push({
         id: "mgr-year",
