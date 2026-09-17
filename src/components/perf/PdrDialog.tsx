@@ -20,9 +20,13 @@ import { format, parseISO } from "date-fns";
 import {
   PDR_CATEGORIES,
   GOAL_MEASURE_TYPES,
+  GOAL_KINDS,
   c1Passed,
   formatGoalValue,
   goalAchievementPercent,
+  goalKindLabel,
+  goalWindowStatus,
+  type GoalKind,
   type GoalMeasureType,
   type PdrCategory,
   type PdrForm,
