@@ -131,11 +131,216 @@ const steps: {
   },
 ];
 
+const employeeJourney: {
+  n: number;
+  title: string;
+  when: string;
+  what: string;
+  href?: string;
+  linkLabel?: string;
+  icon: React.ElementType;
+}[] = [
+  {
+    n: 1,
+    title: "Set your objectives",
+    when: "Start of the year",
+    what:
+      "Write what you're taking on under Faster, Stronger, Better or L&D. Each objective needs a name and a short description of how it will be measured. Edit or remove them freely until your manager aligns them — after that, ask your manager to send them back if something changes.",
+    href: "/pdr",
+    linkLabel: "Objective Setting",
+    icon: ClipboardCheck,
+  },
+  {
+    n: 2,
+    title: "Keep your work visible",
+    when: "Day to day",
+    what:
+      "Track what you're working on as cards on your own board. Your manager can comment on a task and colour-code what to prioritise, so nothing waits for a formal review.",
+    href: "/tasks",
+    linkLabel: "Task Tracker",
+    icon: Repeat,
+  },
+  {
+    n: 3,
+    title: "Add your mid-year comment",
+    when: "Mid-year",
+    what:
+      "Comment against each objective you set — what's moved, what's stuck, what you need. Your manager replies on the same objective, so the conversation stays in one place.",
+    href: "/pdr",
+    linkLabel: "Objective Setting",
+    icon: Users,
+  },
+  {
+    n: 4,
+    title: "Write your year-end input",
+    when: "Dec 01–15",
+    what:
+      "Four short questions: what went well, what was hard, how you've grown, and what support you need. This is read alongside your manager's comments before your score is recorded.",
+    href: "/me",
+    linkLabel: "My review",
+    icon: UserSquare2,
+  },
+  {
+    n: 5,
+    title: "Take your assessment",
+    when: "Around your work anniversary",
+    what:
+      "The behavioural (DISC) and skills questionnaire for your role. It shows how you've grown since last time, and your review can't be completed without it. Open it while signed in and the result files against your record automatically.",
+    href: "/me",
+    linkLabel: "My review",
+    icon: Repeat,
+  },
+  {
+    n: 6,
+    title: "Receive and confirm your outcome",
+    when: "After your pay review",
+    what:
+      "Your rating and any pay change are shared only after HR has signed off, so the number is settled before your manager sits down with you. Confirm you've received it on your review page.",
+    href: "/me",
+    linkLabel: "My review",
+    icon: Send,
+  },
+  {
+    n: 7,
+    title: "Raise a pay concern if you need to",
+    when: "Any time after it's shared",
+    what:
+      "If you're not happy with the amount, say why on your review page. Your manager takes it to HR and the decision comes back to you on the same page — you'll always see where it sits.",
+    href: "/me",
+    linkLabel: "My review",
+    icon: ShieldCheck,
+  },
+];
+
 export default function Playbook() {
   const { has, unconfigured } = usePermissions();
   const isAdminHr = unconfigured || has("admin") || has("hr");
   const forEmployee = !isAdminHr && !has("manager");
-  const visibleSteps = forEmployee ? steps.filter((s) => s.owner === "Employee") : steps;
+  const visibleSteps = steps;
+
+  if (forEmployee) {
+    return (
+      <div className="space-y-5 max-w-4xl">
+        <div>
+          <h1 className="text-xl font-semibold">Your Datapath playbook</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Everything you're asked to do across the year, in the order it happens — and what you can count
+            on in return.
+          </p>
+        </div>
+
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Your year at a glance</CardTitle>
+            <CardDescription className="text-foreground">
+              Three conversations a year, plus your assessment around your work anniversary.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            {PDR_STAGES.map((s, i) => (
+              <div key={s.id} className="rounded-md bg-background border p-3">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  <span className="text-sm font-medium">{s.label}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  You add your input first, then your manager comments on the same objectives.
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-3">
+          {employeeJourney.map((s) => (
+            <Card key={s.n}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <s.icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                      <span className="text-muted-foreground">{s.n}.</span> {s.title}
+                      <Badge variant="secondary" className="text-[10px]">{s.when}</Badge>
+                    </CardTitle>
+                    <CardDescription className="mt-1">{s.what}</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              {s.href && (
+                <CardContent className="pt-0 pl-[3.6rem]">
+                  <Button asChild size="sm" variant="ghost" className="h-7 px-0 text-xs">
+                    <Link to={s.href}>
+                      {s.linkLabel} <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              )}
+            </Card>
+          ))}
+        </div>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">How you're rated</CardTitle>
+            <CardDescription>
+              One rating for your overall performance, based on evidence of what you delivered and how you
+              delivered it.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-5">
+              {[...RATING_SCALE].reverse().map((r) => (
+                <div key={r.score} className={`rounded-md border p-2 text-center ${r.tone}`}>
+                  <div className="text-lg font-semibold">{r.score}</div>
+                  <div className="text-[11px] leading-tight font-medium">{r.label}</div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">What the process guarantees you</CardTitle>
+            <CardDescription>These aren't reminders — the system refuses to let them slide.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <Rule>Your review can't be completed without your assessment from that period on file.</Rule>
+            <Rule>Your pay change is signed off by HR before your manager holds the conversation with you.</Rule>
+            <Rule>Nothing is shared with you until it's final — no half-finished outcomes.</Rule>
+            <Rule>Only you, your manager and HR can see your review. No one else.</Rule>
+            <Rule>Feedback collected from coworkers reaches you without names attached.</Rule>
+            <Rule>
+              Once your objectives are aligned they're locked — your manager sends them back for revision if
+              something needs to change, so nothing is edited behind your back.
+            </Rule>
+            <Rule>Every rating and pay change is recorded with who did it and when.</Rule>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Where to go</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-2 sm:grid-cols-3 text-sm">
+            <Button asChild variant="outline" className="justify-between">
+              <Link to="/me">My review <ArrowRight className="h-3 w-3" /></Link>
+            </Button>
+            <Button asChild variant="outline" className="justify-between">
+              <Link to="/pdr">Objective Setting <ArrowRight className="h-3 w-3" /></Link>
+            </Button>
+            <Button asChild variant="outline" className="justify-between">
+              <Link to="/tasks">Task Tracker <ArrowRight className="h-3 w-3" /></Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 max-w-4xl">
