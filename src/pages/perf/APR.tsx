@@ -33,6 +33,7 @@ import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
+  ChevronDown,
   Download,
   Handshake,
   Loader2,
@@ -704,13 +705,36 @@ function AnniversaryPanel({
   }, [isAdminHr]);
 
   const existing = useMemo(() => new Set(rows.map((r) => r.employee_uuid)), [rows]);
+  const [openBucket, setOpenBucket] = useState<string | null>(null);
 
-  const due = useMemo(() => {
-    return people
+  const buckets = useMemo(() => {
+    const dated = people
       .map((p) => ({ p, due: payReviewDue(p.hire_date) }))
       .filter((x): x is { p: Person; due: NonNullable<ReturnType<typeof payReviewDue>> } => !!x.due)
-      .filter((x) => x.due.daysUntil <= 90)
       .sort((a, b) => a.due.daysUntil - b.due.daysUntil);
+    return [
+      {
+        id: "passed",
+        title: "Anniversary passed",
+        hint: "Their anniversary date has already gone by",
+        list: dated.filter((x) => x.due.daysUntil < 0),
+        tone: "border-red-200 bg-red-50/60 text-red-900",
+      },
+      {
+        id: "due_soon",
+        title: "Due in 3 weeks",
+        hint: "Anniversary within the next 21 days",
+        list: dated.filter((x) => x.due.daysUntil >= 0 && x.due.daysUntil <= 21),
+        tone: "border-amber-200 bg-amber-50/60 text-amber-900",
+      },
+      {
+        id: "not_open",
+        title: "Not open yet",
+        hint: "Anniversary more than 3 weeks away",
+        list: dated.filter((x) => x.due.daysUntil > 21),
+        tone: "border-emerald-200 bg-emerald-50/60 text-emerald-900",
+      },
+    ];
   }, [people]);
 
   const noStart = people.filter((p) => !p.hire_date).length;
@@ -748,97 +772,128 @@ function AnniversaryPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Anniversaries coming up</CardTitle>
+        <CardTitle className="text-base">Employees Anniversary Summary</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
         {loading ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading…
           </div>
-        ) : due.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            No start-date anniversaries in the next three months.
-          </p>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Anniversary</TableHead>
-                  <TableHead>Years</TableHead>
-                  <TableHead>Where it stands</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {due.map(({ p, due: d }) => {
-                  const started = existing.has(p.uuid);
-                  return (
-                    <TableRow key={p.uuid}>
-                      <TableCell>
-                        <div className="font-medium">{p.first_name} {p.last_name}</div>
-                        <div className="text-xs text-muted-foreground">{p.title ?? p.department ?? "—"}</div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {format(d.date, "d MMM yyyy")}
-                        <div className="text-xs text-muted-foreground">
-                          {d.daysUntil < 0
-                            ? `${Math.abs(d.daysUntil)} days ago`
-                            : d.daysUntil === 0
-                              ? "Today"
-                              : `in ${d.daysUntil} days`}
-                        </div>
-                        {(() => {
-                          const s = payReviewSchedule(d.date);
-                          return (
-                            <div className="text-[11px] text-muted-foreground mt-0.5">
-                              Entry {format(s.managerEntryOpens, "d MMM")} · HR by{" "}
-                              {format(s.hrSignOffBy, "d MMM")} · connect &amp; share{" "}
-                              {format(s.connectAndShareBy, "d MMM")}
-                            </div>
-                          );
-                        })()}
-                      </TableCell>
-                      <TableCell className="text-sm">{d.years}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-[11px]",
-                            d.status === "overdue" && "bg-red-100 text-red-800 border-red-200",
-                            d.status === "due" && "bg-amber-100 text-amber-900 border-amber-200",
-                            d.status === "open" && "bg-emerald-100 text-emerald-800 border-emerald-200",
-                          )}
-                        >
-                          {PAY_REVIEW_STATUS_LABEL[d.status]}
-                        </Badge>
-                        {!started && d.status === "upcoming" && (
-                          <div className="text-[11px] text-muted-foreground mt-1">
-                            Opens {format(d.opensOn, "d MMM")}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {started ? (
-                          <span className="text-xs text-muted-foreground">Review open below</span>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={busy === p.uuid}
-                            onClick={() => startReview(p, d.date)}
-                          >
-                            Open pay review
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          buckets.map((bucket) => {
+            const open = openBucket === bucket.id;
+            return (
+              <div key={bucket.id} className={cn("rounded-lg border", bucket.tone)}>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                  onClick={() => setOpenBucket(open ? null : bucket.id)}
+                >
+                  <div>
+                    <div className="font-medium text-sm">{bucket.title}</div>
+                    <div className="text-xs opacity-75">{bucket.hint}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-semibold tabular-nums">{bucket.list.length}</span>
+                    <ChevronDown
+                      className={cn("h-4 w-4 transition-transform", open && "rotate-180")}
+                    />
+                  </div>
+                </button>
+                {open && (
+                  <div className="border-t border-current/10 bg-background/70 px-3 py-2">
+                    {bucket.list.length === 0 ? (
+                      <p className="py-4 text-center text-sm text-muted-foreground">
+                        Nobody in this group right now.
+                      </p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Employee</TableHead>
+                              <TableHead>Anniversary</TableHead>
+                              <TableHead>Years</TableHead>
+                              <TableHead>Where it stands</TableHead>
+                              <TableHead className="text-right">Action</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {bucket.list.map(({ p, due: d }) => {
+                              const started = existing.has(p.uuid);
+                              return (
+                                <TableRow key={p.uuid}>
+                                  <TableCell>
+                                    <div className="font-medium">{p.first_name} {p.last_name}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {p.title ?? p.department ?? "—"}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-sm">
+                                    {format(d.date, "d MMM yyyy")}
+                                    <div className="text-xs text-muted-foreground">
+                                      {d.daysUntil < 0
+                                        ? `${Math.abs(d.daysUntil)} days ago`
+                                        : d.daysUntil === 0
+                                          ? "Today"
+                                          : `in ${d.daysUntil} days`}
+                                    </div>
+                                    {(() => {
+                                      const s = payReviewSchedule(d.date);
+                                      return (
+                                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                                          Entry {format(s.managerEntryOpens, "d MMM")} · HR by{" "}
+                                          {format(s.hrSignOffBy, "d MMM")} · connect &amp; share{" "}
+                                          {format(s.connectAndShareBy, "d MMM")}
+                                        </div>
+                                      );
+                                    })()}
+                                  </TableCell>
+                                  <TableCell className="text-sm">{d.years}</TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      variant="outline"
+                                      className={cn(
+                                        "text-[11px]",
+                                        d.status === "overdue" && "bg-red-100 text-red-800 border-red-200",
+                                        d.status === "due" && "bg-amber-100 text-amber-900 border-amber-200",
+                                        d.status === "open" && "bg-emerald-100 text-emerald-800 border-emerald-200",
+                                      )}
+                                    >
+                                      {PAY_REVIEW_STATUS_LABEL[d.status]}
+                                    </Badge>
+                                    {!started && d.status === "upcoming" && (
+                                      <div className="text-[11px] text-muted-foreground mt-1">
+                                        Opens {format(d.opensOn, "d MMM")}
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {started ? (
+                                      <span className="text-xs text-muted-foreground">Review open below</span>
+                                    ) : (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={busy === p.uuid}
+                                        onClick={() => startReview(p, d.date)}
+                                      >
+                                        Open pay review
+                                      </Button>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
         {noStart > 0 && (
           <p className="text-xs text-muted-foreground mt-3">
