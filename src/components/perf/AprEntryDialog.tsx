@@ -158,10 +158,10 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       fiscal_year: fiscalYear,
       rating_score: Number(score),
       overall_rating: ratingBand(Number(score)),
-      merit_percent: meritPercent === "" ? null : meritPct,
-      merit_amount: meritPercent === "" ? null : meritAmount,
-      comp_adjustment_amount: meritPercent === "" ? null : meritAmount,
-      comp_adjustment_percent: meritPercent === "" ? null : meritPct,
+      merit_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
+      merit_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
+      comp_adjustment_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
+      comp_adjustment_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
       ic_score: ic === "" ? null : Number(ic),
       escalation_note: note || null,
     };
@@ -242,9 +242,33 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label>Merit %</Label>
-              <Input type="number" step="0.1" value={meritPercent} onChange={(e) => setMeritPercent(e.target.value)} placeholder="0" />
+              {meritLocked ? (
+                <div className="flex h-10 items-center rounded-md border bg-muted/50 px-3 text-sm font-medium">
+                  0% — no increase
+                </div>
+              ) : (
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={meritPercent}
+                  onChange={(e) => setMeritPercent(e.target.value)}
+                  placeholder="0"
+                  aria-invalid={meritOutOfRange}
+                />
+              )}
+              {meritRange && !meritLocked && (
+                <p className={`text-xs ${meritOutOfRange ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                  {meritOutOfRange
+                    ? `Rating ${scoreNum} allows ${meritRange.min}–${meritRange.max}%.`
+                    : `Range for rating ${scoreNum}: ${meritRange.min}–${meritRange.max}%.`}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
-                {meritPercent === "" ? "No merit entered" : `${formatMoney(meritAmount)} on ${formatMoney(comp)}`}
+                {meritLocked || meritPercent === ""
+                  ? meritLocked
+                    ? `${formatMoney(0)} on ${formatMoney(comp)}`
+                    : "No merit entered"
+                  : `${formatMoney(meritAmount)} on ${formatMoney(comp)}`}
               </p>
             </div>
             <div className="grid gap-2">
