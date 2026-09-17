@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   ArrowRight,
   CheckCircle2,
@@ -330,11 +329,6 @@ export default function Overview() {
     ).size;
     return { overdue, dueIn30, inProgress, completedQ, assessedThisYear };
   }, [reviews, open, attempts]);
-
-  const upcoming = useMemo(
-    () => [...open].sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date)).slice(0, 5),
-    [open],
-  );
 
   const nameByUuid = useMemo(() => {
     const m = new Map<string, string>();
