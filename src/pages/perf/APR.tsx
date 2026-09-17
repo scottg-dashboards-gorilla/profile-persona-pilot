@@ -709,8 +709,8 @@ function AnniversaryPanel({
             ...direct,
             ...all.filter((e) => e.manager_uuid && direct.includes(e.manager_uuid)).map((e) => e.uuid),
           ]);
-          team.add(meUuid);
-          setPeople(all.filter((e) => team.has(e.uuid)));
+          // Managers see only their reports — not their own anniversary.
+          setPeople(all.filter((e) => team.has(e.uuid) && e.uuid !== meUuid));
         }
       }
       setLoading(false);
