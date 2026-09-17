@@ -22,7 +22,13 @@ export default function MyProfile() {
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(true);
   const [me, setMe] = useState<EmployeeRow | null>(null);
-  const [manager, setManager] = useState<{ first_name: string; last_name: string; title: string | null } | null>(null);
+  const [manager, setManager] = useState<{
+    first_name: string;
+    last_name: string;
+    title: string | null;
+    email: string | null;
+    department: string | null;
+  } | null>(null);
   const [reports, setReports] = useState(0);
 
   useEffect(() => {
@@ -49,7 +55,7 @@ export default function MyProfile() {
       if (row.manager_uuid) {
         const { data: mgr } = await supabase
           .from("employees")
-          .select("first_name, last_name, title")
+          .select("first_name, last_name, title, email, department")
           .eq("uuid", row.manager_uuid)
           .maybeSingle();
         setManager(mgr ?? null);
