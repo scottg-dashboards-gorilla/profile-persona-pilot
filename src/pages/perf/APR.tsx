@@ -61,7 +61,7 @@ import { cn } from "@/lib/utils";
 const thisYear = new Date().getFullYear();
 
 const SELECT =
-  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at";
+  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, ic_score, is_executive, exec_payout_amount, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at";
 
 type Row = AprReview & {
   hr_finalized_at: string | null;
@@ -74,7 +74,7 @@ type Row = AprReview & {
 };
 
 const EXPORT_SELECT =
-  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, bonus_eligible, bonus_amount, ic_score, is_executive, exec_payout_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
+  "employee_uuid, employee_name, employee_email, department, title, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, merit_prorated_amount, dm_eligible, dm_percent, dm_amount, ic_score, is_executive, exec_payout_amount, equity_eligible, equity_percent, equity_value, equity_shares, equity_price_per_share, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, comp_approval_status, comp_approval_note, apr_stage, escalation_status, hr_finalized_at, released_at, employee_ack_at, pay_pushback_status";
 
 type ExportRow = Record<string, string | number | boolean | null>;
 
@@ -96,8 +96,6 @@ const EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "dm_amount", label: "Differentiated award amount" },
   { key: "new_annual_comp", label: "New annual pay" },
   { key: "increase_percent", label: "Total increase %" },
-  { key: "bonus_eligible", label: "Bonus eligible" },
-  { key: "bonus_amount", label: "Bonus amount" },
   { key: "ic_score", label: "I/C score" },
   { key: "is_executive", label: "Executive" },
   { key: "exec_payout_amount", label: "Executive pay-out" },
@@ -189,9 +187,8 @@ export default function APR() {
 
   const totals = useMemo(() => {
     const merit = rows.reduce((s, r) => s + (r.merit_amount ?? 0), 0);
-    const bonus = rows.reduce((s, r) => s + (r.bonus_amount ?? 0), 0);
     const exec = rows.reduce((s, r) => s + (r.exec_payout_amount ?? 0), 0);
-    return { merit, bonus, exec, ic: icAverage(rows.map((r) => r.ic_score)) };
+    return { merit, exec, ic: icAverage(rows.map((r) => r.ic_score)) };
   }, [rows]);
 
   const stageCount = (stage: AprStage) => rows.filter((r) => r.apr_stage === stage).length;
@@ -285,9 +282,8 @@ export default function APR() {
       </header>
 
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Stat label="Merit planned" value={formatMoney(totals.merit)} icon={Wallet} />
-        <Stat label="Bonus planned" value={formatMoney(totals.bonus)} icon={BadgeCheck} />
         <Stat label="Executive pay-out" value={formatMoney(totals.exec)} icon={ShieldCheck} />
         <Card>
           <CardHeader className="pb-2">
@@ -352,7 +348,7 @@ export default function APR() {
                     <TableHead>Employee</TableHead>
                     <TableHead>Rating</TableHead>
                     <TableHead className="text-right">Merit</TableHead>
-                    <TableHead className="text-right">Bonus</TableHead>
+                    
                     <TableHead className="text-right">I/C</TableHead>
                     <TableHead>Stage</TableHead>
                     <TableHead className="text-right">Next step</TableHead>
@@ -384,9 +380,6 @@ export default function APR() {
                               <div className="text-xs text-muted-foreground">{r.merit_percent}%</div>
                             </>
                           ) : "—"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {r.bonus_eligible ? formatMoney(r.bonus_amount ?? 0) : <span className="text-muted-foreground">n/a</span>}
                         </TableCell>
                         <TableCell className="text-right">{r.ic_score ?? "—"}</TableCell>
                         <TableCell>
@@ -549,7 +542,7 @@ type Mgr = { uuid: string; name: string; reports: number };
 function ManagerBudgets({ year }: { year: number }) {
   const { toast } = useToast();
   const [mgrs, setMgrs] = useState<Mgr[]>([]);
-  const [budgets, setBudgets] = useState<Record<string, { merit: string; bonus: string; equity: string }>>({});
+  const [budgets, setBudgets] = useState<Record<string, { merit: string; equity: string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -569,11 +562,10 @@ function ManagerBudgets({ year }: { year: number }) {
       })
       .sort((a, b2) => b2.reports - a.reports);
     setMgrs(managers);
-    const map: Record<string, { merit: string; bonus: string; equity: string }> = {};
-    ((b ?? []) as { manager_uuid: string; merit_budget_amount: number; bonus_budget_amount: number; equity_budget_amount: number | null }[]).forEach((row) => {
+    const map: Record<string, { merit: string; equity: string }> = {};
+    ((b ?? []) as { manager_uuid: string; merit_budget_amount: number; equity_budget_amount: number | null }[]).forEach((row) => {
       map[row.manager_uuid] = {
         merit: String(row.merit_budget_amount ?? 0),
-        bonus: String(row.bonus_budget_amount ?? 0),
         equity: String(row.equity_budget_amount ?? 0),
       };
     });
@@ -585,14 +577,14 @@ function ManagerBudgets({ year }: { year: number }) {
   }, [load]);
 
   async function save(m: Mgr) {
-    const v = budgets[m.uuid] ?? { merit: "0", bonus: "0", equity: "0" };
+    const v = budgets[m.uuid] ?? { merit: "0", equity: "0" };
     setSaving(m.uuid);
     const { error } = await supabase.from("manager_budgets").upsert(
       {
         manager_uuid: m.uuid,
         fiscal_year: year,
         merit_budget_amount: Number(v.merit) || 0,
-        bonus_budget_amount: Number(v.bonus) || 0,
+        
         equity_budget_amount: Number(v.equity) || 0,
       },
       { onConflict: "manager_uuid,fiscal_year" },
@@ -611,14 +603,14 @@ function ManagerBudgets({ year }: { year: number }) {
       <CardHeader>
         <CardTitle className="text-base">Manager budgets · FY{year}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Separate merit and bonus pots. Managers with 5 or more reports are hard-blocked from saving
+          Merit and share pots. Managers with 5 or more reports are hard-blocked from saving
           entries above these amounts — exceptions route to the next-level manager.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         {mgrs.length === 0 && <p className="text-sm text-muted-foreground">No managers with reports yet.</p>}
         {mgrs.map((m) => {
-          const v = budgets[m.uuid] ?? { merit: "", bonus: "", equity: "" };
+          const v = budgets[m.uuid] ?? { merit: "", equity: "" };
           return (
             <div key={m.uuid} className="flex items-end gap-3 flex-wrap border-b pb-3 last:border-0">
               <div className="min-w-[160px]">
@@ -635,15 +627,6 @@ function ManagerBudgets({ year }: { year: number }) {
                   type="number"
                   value={v.merit}
                   onChange={(e) => setBudgets((p) => ({ ...p, [m.uuid]: { ...v, merit: e.target.value } }))}
-                />
-              </div>
-              <div className="grid gap-1">
-                <Label className="text-[10px] uppercase text-muted-foreground">Bonus budget</Label>
-                <Input
-                  className="h-9 w-32"
-                  type="number"
-                  value={v.bonus}
-                  onChange={(e) => setBudgets((p) => ({ ...p, [m.uuid]: { ...v, bonus: e.target.value } }))}
                 />
               </div>
               <div className="grid gap-1">

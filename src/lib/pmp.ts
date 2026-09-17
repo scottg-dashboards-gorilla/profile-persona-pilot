@@ -2,7 +2,7 @@
  * Shared rules for the two Datapath processes:
  *  - PMP  : PDR objectives -> mid-year check-in -> year-end self input -> manager comments -> score
  *  - Pay review cycle : each person's pay review runs on their own start-date anniversary —
- *    rating (1-5) -> merit / bonus / I-C / exec pay-out -> budget gate -> HR approval -> shared with the employee
+ *    rating (1-5) -> merit / I-C / exec pay-out -> budget gate -> HR approval -> shared with the employee
  */
 
 import type { Rating } from "@/lib/compensation";
@@ -69,9 +69,9 @@ export const PMP_PILLARS: { id: string; label: string; what: string }[] = [
     what: "Flexibility to set base salary merit increases that reward individual contribution, through broad overlapping merit ranges.",
   },
   {
-    id: "bonus",
-    label: "Bonus",
-    what: "Empowerment to recognise individual contribution in bonus pay-outs by setting Individual Contribution (I/C) scores.",
+    id: "ic",
+    label: "Individual Contribution",
+    what: "Empowerment to recognise individual contribution by setting Individual Contribution (I/C) scores.",
   },
 ];
 
@@ -281,7 +281,7 @@ export const APR_STAGES: {
     label: "Manager entry",
     owner: "Manager",
     window: "3 weeks before the anniversary",
-    what: "Review self input, assign the 1–5 rating, then enter merit %, bonus, I/C score and any executive pay-out.",
+    what: "Review self input, assign the 1–5 rating, then enter merit %, I/C score and any executive pay-out.",
   },
   {
     id: "escalated",
@@ -295,7 +295,7 @@ export const APR_STAGES: {
     label: "HR sign-off",
     owner: "HR",
     window: "By 2 weeks before the anniversary",
-    what: "HR checks the rating, merit, bonus and I/C against budget and Datapath pay rules, then signs off the pay outcome. Nothing reaches the employee until this is done.",
+    what: "HR checks the rating, merit and I/C against budget and Datapath pay rules, then signs off the pay outcome. Nothing reaches the employee until this is done.",
   },
   {
     id: "closed",
@@ -411,39 +411,34 @@ export function icAverage(scores: (number | null | undefined)[]): number | null 
   return Math.round((list.reduce((a, b) => a + b, 0) / list.length) * 10) / 10;
 }
 
-export type BudgetPot = "merit" | "bonus";
+export type BudgetPot = "merit";
 
 export type ManagerBudget = {
   id: string;
   manager_uuid: string;
   fiscal_year: number;
   merit_budget_amount: number;
-  bonus_budget_amount: number;
   equity_budget_amount?: number;
   note: string | null;
 };
 
 
 /**
- * Merit and bonus draw from separate pots — leftover in one cannot fund the other.
+ * Merit draws from the manager's merit pot.
  * The gate only bites for managers with 5 or more eligible reports (mirrored in the database).
  */
 export function budgetGate(opts: {
   eligibleCount: number;
   budget: ManagerBudget | null;
   plannedMerit: number;
-  plannedBonus: number;
 }) {
   const enforced = opts.eligibleCount >= 5 && !!opts.budget;
   const meritOver = enforced ? opts.plannedMerit > (opts.budget?.merit_budget_amount ?? 0) : false;
-  const bonusOver = enforced ? opts.plannedBonus > (opts.budget?.bonus_budget_amount ?? 0) : false;
   return {
     enforced,
     meritOver,
-    bonusOver,
-    blocked: meritOver || bonusOver,
+    blocked: meritOver,
     meritRemaining: (opts.budget?.merit_budget_amount ?? 0) - opts.plannedMerit,
-    bonusRemaining: (opts.budget?.bonus_budget_amount ?? 0) - opts.plannedBonus,
   };
 }
 
@@ -554,7 +549,7 @@ export const MERIT_PRINCIPLES = {
   ],
 };
 
-/** The Team Score behind the bonus: four key metrics and their weightings. */
+/** The Team Score: four key metrics and their weightings. */
 export const TEAM_SCORE_METRICS: { id: string; label: string; weight: number }[] = [
   { id: "net_revenue", label: "Net Revenue", weight: 30 },
   { id: "nopbt", label: "Net Operating Profit Before Taxes (NOPBT)", weight: 30 },
@@ -562,10 +557,10 @@ export const TEAM_SCORE_METRICS: { id: string; label: string; weight: number }[]
   { id: "cash_flow", label: "Cash Flow", weight: 10 },
 ];
 
-export const BONUS_PRINCIPLES = {
-  teamScore: "The Team Score is based on four key metrics — Net Revenue, NOPBT, Relative Competitive Performance and Cash Flow — and can range from 0–200% of the bonus target.",
+export const TEAM_SCORE_PRINCIPLES = {
+  teamScore: "The Team Score is based on four key metrics — Net Revenue, NOPBT, Relative Competitive Performance and Cash Flow — and can range from 0–200% of target.",
   qualitative: "A qualitative review can adjust the 100% team score by +/- 15 points.",
-  icScore: "The Individual Contribution (I/C) Score is based on individual performance and can range from 0–150% of the bonus target.",
+  icScore: "The Individual Contribution (I/C) Score is based on individual performance and can range from 0–150%.",
   teamScoreMin: 0,
   teamScoreMax: 200,
   icMin: 0,
@@ -573,14 +568,14 @@ export const BONUS_PRINCIPLES = {
   qualitativeSwing: 15,
 };
 
-/** I/C score rules — the lever managers use to differentiate bonus payouts. */
+/** I/C score rules — how managers recognise individual contribution. */
 export const IC_PRINCIPLES = {
-  what: "The I/C score allows managers to differentiate bonus payouts for bonus eligible employees.",
-  eligibility: "Bonus eligible associates as per local policy.",
+  what: "The I/C score allows managers to recognise individual contribution across their team.",
+  eligibility: "All associates as per local policy.",
   watchOuts: [
-    "The I/C Score is a multiplier of the overall team score, impacting the payout for each employee — allowing greater differentiation based on individual performance as per our strong pay-for-performance culture.",
+    "The I/C Score reflects individual performance against the overall team score — allowing greater differentiation as per our strong pay-for-performance culture.",
     "Managers cannot exceed the maximum of the I/C Score range.",
-    "For managers with teams of more than 5 bonus eligible associates, entries cannot be saved if the I/C Score average for the team is above budget.",
+    "For managers with teams of more than 5 associates, entries cannot be saved if the I/C Score average for the team is above budget.",
     `I/C Score average target is ${IC_TARGET}.`,
   ],
 };

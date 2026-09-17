@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import {
   APR_STAGES,
-  BONUS_PRINCIPLES,
+  TEAM_SCORE_PRINCIPLES,
   FOCAL_POINT_ELIGIBILITY,
   IC_PRINCIPLES,
   IC_TARGET,
@@ -396,8 +396,8 @@ export default function Playbook() {
       {!forEmployee && (
   <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">How the bonus is built</CardTitle>
-            <CardDescription>Team Score sets the pot; the I/C score multiplies each payout.</CardDescription>
+            <CardTitle className="text-base">Team Score and I/C</CardTitle>
+            <CardDescription>The Team Score sets company performance; the I/C score recognises the individual.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid gap-2 sm:grid-cols-4">
@@ -412,21 +412,21 @@ export default function Playbook() {
               <div className="rounded-md border p-2">
                 <div className="font-semibold">Team Score</div>
                 <div className="text-muted-foreground">
-                  {BONUS_PRINCIPLES.teamScoreMin}–{BONUS_PRINCIPLES.teamScoreMax}% of bonus target
+                  {TEAM_SCORE_PRINCIPLES.teamScoreMin}–{TEAM_SCORE_PRINCIPLES.teamScoreMax}% of target
                 </div>
               </div>
               <div className="rounded-md border p-2">
                 <div className="font-semibold">Qualitative review</div>
-                <div className="text-muted-foreground">+/- {BONUS_PRINCIPLES.qualitativeSwing} points on a 100% team score</div>
+                <div className="text-muted-foreground">+/- {TEAM_SCORE_PRINCIPLES.qualitativeSwing} points on a 100% team score</div>
               </div>
               <div className="rounded-md border p-2">
-                <div className="font-semibold">I/C score multiplier</div>
+                <div className="font-semibold">I/C score</div>
                 <div className="text-muted-foreground">
-                  {BONUS_PRINCIPLES.icMin}–{BONUS_PRINCIPLES.icMax}% of bonus target · target average {IC_TARGET}
+                  {TEAM_SCORE_PRINCIPLES.icMin}–{TEAM_SCORE_PRINCIPLES.icMax}% · target average {IC_TARGET}
                 </div>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">{BONUS_PRINCIPLES.teamScore} {BONUS_PRINCIPLES.icScore}</p>
+            <p className="text-xs text-muted-foreground">{TEAM_SCORE_PRINCIPLES.teamScore} {TEAM_SCORE_PRINCIPLES.icScore}</p>
           </CardContent>
         </Card>
       )}
@@ -541,7 +541,7 @@ export default function Playbook() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">The pay review cycle</CardTitle>
-            <CardDescription>Pay, merit and bonus · <Link className="underline" to="/apr">open the pay review</Link></CardDescription>
+            <CardDescription>Pay and merit · <Link className="underline" to="/apr">open the pay review</Link></CardDescription>
           </CardHeader>
           <CardContent className="text-sm space-y-2">
             {APR_STAGES.map((s, i) => (
@@ -581,7 +581,7 @@ export default function Playbook() {
                 A manager with 5 or more eligible reports cannot save pay entries above their team budget —
                 the entry must be escalated to the next-level manager and approved first.
               </Rule>
-              <Rule>Merit and bonus draw from separate budgets; unspent money cannot move between them.</Rule>
+              <Rule>Merit and share awards draw from separate budgets; unspent money cannot move between them.</Rule>
               <Rule>I/C scores are tracked against the Datapath target of {IC_TARGET}.</Rule>
             </>
           )}

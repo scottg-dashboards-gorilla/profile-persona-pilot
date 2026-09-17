@@ -45,8 +45,6 @@ export type AprReview = {
   rating_score: number | null;
   merit_percent: number | null;
   merit_amount: number | null;
-  bonus_eligible: boolean;
-  bonus_amount: number | null;
   ic_score: number | null;
   is_executive: boolean;
   exec_payout_amount: number | null;
@@ -69,22 +67,18 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   const [saving, setSaving] = useState(false);
   const [score, setScore] = useState<string>("3");
   const [meritPercent, setMeritPercent] = useState("");
-  const [bonusEligible, setBonusEligible] = useState(false);
-  const [bonus, setBonus] = useState("");
   const [ic, setIc] = useState("");
   const [execPayout, setExecPayout] = useState("");
   const [note, setNote] = useState("");
   const [pdrScore, setPdrScore] = useState<number | null>(null);
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
-  const [teamPlanned, setTeamPlanned] = useState({ merit: 0, bonus: 0, eligible: 0 });
+  const [teamPlanned, setTeamPlanned] = useState({ merit: 0, eligible: 0 });
   const [blockedMsg, setBlockedMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!review) return;
     setScore(String(review.rating_score ?? 3));
     setMeritPercent(review.merit_percent?.toString() ?? "");
-    setBonusEligible(review.bonus_eligible);
-    setBonus(review.bonus_amount?.toString() ?? "");
     setIc(review.ic_score?.toString() ?? "");
     setExecPayout(review.exec_payout_amount?.toString() ?? "");
     setNote(review.escalation_note ?? "");
@@ -122,19 +116,18 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
     if (peers.length > 0) {
       const { data: revs } = await supabase
         .from("performance_reviews")
-        .select("id, merit_amount, bonus_amount, fiscal_year")
+        .select("id, merit_amount, fiscal_year")
         .in("employee_uuid", peers)
         .eq("fiscal_year", fiscalYear);
-      const others = ((revs ?? []) as { id: string; merit_amount: number | null; bonus_amount: number | null }[]).filter(
+      const others = ((revs ?? []) as { id: string; merit_amount: number | null }[]).filter(
         (r) => r.id !== review.id,
       );
       setTeamPlanned({
         merit: others.reduce((s, r) => s + (r.merit_amount ?? 0), 0),
-        bonus: others.reduce((s, r) => s + (r.bonus_amount ?? 0), 0),
         eligible: peers.length,
       });
     } else {
-      setTeamPlanned({ merit: 0, bonus: 0, eligible: 0 });
+      setTeamPlanned({ merit: 0, eligible: 0 });
     }
   }, [review, fiscalYear]);
 
@@ -147,13 +140,11 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   const comp = Number(review.current_annual_comp ?? 0);
   const meritPct = meritPercent === "" ? 0 : Number(meritPercent);
   const meritAmount = Math.round((comp * meritPct) / 100);
-  const bonusAmount = bonus === "" ? 0 : Number(bonus);
 
   const gate = budgetGate({
     eligibleCount: teamPlanned.eligible,
     budget,
     plannedMerit: teamPlanned.merit + meritAmount,
-    plannedBonus: teamPlanned.bonus + bonusAmount,
   });
 
   async function save(escalate = false) {
@@ -167,8 +158,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       merit_amount: meritPercent === "" ? null : meritAmount,
       comp_adjustment_amount: meritPercent === "" ? null : meritAmount,
       comp_adjustment_percent: meritPercent === "" ? null : meritPct,
-      bonus_eligible: bonusEligible,
-      bonus_amount: bonusEligible && bonus !== "" ? bonusAmount : null,
       ic_score: ic === "" ? null : Number(ic),
       exec_payout_amount: review.is_executive && execPayout !== "" ? Number(execPayout) : null,
       escalation_note: note || null,
@@ -180,7 +169,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
     const { error } = await supabase.from("performance_reviews").update(body).eq("id", review.id);
     setSaving(false);
     if (error) {
-      if (/Over (merit|bonus) budget/i.test(error.message)) {
+      if (/Over merit budget/i.test(error.message)) {
         setBlockedMsg(error.message);
         toast({
           title: "Over budget — can't save",
@@ -205,7 +194,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
         <DialogHeader>
           <DialogTitle>Pay review entry · {review.employee_name}</DialogTitle>
           <DialogDescription>
-            Manager step, Dec – Jan 1st half. Merit and bonus draw from separate budgets.
+            Manager step, Dec – Jan 1st half. Merit draws from the manager's merit budget.
           </DialogDescription>
         </DialogHeader>
 
@@ -262,18 +251,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
             </div>
           </div>
 
-          <div className="rounded-md border p-3 space-y-2">
-            <div className="flex items-center gap-2">
-              <Checkbox id="bel" checked={bonusEligible} onCheckedChange={(v) => setBonusEligible(!!v)} />
-              <Label htmlFor="bel" className="cursor-pointer">Bonus eligible</Label>
-            </div>
-            {bonusEligible && (
-              <div className="grid gap-2">
-                <Label className="text-xs">Bonus amount</Label>
-                <Input type="number" value={bonus} onChange={(e) => setBonus(e.target.value)} placeholder="0" />
-              </div>
-            )}
-          </div>
 
           {review.is_executive && (
             <div className="grid gap-2">
@@ -299,12 +276,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
                     {formatMoney(gate.meritRemaining)}
                   </span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span>Bonus left after this entry</span>
-                  <span className={gate.bonusOver ? "text-red-600 font-medium" : "text-emerald-700"}>
-                    {formatMoney(gate.bonusRemaining)}
-                  </span>
-                </div>
               </>
             )}
           </div>
@@ -316,8 +287,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
                 <div>
                   <div className="font-medium">Over budget — this can't be saved as it stands</div>
                   <p className="text-xs">
-                    Reduce the amount, or escalate to the next-level manager with a reason. Unspent merit
-                    cannot fund bonus, and vice versa.
+                    Reduce the amount, or escalate to the next-level manager with a reason.
                   </p>
                 </div>
               </div>
