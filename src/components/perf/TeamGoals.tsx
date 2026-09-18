@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 export type MeritInfo = {
   merit_percent: number | null;
   merit_amount: number | null;
-  overall_rating: number | null;
+  overall_rating: string | null;
 };
 
 export function TeamGoals({
