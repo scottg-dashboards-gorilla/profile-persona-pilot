@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PDR_STAGES, pdrProgress, pdrStageLabel, type PdrForm, type PdrObjective, type PdrStage } from "@/lib/pmp";
 import { ReviewTimeline } from "@/components/perf/ReviewTimeline";
 import { PdrDialog } from "@/components/perf/PdrDialog";
-import { TeamGoals } from "@/components/perf/TeamGoals";
+import { TeamGoals, type MeritInfo } from "@/components/perf/TeamGoals";
 import { usePermissions } from "@/hooks/usePermissions";
 
 type Emp = {
