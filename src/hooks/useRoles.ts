@@ -38,17 +38,30 @@ export function useRoles(opts: { includeInactive?: boolean } = {}) {
         data: { session },
       } = await supabase.auth.getSession();
 
-      // Signed-in users (incl. admins managing inactive roles) read the table directly.
+      // Admins and HR read the table directly (incl. inactive roles for management).
       if (session) {
-        const { data, error } = await supabase
-          .from("role_configs")
-          .select("*")
-          .order("sort_order", { ascending: true });
-        if (error) throw error;
-        return (data ?? []).map(rowToConfig);
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const { data: myRoles } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id);
+          const elevated = (myRoles ?? []).some(
+            (r: any) => r.role === "admin" || r.role === "hr"
+          );
+          if (elevated) {
+            const { data, error } = await supabase
+              .from("role_configs")
+              .select("*")
+              .order("sort_order", { ascending: true });
+            if (!error) return (data ?? []).map(rowToConfig);
+          }
+        }
       }
 
-      // Public assessment: only the active role choices, via a controlled lookup.
+      // Everyone else: only the active role choices, via a controlled lookup.
       const { data, error } = await supabase.rpc("public_active_role_configs");
       if (error) throw error;
       return ((data ?? []) as any[]).map(rowToConfig);
