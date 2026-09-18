@@ -58,6 +58,8 @@ type Review = {
   current_annual_comp: number | null;
   comp_adjustment_amount: number | null;
   comp_adjustment_percent: number | null;
+  merit_percent: number | null;
+  merit_amount: number | null;
   comp_effective_date: string | null;
   cycle_id: string | null;
 };
@@ -149,17 +151,23 @@ export default function Compensation() {
       const months = emp?.hire_date
         ? differenceInMonths(new Date(), parseISO(emp.hire_date))
         : null;
-      const recPct = recommendedPercent(r.overall_rating, composite, {
-        promotion: r.promotion,
-        monthsSinceLastRaise: months,
-      });
-      const existingPct = r.comp_adjustment_percent ?? null;
+      // Merit agreed in the Pay review cycle always wins over the generic recommendation
+      const meritPct = r.merit_percent ?? null;
+      const recPct =
+        meritPct ??
+        recommendedPercent(r.overall_rating, composite, {
+          promotion: r.promotion,
+          monthsSinceLastRaise: months,
+        });
+      const existingPct = r.comp_adjustment_percent ?? meritPct;
       const plan =
         plans[r.id] ??
         ({
           percent: existingPct ?? recPct,
           amount:
-            r.comp_adjustment_amount ?? amountFromPercent(comp, existingPct ?? recPct),
+            r.comp_adjustment_amount ??
+            r.merit_amount ??
+            amountFromPercent(comp, existingPct ?? recPct),
           touched: false,
         } as Plan);
       return {
