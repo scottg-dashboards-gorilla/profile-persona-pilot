@@ -49,6 +49,7 @@ export default function PDR() {
   const [years, setYears] = useState<number[]>([thisYear + 1, thisYear, thisYear - 1]);
   const [forms, setForms] = useState<PdrForm[]>([]);
   const [objectives, setObjectives] = useState<Record<string, PdrObjective[]>>({});
+  const [merit, setMerit] = useState<Record<string, MeritInfo>>({});
   const [employees, setEmployees] = useState<Emp[]>([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
