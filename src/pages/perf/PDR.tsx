@@ -106,8 +106,27 @@ export default function PDR() {
         (grouped[o.form_id] ??= []).push(o);
       });
       setObjectives(grouped);
+      // Merit agreed in the Pay review cycle, so goal delivery and reward sit side by side.
+      const { data: revs } = await supabase
+        .from("performance_reviews")
+        .select("employee_uuid,merit_percent,merit_amount,overall_rating,created_at")
+        .in("employee_uuid", list.map((x) => x.employee_uuid));
+      const m: Record<string, MeritInfo> = {};
+      ((revs ?? []) as (MeritInfo & { employee_uuid: string; created_at: string })[])
+        .sort((a, b) => (a.created_at < b.created_at ? -1 : 1))
+        .forEach((r) => {
+          if (r.merit_percent != null || r.merit_amount != null || r.overall_rating != null) {
+            m[r.employee_uuid] = {
+              merit_percent: r.merit_percent,
+              merit_amount: r.merit_amount,
+              overall_rating: r.overall_rating,
+            };
+          }
+        });
+      setMerit(m);
     } else {
       setObjectives({});
+      setMerit({});
     }
     setLoading(false);
   }, [year, isAdminHr, isManager]);
