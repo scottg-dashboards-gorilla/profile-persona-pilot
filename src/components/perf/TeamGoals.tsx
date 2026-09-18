@@ -12,13 +12,21 @@ import { cn } from "@/lib/utils";
  * Goals and achievements across the people a manager looks after, so progress can
  * be tracked in one place and weighed when merit is awarded.
  */
+export type MeritInfo = {
+  merit_percent: number | null;
+  merit_amount: number | null;
+  overall_rating: string | null;
+};
+
 export function TeamGoals({
   forms,
   objectives,
+  merit,
   onOpen,
 }: {
   forms: PdrForm[];
   objectives: Record<string, PdrObjective[]>;
+  merit?: Record<string, MeritInfo>;
   onOpen?: (formId: string) => void;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -69,6 +77,15 @@ export function TeamGoals({
                 <Badge variant="secondary" className="text-[10px]">
                   {s.achieved} achieved
                 </Badge>
+                {(() => {
+                  const m = merit?.[form.employee_uuid];
+                  const pct = m?.merit_percent;
+                  return (
+                    <span className="hidden md:inline text-xs text-muted-foreground w-28 text-right">
+                      {pct != null ? `Merit ${pct}%` : "Merit —"}
+                    </span>
+                  );
+                })()}
                 <div className="hidden sm:flex items-center gap-2 w-40">
                   <Progress value={Math.min(100, s.average ?? 0)} className="h-2" />
                   <span className={cn("text-xs w-10 text-right", s.average == null && "text-muted-foreground")}>

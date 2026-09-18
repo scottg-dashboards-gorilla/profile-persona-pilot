@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PDR_STAGES, pdrProgress, pdrStageLabel, type PdrForm, type PdrObjective, type PdrStage } from "@/lib/pmp";
 import { ReviewTimeline } from "@/components/perf/ReviewTimeline";
 import { PdrDialog } from "@/components/perf/PdrDialog";
-import { TeamGoals } from "@/components/perf/TeamGoals";
+import { TeamGoals, type MeritInfo } from "@/components/perf/TeamGoals";
 import { usePermissions } from "@/hooks/usePermissions";
 
 type Emp = {
@@ -49,6 +49,7 @@ export default function PDR() {
   const [years, setYears] = useState<number[]>([thisYear + 1, thisYear, thisYear - 1]);
   const [forms, setForms] = useState<PdrForm[]>([]);
   const [objectives, setObjectives] = useState<Record<string, PdrObjective[]>>({});
+  const [merit, setMerit] = useState<Record<string, MeritInfo>>({});
   const [employees, setEmployees] = useState<Emp[]>([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -106,8 +107,27 @@ export default function PDR() {
         (grouped[o.form_id] ??= []).push(o);
       });
       setObjectives(grouped);
+      // Merit agreed in the Pay review cycle, so goal delivery and reward sit side by side.
+      const { data: revs } = await supabase
+        .from("performance_reviews")
+        .select("employee_uuid,merit_percent,merit_amount,overall_rating,created_at")
+        .in("employee_uuid", list.map((x) => x.employee_uuid));
+      const m: Record<string, MeritInfo> = {};
+      ((revs ?? []) as (MeritInfo & { employee_uuid: string; created_at: string })[])
+        .sort((a, b) => (a.created_at < b.created_at ? -1 : 1))
+        .forEach((r) => {
+          if (r.merit_percent != null || r.merit_amount != null || r.overall_rating != null) {
+            m[r.employee_uuid] = {
+              merit_percent: r.merit_percent,
+              merit_amount: r.merit_amount,
+              overall_rating: r.overall_rating,
+            };
+          }
+        });
+      setMerit(m);
     } else {
       setObjectives({});
+      setMerit({});
     }
     setLoading(false);
   }, [year, isAdminHr, isManager]);
@@ -336,7 +356,9 @@ export default function PDR() {
         </CardContent>
       </Card>
 
-      {canManage && !loading && <TeamGoals forms={rows} objectives={objectives} onOpen={setOpenId} />}
+      {canManage && !loading && (
+        <TeamGoals forms={rows} objectives={objectives} merit={merit} onOpen={setOpenId} />
+      )}
 
       <PdrDialog
         formId={openId}
