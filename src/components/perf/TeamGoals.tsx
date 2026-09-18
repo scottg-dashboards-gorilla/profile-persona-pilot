@@ -12,13 +12,21 @@ import { cn } from "@/lib/utils";
  * Goals and achievements across the people a manager looks after, so progress can
  * be tracked in one place and weighed when merit is awarded.
  */
+export type MeritInfo = {
+  merit_percent: number | null;
+  merit_amount: number | null;
+  overall_rating: number | null;
+};
+
 export function TeamGoals({
   forms,
   objectives,
+  merit,
   onOpen,
 }: {
   forms: PdrForm[];
   objectives: Record<string, PdrObjective[]>;
+  merit?: Record<string, MeritInfo>;
   onOpen?: (formId: string) => void;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
