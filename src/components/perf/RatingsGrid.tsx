@@ -282,6 +282,21 @@ export function RatingsGrid({ year }: { year: number }) {
 
   const dirty = changed.length > 0;
 
+  /** Where each proposed outcome sits in the approval workflow. */
+  const approval = useMemo(() => {
+    const withMerit = rows.filter((r) => (r.merit_percent ?? 0) > 0);
+    return {
+      ready: withMerit.filter(
+        (r) =>
+          r.comp_approval_status === "not_required" || r.comp_approval_status === "changes_requested",
+      ).length,
+      submitted: withMerit.filter((r) => r.comp_approval_status === "submitted").length,
+      approved: withMerit.filter((r) => r.comp_approval_status === "approved").length,
+      sentBack: withMerit.filter((r) => r.comp_approval_status === "changes_requested").length,
+    };
+  }, [rows]);
+
+
   async function saveAll() {
     if (blocked) {
       toast({
