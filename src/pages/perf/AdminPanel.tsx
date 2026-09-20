@@ -37,6 +37,7 @@ type ReviewRow = {
   merit_percent: number | null;
   merit_amount: number | null;
   comp_approval_status: string;
+  comp_submitted_at: string | null;
   released_at: string | null;
   fiscal_year: number | null;
 };
