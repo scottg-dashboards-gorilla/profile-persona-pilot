@@ -510,35 +510,43 @@ export default function Compensation() {
                   <TableCell className="text-right text-xs text-muted-foreground">
                     {r.recPct}%
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Input
-                      className="h-8 text-right"
-                      type="number"
-                      step="0.1"
-                      value={r.plan.percent}
-                      onChange={(e) => {
-                        const pct = Number(e.target.value);
-                        setPlan(r.review.id, { percent: pct, amount: amountFromPercent(r.comp, pct) });
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Input
-                      className="h-8 text-right"
-                      type="number"
-                      value={r.plan.amount}
-                      onChange={(e) => {
-                        const amt = Number(e.target.value);
-                        setPlan(r.review.id, {
-                          amount: amt,
-                          percent: percentFromAmount(r.comp, amt),
-                        });
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatMoney(r.comp + (r.plan.amount || 0))}
-                  </TableCell>
+                  {r.awaiting ? (
+                    <TableCell colSpan={3} className="text-right text-xs text-amber-700">
+                      Waiting for HR sign-off — figure hidden until approved
+                    </TableCell>
+                  ) : (
+                    <>
+                      <TableCell className="text-right">
+                        <Input
+                          className="h-8 text-right"
+                          type="number"
+                          step="0.1"
+                          value={r.plan.percent}
+                          onChange={(e) => {
+                            const pct = Number(e.target.value);
+                            setPlan(r.review.id, { percent: pct, amount: amountFromPercent(r.comp, pct) });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          className="h-8 text-right"
+                          type="number"
+                          value={r.plan.amount}
+                          onChange={(e) => {
+                            const amt = Number(e.target.value);
+                            setPlan(r.review.id, {
+                              amount: amt,
+                              percent: percentFromAmount(r.comp, amt),
+                            });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatMoney(r.comp + (r.plan.amount || 0))}
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell>
                     <Button asChild size="icon" variant="ghost" className="h-8 w-8">
                       <Link to={`/people/${r.review.employee_uuid}`}>
