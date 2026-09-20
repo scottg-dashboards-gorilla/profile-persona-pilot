@@ -36,6 +36,7 @@ import {
 import { ActionItemsPanel } from "@/components/perf/ActionItemsPanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { exportCycleComparisonPdf } from "@/lib/cycleComparisonPdf";
+import { exportRecordPack } from "@/lib/recordPack";
 
 type Employee = {
   uuid: string;
@@ -157,6 +158,27 @@ export default function EmployeeDetail() {
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to people
           </Link>
         </Button>
+        {emp && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const name = `${emp.first_name ?? ""} ${emp.last_name ?? ""}`.trim() || "employee";
+              try {
+                await exportRecordPack(emp.uuid, name);
+                toast({ title: "Record pack downloaded", description: `${name}'s full cycle record.` });
+              } catch (err) {
+                toast({
+                  title: "Couldn't build the pack",
+                  description: err instanceof Error ? err.message : "Please try again.",
+                  variant: "destructive",
+                });
+              }
+            }}
+          >
+            <FileDown className="h-4 w-4 mr-1" /> Export record pack
+          </Button>
+        )}
       </div>
 
       <Card>
