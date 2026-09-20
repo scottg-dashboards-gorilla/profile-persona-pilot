@@ -28,6 +28,7 @@ import Playbook from "./pages/perf/Playbook";
 import PDR from "./pages/perf/PDR";
 import APR from "./pages/perf/APR";
 import SalaryHistory from "./pages/perf/SalaryHistory";
+import AdminPanel from "./pages/perf/AdminPanel";
 import ReviewForm from "./pages/ReviewForm";
 import RequireArea from "./components/perf/RequireArea";
 
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/salary-history" element={<RequireArea area="salary"><SalaryHistory /></RequireArea>} />
             <Route path="/calibration" element={<RequireArea area="calibration"><Calibration /></RequireArea>} />
             <Route path="/org" element={<RequireArea area="org"><OrgRollups /></RequireArea>} />
+            <Route path="/admin/panel" element={<AdminPanel />} />
             <Route path="/admin/audit" element={<RequireArea area="audit"><AuditLog /></RequireArea>} />
 
             <Route path="/assessments" element={<Dashboard />} />

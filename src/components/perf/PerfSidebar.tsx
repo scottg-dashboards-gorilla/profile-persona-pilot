@@ -45,6 +45,7 @@ const primary: Item[] = [
 
 const secondary: Item[] = [
   { title: "Playbook", url: "/playbook", icon: BookOpen },
+  { title: "Admin panel", url: "/admin/panel", icon: ShieldCheck, adminOnly: true },
   { title: "Assessments", url: "/assessments", icon: FileSpreadsheet, adminOnly: true },
   { title: "Role Configs", url: "/admin/roles", icon: Settings, adminOnly: true },
   { title: "Access", url: "/admin/access", icon: ShieldCheck, adminOnly: true },

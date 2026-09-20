@@ -30,6 +30,7 @@ export function BudgetApproval({ year }: { year: number }) {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [edits, setEdits] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -79,6 +80,7 @@ export function BudgetApproval({ year }: { year: number }) {
       .sort((a, b) => b.teamPay - a.teamPay);
 
     setRows(list);
+    setEdits({});
     setLoading(false);
   }, [year]);
 
@@ -94,6 +96,15 @@ export function BudgetApproval({ year }: { year: number }) {
 
   const shown = rows.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()));
 
+  /** Amount an admin typed in for a manager, overriding the standing 5% pot. */
+  const amountFor = (m: Manager) => {
+    const typed = edits[m.uuid];
+    if (typed !== undefined && typed.trim() !== "" && Number.isFinite(Number(typed))) {
+      return Math.max(0, Math.round(Number(typed)));
+    }
+    return m.budget !== null ? Math.round(m.budget) : Math.round(m.teamPay * MERIT_POOL_RATE);
+  };
+
   async function approve(list: Manager[], label: string) {
     if (list.length === 0) return;
     setBusy(label);
@@ -102,7 +113,7 @@ export function BudgetApproval({ year }: { year: number }) {
       list.map((m) => ({
         manager_uuid: m.uuid,
         fiscal_year: year,
-        merit_budget_amount: Math.round(m.teamPay * MERIT_POOL_RATE),
+        merit_budget_amount: amountFor(m),
         approval_status: "approved",
         approved_at: new Date().toISOString(),
         approved_by: auth.user?.id ?? null,
@@ -178,8 +189,15 @@ export function BudgetApproval({ year }: { year: number }) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-semibold">{formatMoney(pot)}</div>
-                    <div className="text-[11px] text-muted-foreground">5% of team pay</div>
+                    <Input
+                      className="h-8 w-32 text-right"
+                      inputMode="numeric"
+                      value={edits[m.uuid] ?? String(m.budget !== null ? Math.round(m.budget) : pot)}
+                      onChange={(e) => setEdits((s) => ({ ...s, [m.uuid]: e.target.value }))}
+                    />
+                    <div className="text-[11px] text-muted-foreground">
+                      5% of team pay = {formatMoney(pot)}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {approved ? (
