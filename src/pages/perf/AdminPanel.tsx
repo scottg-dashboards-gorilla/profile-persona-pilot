@@ -131,7 +131,11 @@ function ReviewApprovals() {
               <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading…
             </div>
           ) : waiting.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Nothing waiting for you.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nothing submitted for your decision.
+              {withManagers.length > 0 &&
+                ` ${withManagers.length} figure(s) are still being worked on by managers.`}
+            </p>
           ) : (
             <Table>
               <TableHeader>
