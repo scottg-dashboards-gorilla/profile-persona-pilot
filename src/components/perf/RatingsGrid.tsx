@@ -660,6 +660,15 @@ export function RatingsGrid({ year }: { year: number }) {
                 {saving ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
                 Save
               </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={saving || dirty || approval.ready === 0}
+                onClick={submitForApproval}
+              >
+                <Send className="h-3.5 w-3.5 mr-1" />
+                Submit {approval.ready > 0 ? `${approval.ready} ` : ""}to HR
+              </Button>
             </div>
           </>
         )}
