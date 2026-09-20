@@ -119,8 +119,10 @@ function ReviewApprovals() {
             <ClipboardCheck className="h-4 w-4 text-primary" /> Pay outcomes waiting for sign-off
           </CardTitle>
           <CardDescription>
-            Managers propose the figure; nothing can be shared with the employee until it is approved here.
-            {waiting.length} waiting · {approved.length} approved.
+            Managers enter the figure and submit it; nothing reaches the salary update page or the
+            employee until it is approved here. {waiting.length} submitted and waiting ·{" "}
+            {withManagers.length} still with managers · {sentBack.length} sent back ·{" "}
+            {approved.length} approved.
           </CardDescription>
         </CardHeader>
         <CardContent>
