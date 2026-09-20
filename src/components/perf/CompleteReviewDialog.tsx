@@ -35,6 +35,8 @@ import {
   tierChange,
   readableTier,
   topMovers,
+  flaggedAreas,
+  type FlaggedArea,
 } from "@/lib/assessmentDeltas";
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
