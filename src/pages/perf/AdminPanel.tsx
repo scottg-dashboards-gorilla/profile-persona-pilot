@@ -64,7 +64,7 @@ function ReviewApprovals() {
     const { data, error } = await supabase
       .from("performance_reviews")
       .select(
-        "id,employee_name,department,overall_rating,merit_percent,merit_amount,comp_approval_status,released_at,fiscal_year",
+        "id,employee_name,department,overall_rating,merit_percent,merit_amount,comp_approval_status,comp_submitted_at,released_at,fiscal_year",
       )
       .order("employee_name");
     if (error) toast.error(error.message);
@@ -76,9 +76,20 @@ function ReviewApprovals() {
     load();
   }, [load]);
 
+  const proposed = useMemo(() => rows.filter((r) => (r.merit_percent ?? 0) > 0), [rows]);
+  /** Only what a manager has actually submitted is a decision for HR. */
   const waiting = useMemo(
-    () => rows.filter((r) => r.comp_approval_status !== "approved" && (r.merit_percent ?? 0) > 0),
-    [rows],
+    () => proposed.filter((r) => r.comp_approval_status === "submitted"),
+    [proposed],
+  );
+  /** Still being worked on by the manager — nothing for HR to do yet. */
+  const withManagers = useMemo(
+    () => proposed.filter((r) => r.comp_approval_status === "not_required"),
+    [proposed],
+  );
+  const sentBack = useMemo(
+    () => proposed.filter((r) => r.comp_approval_status === "changes_requested"),
+    [proposed],
   );
   const approved = useMemo(() => rows.filter((r) => r.comp_approval_status === "approved"), [rows]);
 
