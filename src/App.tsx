@@ -16,6 +16,7 @@ import Overview from "./pages/perf/Overview";
 import Reviews from "./pages/perf/Reviews";
 import People from "./pages/perf/People";
 import EmployeeDetail from "./pages/perf/EmployeeDetail";
+import ImprovementActions from "./pages/perf/ImprovementActions";
 import TaskTracker from "./pages/perf/TaskTracker";
 import Compensation from "./pages/perf/Compensation";
 import Calibration from "./pages/perf/Calibration";
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/apr" element={<RequireArea area="apr"><APR /></RequireArea>} />
             <Route path="/people" element={<People />} />
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
+            <Route path="/improvement" element={<ImprovementActions />} />
             <Route path="/me" element={<EmployeeOnly><MyReview /></EmployeeOnly>} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/playbook" element={<Playbook />} />
