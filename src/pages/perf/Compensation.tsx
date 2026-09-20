@@ -249,7 +249,8 @@ export default function Compensation() {
   }
 
   async function saveAll() {
-    const dirty = rows.filter((r) => plans[r.review.id]?.touched);
+    // Anything still waiting on HR is never written from here.
+    const dirty = rows.filter((r) => !r.awaiting && plans[r.review.id]?.touched);
     if (dirty.length === 0) {
       toast({ title: "Nothing to save" });
       return;
