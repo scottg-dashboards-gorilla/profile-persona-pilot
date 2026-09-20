@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardCheck, Users, Target, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Users, Target, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock, TrendingUp } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -34,6 +34,7 @@ const primary: Item[] = [
   { title: "Pay review cycle", url: "/apr", icon: Wallet, area: "apr" },
   { title: "Reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
   { title: "Team's Assessment", url: "/people", icon: Users, area: "reviews", notInEmployeeView: true },
+  { title: "Improvement actions", url: "/improvement", icon: TrendingUp, area: "reviews", notInEmployeeView: true },
   { title: "Task Tracker", url: "/tasks", icon: ListTodo },
   { title: "My review", url: "/me", icon: UserSquare2, employeeOnly: true },
   { title: "Company performance", url: "/company", icon: Building2, area: "company" },
