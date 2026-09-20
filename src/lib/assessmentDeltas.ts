@@ -92,6 +92,73 @@ export function pickLatestPair(attempts: AttemptRow[]): { current: AttemptRow | 
   return { current: sorted[0] ?? null, previous: sorted[1] ?? null };
 }
 
+/** Score at or below this counts as an underperforming area. */
+export const WEAK_SCORE_THRESHOLD = 60;
+/** A drop of this many points or more counts as a regression worth acting on. */
+export const REGRESSION_THRESHOLD = 5;
+
+export type FlaggedArea = {
+  /** Stable key used to match an action item: `technical:<id>` or `tier`. */
+  matchKey: string;
+  kind: "technical" | "tier";
+  key: string | null;
+  reason: "low" | "regressed" | "both" | "tier_drop";
+  from: number | null;
+  to: number | null;
+};
+
+const TIER_RANK: Record<string, number> = {
+  "tier-1": 1,
+  tier_1: 1,
+  "tier-2": 2,
+  tier_2: 2,
+  "team-leader": 3,
+  team_leader: 3,
+};
+
+/**
+ * Areas from this attempt that must have an improvement action before a review
+ * can be completed: any competency scoring at or below the weak threshold, any
+ * competency that dropped meaningfully since the last attempt, and a tier drop.
+ */
+export function flaggedAreas(prev: AttemptRow | null, curr: AttemptRow | null): FlaggedArea[] {
+  if (!curr) return [];
+  const out: FlaggedArea[] = [];
+  for (const d of technicalDelta(prev, curr)) {
+    const low = d.to <= WEAK_SCORE_THRESHOLD;
+    const regressed = d.delta != null && d.delta <= -REGRESSION_THRESHOLD;
+    if (!low && !regressed) continue;
+    out.push({
+      matchKey: `technical:${d.id}`,
+      kind: "technical",
+      key: d.id,
+      reason: low && regressed ? "both" : low ? "low" : "regressed",
+      from: d.from,
+      to: d.to,
+    });
+  }
+  const prevRank = prev?.tier ? TIER_RANK[prev.tier] : undefined;
+  const currRank = curr.tier ? TIER_RANK[curr.tier] : undefined;
+  if (prevRank != null && currRank != null && currRank < prevRank) {
+    out.push({
+      matchKey: "tier",
+      kind: "tier",
+      key: curr.tier,
+      reason: "tier_drop",
+      from: prevRank,
+      to: currRank,
+    });
+  }
+  return out;
+}
+
+export function flagReasonLabel(a: FlaggedArea): string {
+  if (a.reason === "tier_drop") return "Tier dropped";
+  if (a.reason === "both") return `Low (${a.to?.toFixed(0)}) and down ${Math.abs((a.to ?? 0) - (a.from ?? 0)).toFixed(0)}`;
+  if (a.reason === "low") return `Scored ${a.to?.toFixed(0)} — below ${WEAK_SCORE_THRESHOLD}`;
+  return `Down ${Math.abs((a.to ?? 0) - (a.from ?? 0)).toFixed(0)} since last time`;
+}
+
 export function topMovers(
   deltas: CompetencyDelta[],
   direction: "up" | "down",
