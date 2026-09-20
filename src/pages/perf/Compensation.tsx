@@ -62,6 +62,9 @@ type Review = {
   merit_amount: number | null;
   comp_effective_date: string | null;
   cycle_id: string | null;
+  /** Where the pay outcome sits: not_required, submitted, changes_requested, approved. */
+  comp_approval_status: string;
+  comp_submitted_at: string | null;
 };
 
 type Employee = { uuid: string; current_annual_comp: number | null; hire_date: string | null };
