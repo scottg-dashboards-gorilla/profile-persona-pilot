@@ -165,6 +165,56 @@ export type Database = {
           },
         ]
       }
+      assessment_check_in_requests: {
+        Row: {
+          attempt_id: string | null
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          employee_uuid: string
+          id: string
+          note: string | null
+          requested_by: string | null
+          requester_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          employee_uuid: string
+          id?: string
+          note?: string | null
+          requested_by?: string | null
+          requester_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          employee_uuid?: string
+          id?: string
+          note?: string | null
+          requested_by?: string | null
+          requester_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_check_in_requests_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
