@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { GoalsPanel, GoalsSummaryLine } from "@/components/perf/GoalsPanel";
 import { ImprovementPlanCard } from "@/components/perf/ImprovementPlanCard";
+import { AssessmentCheckInCard } from "@/components/perf/AssessmentCheckInCard";
 import { goalsSummary, type PdrObjective } from "@/lib/pmp";
 import {
   Select,
@@ -771,6 +772,7 @@ export default function MyReview() {
         </Card>
       )}
 
+      {me?.uuid && <AssessmentCheckInCard employeeUuid={me.uuid} />}
       {me?.uuid && <ImprovementPlanCard employeeUuid={me.uuid} />}
 
       <Card>
