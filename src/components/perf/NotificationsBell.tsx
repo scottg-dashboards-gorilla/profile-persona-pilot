@@ -95,6 +95,21 @@ export function NotificationsBell() {
       });
     }
 
+    // An off-cycle assessment check-in a manager or HR has asked for.
+    const { data: checkIns } = await supabase
+      .from("assessment_check_in_requests")
+      .select("id, requester_name, due_date")
+      .eq("employee_uuid", uuid)
+      .eq("status", "open");
+    for (const c of checkIns ?? []) {
+      out.push({
+        id: `checkin-${c.id}`,
+        title: "Assessment check-in requested",
+        detail: `${c.requester_name ?? "Your manager"} asked you to take the assessment${c.due_date ? ` by ${c.due_date}` : ""}.`,
+        href: "/me",
+      });
+    }
+
     if (!forms) {
       out.push({
         id: "pdr-none",

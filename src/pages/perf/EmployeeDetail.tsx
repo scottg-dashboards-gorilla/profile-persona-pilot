@@ -38,6 +38,7 @@ import { ActionItemsPanel } from "@/components/perf/ActionItemsPanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { exportCycleComparisonPdf } from "@/lib/cycleComparisonPdf";
 import { exportRecordPack } from "@/lib/recordPack";
+import { RequestCheckInButton } from "@/components/perf/RequestCheckInButton";
 
 type Employee = {
   uuid: string;
@@ -179,6 +180,12 @@ export default function EmployeeDetail() {
           >
             <FileDown className="h-4 w-4 mr-1" /> Export record pack
           </Button>
+        )}
+        {emp && (
+          <RequestCheckInButton
+            employeeUuid={emp.uuid}
+            employeeName={`${emp.first_name ?? ""} ${emp.last_name ?? ""}`.trim()}
+          />
         )}
       </div>
 
