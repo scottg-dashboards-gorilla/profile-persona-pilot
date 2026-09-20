@@ -35,6 +35,8 @@ import {
   tierChange,
   readableTier,
   topMovers,
+  flaggedAreas,
+  type FlaggedArea,
 } from "@/lib/assessmentDeltas";
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
@@ -96,6 +98,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [currentAttempt, setCurrentAttempt] = useState<AttemptRow | null>(null);
   const [previousAttempt, setPreviousAttempt] = useState<AttemptRow | null>(null);
   const [presetContext, setPresetContext] = useState<DeltaContext | null>(null);
+  const [uncoveredAreas, setUncoveredAreas] = useState<FlaggedArea[]>([]);
 
   const [promotion, setPromotion] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -162,6 +165,14 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
       toast({
         title: "Assessment required",
         description: "Send the assessment link and wait for submission before completing this review.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (uncoveredAreas.length > 0) {
+      toast({
+        title: "Improvement actions required",
+        description: `${uncoveredAreas.length} area${uncoveredAreas.length === 1 ? "" : "s"} flagged by the assessment still need an action and a date to achieve it by.`,
         variant: "destructive",
       });
       return;
@@ -239,7 +250,9 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
               reviewId={review.id}
               attemptId={currentAttempt.id}
               presetContext={presetContext}
-              title="Reviewer action items"
+              requiredAreas={flaggedAreas(previousAttempt, currentAttempt)}
+              onCoverageChange={setUncoveredAreas}
+              title="Improvement plan & action items"
             />
           )}
           {contribs.length > 0 && (
@@ -345,13 +358,20 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
           <Button
             onClick={handleSave}
-            disabled={saving || !currentAttempt || (wasShared && !reopenReason.trim())}
+            disabled={
+              saving ||
+              !currentAttempt ||
+              uncoveredAreas.length > 0 ||
+              (wasShared && !reopenReason.trim())
+            }
             title={
               !currentAttempt
                 ? "An assessment attempt is required for this review"
-                : wasShared && !reopenReason.trim()
-                  ? "Explain why the shared outcome is changing"
-                  : undefined
+                : uncoveredAreas.length > 0
+                  ? "Every flagged area needs an improvement action with a date"
+                  : wasShared && !reopenReason.trim()
+                    ? "Explain why the shared outcome is changing"
+                    : undefined
             }
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}

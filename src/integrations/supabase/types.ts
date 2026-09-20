@@ -25,11 +25,14 @@ export type Database = {
           delta_key: string | null
           delta_kind: string
           delta_to: number | null
+          due_date: string | null
           employee_uuid: string
           follow_up_review_id: string | null
           id: string
+          is_required: boolean
           review_id: string | null
           status: string
+          target_value: number | null
           updated_at: string
         }
         Insert: {
@@ -42,11 +45,14 @@ export type Database = {
           delta_key?: string | null
           delta_kind: string
           delta_to?: number | null
+          due_date?: string | null
           employee_uuid: string
           follow_up_review_id?: string | null
           id?: string
+          is_required?: boolean
           review_id?: string | null
           status?: string
+          target_value?: number | null
           updated_at?: string
         }
         Update: {
@@ -59,11 +65,14 @@ export type Database = {
           delta_key?: string | null
           delta_kind?: string
           delta_to?: number | null
+          due_date?: string | null
           employee_uuid?: string
           follow_up_review_id?: string | null
           id?: string
+          is_required?: boolean
           review_id?: string | null
           status?: string
+          target_value?: number | null
           updated_at?: string
         }
         Relationships: [

@@ -15,6 +15,7 @@ import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { GoalsPanel, GoalsSummaryLine } from "@/components/perf/GoalsPanel";
+import { ImprovementPlanCard } from "@/components/perf/ImprovementPlanCard";
 import { goalsSummary, type PdrObjective } from "@/lib/pmp";
 import {
   Select,
@@ -769,6 +770,8 @@ export default function MyReview() {
           </CardContent>
         </Card>
       )}
+
+      {me?.uuid && <ImprovementPlanCard employeeUuid={me.uuid} />}
 
       <Card>
         <CardHeader>
