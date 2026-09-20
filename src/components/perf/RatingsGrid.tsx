@@ -62,6 +62,10 @@ type GridRow = {
   
   ic_score: number | null;
   apr_stage: string;
+  /** not_required → submitted → approved (or changes_requested back to the manager). */
+  comp_approval_status: string;
+  comp_approval_note: string | null;
+  comp_submitted_at: string | null;
 };
 
 type Draft = {
