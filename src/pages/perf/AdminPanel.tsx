@@ -155,6 +155,11 @@ function ReviewApprovals() {
                       <div className="text-sm font-medium">{r.employee_name}</div>
                       <div className="text-xs text-muted-foreground">
                         {r.department ?? "—"} · FY{r.fiscal_year ?? FISCAL_YEAR}
+                        {r.comp_submitted_at &&
+                          ` · submitted ${new Date(r.comp_submitted_at).toLocaleDateString("en-US", {
+                            day: "numeric",
+                            month: "short",
+                          })}`}
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{r.overall_rating ?? "—"}</TableCell>
