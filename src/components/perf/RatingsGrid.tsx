@@ -318,6 +318,43 @@ export function RatingsGrid({ year }: { year: number }) {
     await load();
   }
 
+  /**
+   * Hands the proposed pay outcomes to HR. Nothing reaches the salary update
+   * page, or the employee, until HR signs each one off.
+   */
+  async function submitForApproval() {
+    const toSubmit = rows.filter(
+      (r) =>
+        (r.merit_percent ?? 0) > 0 &&
+        (r.comp_approval_status === "not_required" || r.comp_approval_status === "changes_requested"),
+    );
+    if (toSubmit.length === 0) return;
+    setSaving(true);
+    const { data: auth } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("performance_reviews")
+      .update({
+        comp_approval_status: "submitted",
+        comp_submitted_at: new Date().toISOString(),
+        comp_submitted_by: auth.user?.id ?? null,
+      })
+      .in(
+        "id",
+        toSubmit.map((r) => r.id),
+      );
+    setSaving(false);
+    if (error) {
+      toast({ title: "Couldn't submit", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Sent to HR",
+      description: `${toSubmit.length} pay outcome(s) are now waiting for sign-off.`,
+    });
+    await load();
+  }
+
+
   return (
     <Card>
       <CardHeader className="gap-3">
