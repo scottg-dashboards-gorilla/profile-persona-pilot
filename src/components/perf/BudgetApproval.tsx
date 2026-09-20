@@ -94,6 +94,15 @@ export function BudgetApproval({ year }: { year: number }) {
 
   const shown = rows.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()));
 
+  /** Amount an admin typed in for a manager, overriding the standing 5% pot. */
+  const amountFor = (m: Manager) => {
+    const typed = edits[m.uuid];
+    if (typed !== undefined && typed.trim() !== "" && Number.isFinite(Number(typed))) {
+      return Math.max(0, Math.round(Number(typed)));
+    }
+    return m.budget !== null ? Math.round(m.budget) : Math.round(m.teamPay * MERIT_POOL_RATE);
+  };
+
   async function approve(list: Manager[], label: string) {
     if (list.length === 0) return;
     setBusy(label);
@@ -102,7 +111,7 @@ export function BudgetApproval({ year }: { year: number }) {
       list.map((m) => ({
         manager_uuid: m.uuid,
         fiscal_year: year,
-        merit_budget_amount: Math.round(m.teamPay * MERIT_POOL_RATE),
+        merit_budget_amount: amountFor(m),
         approval_status: "approved",
         approved_at: new Date().toISOString(),
         approved_by: auth.user?.id ?? null,
