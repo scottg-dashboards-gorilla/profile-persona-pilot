@@ -491,6 +491,12 @@ export function RatingsGrid({ year }: { year: number }) {
                         <div className="text-[11px] text-muted-foreground">
                           {c.row.title ?? c.row.department ?? "—"}
                         </div>
+                        {(c.row.merit_percent ?? 0) > 0 && (
+                          <ApprovalBadge
+                            status={c.row.comp_approval_status}
+                            note={c.row.comp_approval_note}
+                          />
+                        )}
                       </TableCell>
                       <TableCell className="align-middle">
                         {(() => {
