@@ -392,6 +392,9 @@ export default function AdminPanel() {
         <TabsContent value="roles" className="mt-4">
           <RolesTab />
         </TabsContent>
+        <TabsContent value="calendar" className="mt-4">
+          <ReviewCalendar />
+        </TabsContent>
         <TabsContent value="fairness" className="mt-4">
           <FairnessCheck year={FISCAL_YEAR} />
         </TabsContent>
