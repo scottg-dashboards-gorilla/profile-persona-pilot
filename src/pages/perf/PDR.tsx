@@ -108,12 +108,19 @@ export default function PDR() {
       });
       setObjectives(grouped);
       // Merit agreed in the Pay review cycle, so goal delivery and reward sit side by side.
+      // Keep only the review that belongs to the year being viewed — older rows may lack a
+      // fiscal_year, in which case fall back to the review's creation year.
       const { data: revs } = await supabase
         .from("performance_reviews")
-        .select("employee_uuid,merit_percent,merit_amount,overall_rating,created_at")
+        .select("employee_uuid,merit_percent,merit_amount,overall_rating,created_at,fiscal_year")
         .in("employee_uuid", list.map((x) => x.employee_uuid));
       const m: Record<string, MeritInfo> = {};
-      ((revs ?? []) as (MeritInfo & { employee_uuid: string; created_at: string })[])
+      ((revs ?? []) as (MeritInfo & { employee_uuid: string; created_at: string; fiscal_year: number | null })[])
+        .filter((r) =>
+          r.fiscal_year != null
+            ? r.fiscal_year === year
+            : new Date(r.created_at).getFullYear() === year,
+        )
         .sort((a, b) => (a.created_at < b.created_at ? -1 : 1))
         .forEach((r) => {
           if (r.merit_percent != null || r.merit_amount != null || r.overall_rating != null) {
