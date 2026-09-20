@@ -30,6 +30,7 @@ export function BudgetApproval({ year }: { year: number }) {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [edits, setEdits] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
