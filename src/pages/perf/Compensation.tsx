@@ -429,6 +429,16 @@ export default function Compensation() {
         </CardContent>
       </Card>
 
+      {rows.some((r) => r.awaiting) && (
+        <Card className="border-amber-200 bg-amber-50/60">
+          <CardContent className="p-4 text-sm text-amber-900">
+            {rows.filter((r) => r.awaiting).length} pay outcome(s) proposed by managers are still
+            waiting for HR sign-off. Their figures are hidden here and left out of the totals until
+            HR approves them in the Admin panel.
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardContent className="p-0 overflow-x-auto">
           <Table>
