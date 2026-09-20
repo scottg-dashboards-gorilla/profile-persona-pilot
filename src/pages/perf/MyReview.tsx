@@ -1,3 +1,4 @@
+import { KeyDates } from "@/components/perf/KeyDates";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -416,6 +417,9 @@ export default function MyReview() {
         </h1>
         <p className="text-sm text-muted-foreground">{me.title ?? "—"}</p>
       </div>
+
+      <KeyDates audience="employee" />
+
 
       {todos.length > 0 && (
         <Card className="border-amber-200 bg-amber-50/60">

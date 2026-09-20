@@ -103,15 +103,17 @@ export function RatingsGrid({ year }: { year: number }) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data }, { data: budgets }] = await Promise.all([
+    // Everything that doesn't depend on anything else is fetched at once, so the
+    // grid appears quickly instead of waiting on a chain of requests.
+    const [{ data }, { data: budgets }, { data: authData }] = await Promise.all([
       supabase.from("performance_reviews").select(SELECT).eq("fiscal_year", year).order("employee_name"),
       supabase.from("manager_budgets").select("*").eq("fiscal_year", year),
+      supabase.auth.getUser(),
     ]);
     let list = (data ?? []) as unknown as GridRow[];
     let myUuid: string | null = null;
     // This grid is for the team — the signed-in person's own review never appears,
     // and a manager only ever sees the people who report directly to them.
-    const { data: authData } = await supabase.auth.getUser();
     const uid = authData.user?.id;
     if (uid) {
       const { data: me } = await supabase
@@ -142,6 +144,21 @@ export function RatingsGrid({ year }: { year: number }) {
     const next: Record<string, Draft> = {};
     list.forEach((r) => (next[r.id] = toDraft(r)));
     setDrafts(next);
+    // Only the budget that belongs to this team counts: a manager sees their own
+    // approved pot, HR and admins see the approved pots added together.
+    const bs = ((budgets ?? []) as unknown as ManagerBudget[]).filter((b) =>
+      isAdminHr ? true : myUuid != null && b.manager_uuid === myUuid,
+    );
+    const sum = (status: string) =>
+      bs
+        .filter((b) => (b.approval_status ?? "pending") === status)
+        .reduce((s, b) => s + Number(b.merit_budget_amount ?? 0), 0);
+    setApprovedBudget(sum("approved"));
+    setPendingBudget(bs.reduce((s, b) => s + Number(b.merit_budget_amount ?? 0), 0) - sum("approved"));
+    // The grid is usable from here — goal progress fills in a moment later rather
+    // than holding the whole page up.
+    setLoading(false);
+
     // Goal progress for the same people, so merit can be weighed against what they
     // actually signed up to deliver.
     if (list.length > 0) {
@@ -169,18 +186,6 @@ export function RatingsGrid({ year }: { year: number }) {
     } else {
       setGoalsByEmp({});
     }
-    // Only the budget that belongs to this team counts: a manager sees their own
-    // approved pot, HR and admins see the approved pots added together.
-    const bs = ((budgets ?? []) as unknown as ManagerBudget[]).filter((b) =>
-      isAdminHr ? true : myUuid != null && b.manager_uuid === myUuid,
-    );
-    const sum = (status: string) =>
-      bs
-        .filter((b) => (b.approval_status ?? "pending") === status)
-        .reduce((s, b) => s + Number(b.merit_budget_amount ?? 0), 0);
-    setApprovedBudget(sum("approved"));
-    setPendingBudget(bs.reduce((s, b) => s + Number(b.merit_budget_amount ?? 0), 0) - sum("approved"));
-    setLoading(false);
   }, [year, isAdminHr]);
 
   useEffect(() => {
@@ -223,6 +228,25 @@ export function RatingsGrid({ year }: { year: number }) {
       ? Math.round((pcts.reduce((s, p) => s + p, 0) / pcts.length) * 100) / 100
       : null;
     return { merit, icAvg, meritAvg };
+  }, [computed]);
+
+  /**
+   * How this team's ratings are spread across the 1–5 scale. A team where most
+   * people sit at 4 or 5 needs calibrating before pay is agreed.
+   */
+  const distribution = useMemo(() => {
+    const scored = computed.filter((c) => c.score != null);
+    const counts = RATING_SCALE.map((s) => ({
+      score: s.score,
+      label: s.label,
+      count: scored.filter((c) => c.score === s.score).length,
+    }));
+    const topShare = scored.length
+      ? Math.round(
+          (counts.filter((c) => c.score >= 4).reduce((s, c) => s + c.count, 0) / scored.length) * 100,
+        )
+      : 0;
+    return { counts, rated: scored.length, topShare, topHeavy: scored.length >= 4 && topShare > 40 };
   }, [computed]);
 
   const eligibleCount = rows.length;
@@ -338,6 +362,44 @@ export function RatingsGrid({ year }: { year: number }) {
           <p className="py-8 text-center text-sm text-muted-foreground">No reviews dated in FY{year}.</p>
         ) : (
           <>
+            <div className="rounded-md border p-3 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-medium">Your team's rating spread</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {distribution.rated} of {rows.length} rated
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {distribution.counts.map((c) => (
+                  <Badge key={c.score} variant={c.count > 0 ? "secondary" : "outline"} className="font-normal">
+                    {c.score} — {c.label}: {c.count}
+                  </Badge>
+                ))}
+              </div>
+              {distribution.topHeavy && (
+                <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    {distribution.topShare}% of your team is rated 4 or 5. Check each of those
+                    has written evidence behind it — a strong rating should stand out from a
+                    solid year.
+                  </span>
+                </div>
+              )}
+              <details className="text-[11px] text-muted-foreground">
+                <summary className="cursor-pointer font-medium text-foreground">
+                  Writing a rating you can stand behind
+                </summary>
+                <ul className="mt-2 list-disc space-y-1 pl-4">
+                  <li>Name the work, not the person: what was delivered, when, and what changed as a result.</li>
+                  <li>Cover the whole year, not the last few weeks.</li>
+                  <li>Use the same standard for everyone — compare the work to the role, not people to each other.</li>
+                  <li>Say what would have made it a higher rating; that becomes next year's focus.</li>
+                  <li>Watch for the usual traps: recency, similarity to yourself, one memorable event, and being swayed by how someone communicates rather than what they delivered.</li>
+                </ul>
+              </details>
+            </div>
+
             <div className="overflow-x-auto">
               <Table className="text-xs">
                 <TableHeader>

@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, ShieldCheck, Wallet, ClipboardCheck, Users } from "lucide-react";
+import { Loader2, ShieldCheck, Wallet, ClipboardCheck, Users, Scale, ShieldAlert } from "lucide-react";
+import FairnessCheck from "@/components/perf/FairnessCheck";
+import DataHealth from "@/components/perf/DataHealth";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
 import BudgetApproval from "@/components/perf/BudgetApproval";
@@ -361,6 +363,12 @@ export default function AdminPanel() {
           <TabsTrigger value="roles" className="gap-1.5">
             <Users className="h-4 w-4" /> Employee roles
           </TabsTrigger>
+          <TabsTrigger value="fairness" className="gap-1.5">
+            <Scale className="h-4 w-4" /> Fairness check
+          </TabsTrigger>
+          <TabsTrigger value="records" className="gap-1.5">
+            <ShieldAlert className="h-4 w-4" /> Records
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="budget" className="mt-4">
           <BudgetApproval year={FISCAL_YEAR} />
@@ -370,6 +378,12 @@ export default function AdminPanel() {
         </TabsContent>
         <TabsContent value="roles" className="mt-4">
           <RolesTab />
+        </TabsContent>
+        <TabsContent value="fairness" className="mt-4">
+          <FairnessCheck year={FISCAL_YEAR} />
+        </TabsContent>
+        <TabsContent value="records" className="mt-4">
+          <DataHealth year={FISCAL_YEAR} />
         </TabsContent>
       </Tabs>
     </div>
