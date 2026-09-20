@@ -154,25 +154,31 @@ export default function Compensation() {
       const months = emp?.hire_date
         ? differenceInMonths(new Date(), parseISO(emp.hire_date))
         : null;
-      // Merit agreed in the Pay review cycle always wins over the generic recommendation
-      const meritPct = r.merit_percent ?? null;
+      // A merit figure only counts here once HR has signed it off. Anything a
+      // manager has proposed but HR hasn't approved stays hidden so the salary
+      // plan can never be built on an unapproved number.
+      const proposed = (r.merit_percent ?? 0) > 0;
+      const approved = r.comp_approval_status === "approved";
+      const awaiting = proposed && !approved;
+      const meritPct = approved ? r.merit_percent ?? null : null;
       const recPct =
         meritPct ??
         recommendedPercent(r.overall_rating, composite, {
           promotion: r.promotion,
           monthsSinceLastRaise: months,
         });
-      const existingPct = r.comp_adjustment_percent ?? meritPct;
-      const plan =
-        plans[r.id] ??
-        ({
-          percent: existingPct ?? recPct,
-          amount:
-            r.comp_adjustment_amount ??
-            r.merit_amount ??
-            amountFromPercent(comp, existingPct ?? recPct),
-          touched: false,
-        } as Plan);
+      const existingPct = approved ? r.comp_adjustment_percent ?? meritPct : null;
+      const plan = awaiting
+        ? ({ percent: 0, amount: 0, touched: false } as Plan)
+        : plans[r.id] ??
+          ({
+            percent: existingPct ?? recPct,
+            amount:
+              r.comp_adjustment_amount ??
+              (approved ? r.merit_amount : null) ??
+              amountFromPercent(comp, existingPct ?? recPct),
+            touched: false,
+          } as Plan);
       return {
         review: r,
         comp,
@@ -181,6 +187,8 @@ export default function Compensation() {
         hasAttempt: !!pair.current,
         recPct,
         plan,
+        awaiting,
+        approved,
       };
     });
   }, [reviews, employees, attempts, plans, onlyCompleted]);
