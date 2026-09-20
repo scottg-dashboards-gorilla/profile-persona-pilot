@@ -32,6 +32,7 @@ import {
   tierChange,
   readableTier,
   pickLatestPair,
+  flaggedAreas,
 } from "@/lib/assessmentDeltas";
 import { ActionItemsPanel } from "@/components/perf/ActionItemsPanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -576,7 +577,8 @@ export default function EmployeeDetail() {
             <ActionItemsPanel
               employeeUuid={uuid}
               attemptId={current?.id ?? null}
-              title="Action items & follow-ups"
+              requiredAreas={flaggedAreas(previous, current)}
+              title="Improvement plan & follow-ups"
             />
           </TabsContent>
 
