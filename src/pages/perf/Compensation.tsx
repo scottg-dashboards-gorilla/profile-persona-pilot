@@ -62,6 +62,9 @@ type Review = {
   merit_amount: number | null;
   comp_effective_date: string | null;
   cycle_id: string | null;
+  /** Where the pay outcome sits: not_required, submitted, changes_requested, approved. */
+  comp_approval_status: string;
+  comp_submitted_at: string | null;
 };
 
 type Employee = { uuid: string; current_annual_comp: number | null; hire_date: string | null };
@@ -151,25 +154,31 @@ export default function Compensation() {
       const months = emp?.hire_date
         ? differenceInMonths(new Date(), parseISO(emp.hire_date))
         : null;
-      // Merit agreed in the Pay review cycle always wins over the generic recommendation
-      const meritPct = r.merit_percent ?? null;
+      // A merit figure only counts here once HR has signed it off. Anything a
+      // manager has proposed but HR hasn't approved stays hidden so the salary
+      // plan can never be built on an unapproved number.
+      const proposed = (r.merit_percent ?? 0) > 0;
+      const approved = r.comp_approval_status === "approved";
+      const awaiting = proposed && !approved;
+      const meritPct = approved ? r.merit_percent ?? null : null;
       const recPct =
         meritPct ??
         recommendedPercent(r.overall_rating, composite, {
           promotion: r.promotion,
           monthsSinceLastRaise: months,
         });
-      const existingPct = r.comp_adjustment_percent ?? meritPct;
-      const plan =
-        plans[r.id] ??
-        ({
-          percent: existingPct ?? recPct,
-          amount:
-            r.comp_adjustment_amount ??
-            r.merit_amount ??
-            amountFromPercent(comp, existingPct ?? recPct),
-          touched: false,
-        } as Plan);
+      const existingPct = approved ? r.comp_adjustment_percent ?? meritPct : null;
+      const plan = awaiting
+        ? ({ percent: 0, amount: 0, touched: false } as Plan)
+        : plans[r.id] ??
+          ({
+            percent: existingPct ?? recPct,
+            amount:
+              r.comp_adjustment_amount ??
+              (approved ? r.merit_amount : null) ??
+              amountFromPercent(comp, existingPct ?? recPct),
+            touched: false,
+          } as Plan);
       return {
         review: r,
         comp,
@@ -178,6 +187,8 @@ export default function Compensation() {
         hasAttempt: !!pair.current,
         recPct,
         plan,
+        awaiting,
+        approved,
       };
     });
   }, [reviews, employees, attempts, plans, onlyCompleted]);
@@ -238,7 +249,8 @@ export default function Compensation() {
   }
 
   async function saveAll() {
-    const dirty = rows.filter((r) => plans[r.review.id]?.touched);
+    // Anything still waiting on HR is never written from here.
+    const dirty = rows.filter((r) => !r.awaiting && plans[r.review.id]?.touched);
     if (dirty.length === 0) {
       toast({ title: "Nothing to save" });
       return;
@@ -418,6 +430,16 @@ export default function Compensation() {
         </CardContent>
       </Card>
 
+      {rows.some((r) => r.awaiting) && (
+        <Card className="border-amber-200 bg-amber-50/60">
+          <CardContent className="p-4 text-sm text-amber-900">
+            {rows.filter((r) => r.awaiting).length} pay outcome(s) proposed by managers are still
+            waiting for HR sign-off. Their figures are hidden here and left out of the totals until
+            HR approves them in the Admin panel.
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardContent className="p-0 overflow-x-auto">
           <Table>
@@ -499,35 +521,43 @@ export default function Compensation() {
                   <TableCell className="text-right text-xs text-muted-foreground">
                     {r.recPct}%
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Input
-                      className="h-8 text-right"
-                      type="number"
-                      step="0.1"
-                      value={r.plan.percent}
-                      onChange={(e) => {
-                        const pct = Number(e.target.value);
-                        setPlan(r.review.id, { percent: pct, amount: amountFromPercent(r.comp, pct) });
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Input
-                      className="h-8 text-right"
-                      type="number"
-                      value={r.plan.amount}
-                      onChange={(e) => {
-                        const amt = Number(e.target.value);
-                        setPlan(r.review.id, {
-                          amount: amt,
-                          percent: percentFromAmount(r.comp, amt),
-                        });
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatMoney(r.comp + (r.plan.amount || 0))}
-                  </TableCell>
+                  {r.awaiting ? (
+                    <TableCell colSpan={3} className="text-right text-xs text-amber-700">
+                      Waiting for HR sign-off — figure hidden until approved
+                    </TableCell>
+                  ) : (
+                    <>
+                      <TableCell className="text-right">
+                        <Input
+                          className="h-8 text-right"
+                          type="number"
+                          step="0.1"
+                          value={r.plan.percent}
+                          onChange={(e) => {
+                            const pct = Number(e.target.value);
+                            setPlan(r.review.id, { percent: pct, amount: amountFromPercent(r.comp, pct) });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          className="h-8 text-right"
+                          type="number"
+                          value={r.plan.amount}
+                          onChange={(e) => {
+                            const amt = Number(e.target.value);
+                            setPlan(r.review.id, {
+                              amount: amt,
+                              percent: percentFromAmount(r.comp, amt),
+                            });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatMoney(r.comp + (r.plan.amount || 0))}
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell>
                     <Button asChild size="icon" variant="ghost" className="h-8 w-8">
                       <Link to={`/people/${r.review.employee_uuid}`}>

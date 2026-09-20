@@ -27,3 +27,5 @@
 - [ ] Mid-year review dates not published in the tool (not in the PMP pack — confirm with HR)
 - [ ] Pilot dry run with 5–6 people across two managers before company-wide access
 - [ ] Plan for restoring true salaries (currently obfuscated) with admin/HR-only access
+- [x] Admin calendar tab: month view of review due dates by manager + pending approval counts
+- [x] Approval workflow: manager submits (comp_approval_status=submitted) → HR approves/sends back → salary page only shows approved figures

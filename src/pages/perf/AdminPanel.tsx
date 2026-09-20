@@ -7,7 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, ShieldCheck, Wallet, ClipboardCheck, Users, Scale, ShieldAlert } from "lucide-react";
+import {
+  Loader2,
+  ShieldCheck,
+  Wallet,
+  ClipboardCheck,
+  Users,
+  Scale,
+  ShieldAlert,
+  CalendarDays,
+} from "lucide-react";
+import ReviewCalendar from "@/components/perf/ReviewCalendar";
 import FairnessCheck from "@/components/perf/FairnessCheck";
 import DataHealth from "@/components/perf/DataHealth";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +37,7 @@ type ReviewRow = {
   merit_percent: number | null;
   merit_amount: number | null;
   comp_approval_status: string;
+  comp_submitted_at: string | null;
   released_at: string | null;
   fiscal_year: number | null;
 };
@@ -53,7 +64,7 @@ function ReviewApprovals() {
     const { data, error } = await supabase
       .from("performance_reviews")
       .select(
-        "id,employee_name,department,overall_rating,merit_percent,merit_amount,comp_approval_status,released_at,fiscal_year",
+        "id,employee_name,department,overall_rating,merit_percent,merit_amount,comp_approval_status,comp_submitted_at,released_at,fiscal_year",
       )
       .order("employee_name");
     if (error) toast.error(error.message);
@@ -65,9 +76,20 @@ function ReviewApprovals() {
     load();
   }, [load]);
 
+  const proposed = useMemo(() => rows.filter((r) => (r.merit_percent ?? 0) > 0), [rows]);
+  /** Only what a manager has actually submitted is a decision for HR. */
   const waiting = useMemo(
-    () => rows.filter((r) => r.comp_approval_status !== "approved" && (r.merit_percent ?? 0) > 0),
-    [rows],
+    () => proposed.filter((r) => r.comp_approval_status === "submitted"),
+    [proposed],
+  );
+  /** Still being worked on by the manager — nothing for HR to do yet. */
+  const withManagers = useMemo(
+    () => proposed.filter((r) => r.comp_approval_status === "not_required"),
+    [proposed],
+  );
+  const sentBack = useMemo(
+    () => proposed.filter((r) => r.comp_approval_status === "changes_requested"),
+    [proposed],
   );
   const approved = useMemo(() => rows.filter((r) => r.comp_approval_status === "approved"), [rows]);
 
@@ -97,8 +119,10 @@ function ReviewApprovals() {
             <ClipboardCheck className="h-4 w-4 text-primary" /> Pay outcomes waiting for sign-off
           </CardTitle>
           <CardDescription>
-            Managers propose the figure; nothing can be shared with the employee until it is approved here.
-            {waiting.length} waiting · {approved.length} approved.
+            Managers enter the figure and submit it; nothing reaches the salary update page or the
+            employee until it is approved here. {waiting.length} submitted and waiting ·{" "}
+            {withManagers.length} still with managers · {sentBack.length} sent back ·{" "}
+            {approved.length} approved.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -107,7 +131,11 @@ function ReviewApprovals() {
               <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading…
             </div>
           ) : waiting.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Nothing waiting for you.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nothing submitted for your decision.
+              {withManagers.length > 0 &&
+                ` ${withManagers.length} figure(s) are still being worked on by managers.`}
+            </p>
           ) : (
             <Table>
               <TableHeader>
@@ -127,6 +155,11 @@ function ReviewApprovals() {
                       <div className="text-sm font-medium">{r.employee_name}</div>
                       <div className="text-xs text-muted-foreground">
                         {r.department ?? "—"} · FY{r.fiscal_year ?? FISCAL_YEAR}
+                        {r.comp_submitted_at &&
+                          ` · submitted ${new Date(r.comp_submitted_at).toLocaleDateString("en-US", {
+                            day: "numeric",
+                            month: "short",
+                          })}`}
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{r.overall_rating ?? "—"}</TableCell>
@@ -363,6 +396,9 @@ export default function AdminPanel() {
           <TabsTrigger value="roles" className="gap-1.5">
             <Users className="h-4 w-4" /> Employee roles
           </TabsTrigger>
+          <TabsTrigger value="calendar" className="gap-1.5">
+            <CalendarDays className="h-4 w-4" /> Calendar
+          </TabsTrigger>
           <TabsTrigger value="fairness" className="gap-1.5">
             <Scale className="h-4 w-4" /> Fairness check
           </TabsTrigger>
@@ -378,6 +414,9 @@ export default function AdminPanel() {
         </TabsContent>
         <TabsContent value="roles" className="mt-4">
           <RolesTab />
+        </TabsContent>
+        <TabsContent value="calendar" className="mt-4">
+          <ReviewCalendar />
         </TabsContent>
         <TabsContent value="fairness" className="mt-4">
           <FairnessCheck year={FISCAL_YEAR} />

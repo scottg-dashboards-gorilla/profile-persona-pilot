@@ -26,6 +26,7 @@ import {
   Loader2,
   RotateCcw,
   Save,
+  Send,
   X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +63,10 @@ type GridRow = {
   
   ic_score: number | null;
   apr_stage: string;
+  /** not_required → submitted → approved (or changes_requested back to the manager). */
+  comp_approval_status: string;
+  comp_approval_note: string | null;
+  comp_submitted_at: string | null;
 };
 
 type Draft = {
@@ -71,7 +76,7 @@ type Draft = {
 };
 
 const SELECT =
-  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, ic_score, apr_stage";
+  "id, employee_uuid, employee_name, title, department, hire_date, current_annual_comp, rating_score, merit_percent, merit_amount, ic_score, apr_stage, comp_approval_status, comp_approval_note, comp_submitted_at";
 
 function toDraft(r: GridRow): Draft {
   return {
@@ -81,6 +86,30 @@ function toDraft(r: GridRow): Draft {
   };
 }
 
+
+/** Where a proposed pay outcome sits with HR, shown next to the person's name. */
+function ApprovalBadge({ status, note }: { status: string; note: string | null }) {
+  const meta: Record<string, { label: string; className: string }> = {
+    not_required: { label: "Not sent to HR", className: "border-muted text-muted-foreground" },
+    submitted: { label: "With HR", className: "border-blue-300 bg-blue-50 text-blue-800" },
+    approved: { label: "Approved", className: "border-emerald-300 bg-emerald-50 text-emerald-800" },
+    changes_requested: {
+      label: "Sent back by HR",
+      className: "border-amber-300 bg-amber-50 text-amber-900",
+    },
+  };
+  const m = meta[status] ?? meta.not_required;
+  return (
+    <div className="mt-1">
+      <Badge variant="outline" className={cn("text-[10px] font-normal", m.className)}>
+        {m.label}
+      </Badge>
+      {status === "changes_requested" && note && (
+        <div className="mt-0.5 text-[10px] text-amber-800">{note}</div>
+      )}
+    </div>
+  );
+}
 
 /**
  * The manager's ratings grid — one row per team member, with the performance
@@ -278,6 +307,21 @@ export function RatingsGrid({ year }: { year: number }) {
 
   const dirty = changed.length > 0;
 
+  /** Where each proposed outcome sits in the approval workflow. */
+  const approval = useMemo(() => {
+    const withMerit = rows.filter((r) => (r.merit_percent ?? 0) > 0);
+    return {
+      ready: withMerit.filter(
+        (r) =>
+          r.comp_approval_status === "not_required" || r.comp_approval_status === "changes_requested",
+      ).length,
+      submitted: withMerit.filter((r) => r.comp_approval_status === "submitted").length,
+      approved: withMerit.filter((r) => r.comp_approval_status === "approved").length,
+      sentBack: withMerit.filter((r) => r.comp_approval_status === "changes_requested").length,
+    };
+  }, [rows]);
+
+
   async function saveAll() {
     if (blocked) {
       toast({
@@ -313,6 +357,43 @@ export function RatingsGrid({ year }: { year: number }) {
     toast({ title: "Entries saved", description: `${changed.length} team member(s)` });
     await load();
   }
+
+  /**
+   * Hands the proposed pay outcomes to HR. Nothing reaches the salary update
+   * page, or the employee, until HR signs each one off.
+   */
+  async function submitForApproval() {
+    const toSubmit = rows.filter(
+      (r) =>
+        (r.merit_percent ?? 0) > 0 &&
+        (r.comp_approval_status === "not_required" || r.comp_approval_status === "changes_requested"),
+    );
+    if (toSubmit.length === 0) return;
+    setSaving(true);
+    const { data: auth } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("performance_reviews")
+      .update({
+        comp_approval_status: "submitted",
+        comp_submitted_at: new Date().toISOString(),
+        comp_submitted_by: auth.user?.id ?? null,
+      })
+      .in(
+        "id",
+        toSubmit.map((r) => r.id),
+      );
+    setSaving(false);
+    if (error) {
+      toast({ title: "Couldn't submit", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Sent to HR",
+      description: `${toSubmit.length} pay outcome(s) are now waiting for sign-off.`,
+    });
+    await load();
+  }
+
 
   return (
     <Card>
@@ -434,6 +515,12 @@ export function RatingsGrid({ year }: { year: number }) {
                         <div className="text-[11px] text-muted-foreground">
                           {c.row.title ?? c.row.department ?? "—"}
                         </div>
+                        {(c.row.merit_percent ?? 0) > 0 && (
+                          <ApprovalBadge
+                            status={c.row.comp_approval_status}
+                            note={c.row.comp_approval_note}
+                          />
+                        )}
                       </TableCell>
                       <TableCell className="align-middle">
                         {(() => {
@@ -603,6 +690,15 @@ export function RatingsGrid({ year }: { year: number }) {
               <Button size="sm" disabled={!dirty || saving || blocked} onClick={saveAll}>
                 {saving ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
                 Save
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={saving || dirty || approval.ready === 0}
+                onClick={submitForApproval}
+              >
+                <Send className="h-3.5 w-3.5 mr-1" />
+                Submit {approval.ready > 0 ? `${approval.ready} ` : ""}to HR
               </Button>
             </div>
           </>

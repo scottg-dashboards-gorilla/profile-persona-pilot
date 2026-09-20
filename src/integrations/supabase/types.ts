@@ -1086,6 +1086,8 @@ export type Database = {
           comp_approved_at: string | null
           comp_approved_by: string | null
           comp_effective_date: string | null
+          comp_submitted_at: string | null
+          comp_submitted_by: string | null
           completed_date: string | null
           connect_held_at: string | null
           connect_note: string | null
@@ -1158,6 +1160,8 @@ export type Database = {
           comp_approved_at?: string | null
           comp_approved_by?: string | null
           comp_effective_date?: string | null
+          comp_submitted_at?: string | null
+          comp_submitted_by?: string | null
           completed_date?: string | null
           connect_held_at?: string | null
           connect_note?: string | null
@@ -1230,6 +1234,8 @@ export type Database = {
           comp_approved_at?: string | null
           comp_approved_by?: string | null
           comp_effective_date?: string | null
+          comp_submitted_at?: string | null
+          comp_submitted_by?: string | null
           completed_date?: string | null
           connect_held_at?: string | null
           connect_note?: string | null
