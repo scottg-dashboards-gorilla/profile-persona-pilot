@@ -87,6 +87,30 @@ function toDraft(r: GridRow): Draft {
 }
 
 
+/** Where a proposed pay outcome sits with HR, shown next to the person's name. */
+function ApprovalBadge({ status, note }: { status: string; note: string | null }) {
+  const meta: Record<string, { label: string; className: string }> = {
+    not_required: { label: "Not sent to HR", className: "border-muted text-muted-foreground" },
+    submitted: { label: "With HR", className: "border-blue-300 bg-blue-50 text-blue-800" },
+    approved: { label: "Approved", className: "border-emerald-300 bg-emerald-50 text-emerald-800" },
+    changes_requested: {
+      label: "Sent back by HR",
+      className: "border-amber-300 bg-amber-50 text-amber-900",
+    },
+  };
+  const m = meta[status] ?? meta.not_required;
+  return (
+    <div className="mt-1">
+      <Badge variant="outline" className={cn("text-[10px] font-normal", m.className)}>
+        {m.label}
+      </Badge>
+      {status === "changes_requested" && note && (
+        <div className="mt-0.5 text-[10px] text-amber-800">{note}</div>
+      )}
+    </div>
+  );
+}
+
 /**
  * The manager's ratings grid — one row per team member, with the performance
  * rating, I/C score and merit entered inline and checked
