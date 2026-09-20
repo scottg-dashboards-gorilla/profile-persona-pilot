@@ -80,6 +80,7 @@ export function BudgetApproval({ year }: { year: number }) {
       .sort((a, b) => b.teamPay - a.teamPay);
 
     setRows(list);
+    setEdits({});
     setLoading(false);
   }, [year]);
 
