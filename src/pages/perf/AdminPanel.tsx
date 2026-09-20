@@ -363,6 +363,9 @@ export default function AdminPanel() {
           <TabsTrigger value="roles" className="gap-1.5">
             <Users className="h-4 w-4" /> Employee roles
           </TabsTrigger>
+          <TabsTrigger value="calendar" className="gap-1.5">
+            <CalendarDays className="h-4 w-4" /> Calendar
+          </TabsTrigger>
           <TabsTrigger value="fairness" className="gap-1.5">
             <Scale className="h-4 w-4" /> Fairness check
           </TabsTrigger>
