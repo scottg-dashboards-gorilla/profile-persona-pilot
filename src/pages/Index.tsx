@@ -180,6 +180,16 @@ const Index = () => {
           description: "Your answers were recorded but not attached to your record. Please tell HR.",
           variant: "destructive",
         });
+      } else {
+        // Any outstanding check-in request from a manager is now satisfied.
+        const uuid = linkedUuid ?? employeeUuidParam;
+        if (uuid) {
+          await supabase
+            .from("assessment_check_in_requests")
+            .update({ status: "completed", completed_at: new Date().toISOString() })
+            .eq("employee_uuid", uuid)
+            .eq("status", "open");
+        }
       }
     }
   }, [startTime, completeAssessment, employeeName, role, scores, discProfile, truthfulness, linkedUuid, employeeUuidParam, reviewId, state.answers]);
