@@ -188,8 +188,15 @@ export function BudgetApproval({ year }: { year: number }) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-semibold">{formatMoney(pot)}</div>
-                    <div className="text-[11px] text-muted-foreground">5% of team pay</div>
+                    <Input
+                      className="h-8 w-32 text-right"
+                      inputMode="numeric"
+                      value={edits[m.uuid] ?? String(m.budget !== null ? Math.round(m.budget) : pot)}
+                      onChange={(e) => setEdits((s) => ({ ...s, [m.uuid]: e.target.value }))}
+                    />
+                    <div className="text-[11px] text-muted-foreground">
+                      5% of team pay = {formatMoney(pot)}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {approved ? (
