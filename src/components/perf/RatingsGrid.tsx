@@ -278,7 +278,6 @@ export function RatingsGrid({ year }: { year: number }) {
     return { counts, rated: scored.length, topShare, topHeavy: scored.length >= 4 && topShare > 40 };
   }, [computed]);
 
-  const eligibleCount = rows.length;
   /** Total pay of the people shown, and the 5% pot that pay funds. */
   const teamPay = useMemo(
     () => rows.reduce((s, r) => s + Number(r.current_annual_comp ?? 0), 0),
@@ -286,8 +285,9 @@ export function RatingsGrid({ year }: { year: number }) {
   );
   const pool5 = Math.round(teamPay * (MERIT_AVERAGE_TARGET / 100));
   const meritBudget = approvedBudget;
-  const gateEnforced = eligibleCount >= 5 && meritBudget > 0;
-  const meritOver = gateEnforced && spend.merit > meritBudget;
+  const gateEnforced = meritBudget > 0;
+  const budgetMissing = spend.merit > 0 && !gateEnforced;
+  const meritOver = spend.merit > meritBudget;
   const icOver =
     gateEnforced && spend.icAvg != null && spend.icAvg > IC_TARGET;
   /** Only what the manager has touched this session — older entries never block a save. */
@@ -303,7 +303,7 @@ export function RatingsGrid({ year }: { year: number }) {
     (c) => c.meritOk === false || c.icOk === false,
   ).length;
 
-  const blocked = meritOver || icOver || rangeBreaches > 0;
+  const blocked = budgetMissing || meritOver || icOver || rangeBreaches > 0;
 
   const dirty = changed.length > 0;
 
@@ -326,7 +326,9 @@ export function RatingsGrid({ year }: { year: number }) {
     if (blocked) {
       toast({
         title: "Entries can't be saved",
-        description: meritOver
+        description: budgetMissing
+          ? "An approved merit budget is required before increases can be saved."
+          : meritOver
           ? "Merit spend is higher than the merit budget."
           : icOver
             ? `The team I/C average is above the target of ${IC_TARGET}.`
@@ -363,6 +365,16 @@ export function RatingsGrid({ year }: { year: number }) {
    * page, or the employee, until HR signs each one off.
    */
   async function submitForApproval() {
+    if (budgetMissing || meritOver) {
+      toast({
+        title: "Can't submit to HR",
+        description: budgetMissing
+          ? "Your annual merit budget must be approved first."
+          : "Reduce the increases so their total does not exceed your approved merit budget.",
+        variant: "destructive",
+      });
+      return;
+    }
     const toSubmit = rows.filter(
       (r) =>
         (r.merit_percent ?? 0) > 0 &&
@@ -664,15 +676,17 @@ export function RatingsGrid({ year }: { year: number }) {
               {blocked && (
                 <span className="mr-auto text-xs text-destructive flex items-center gap-1">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  {meritOver
-                    ? "Merit spend is over budget — entries can't be saved."
+                  {budgetMissing
+                    ? "An approved merit budget is required before increases can be saved."
+                    : meritOver
+                    ? "Total increases exceed the merit budget — entries can't be saved."
                     : icOver
                       ? `Team I/C average is above ${IC_TARGET} — entries can't be saved.`
                       : `${rangeBreaches} entr${rangeBreaches === 1 ? "y is" : "ies are"} outside the allowed range.`}
 
                 </span>
               )}
-              {!gateEnforced && (
+              {!gateEnforced && spend.merit === 0 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="mr-auto text-xs text-muted-foreground flex items-center gap-1">
@@ -680,7 +694,7 @@ export function RatingsGrid({ year }: { year: number }) {
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
-                    The hard block applies to managers with 5 or more associates and a budget set.
+                      Managers need an approved annual merit budget before entering increases.
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -694,7 +708,7 @@ export function RatingsGrid({ year }: { year: number }) {
               <Button
                 size="sm"
                 variant="secondary"
-                disabled={saving || dirty || approval.ready === 0}
+                disabled={saving || dirty || approval.ready === 0 || budgetMissing || meritOver}
                 onClick={submitForApproval}
               >
                 <Send className="h-3.5 w-3.5 mr-1" />

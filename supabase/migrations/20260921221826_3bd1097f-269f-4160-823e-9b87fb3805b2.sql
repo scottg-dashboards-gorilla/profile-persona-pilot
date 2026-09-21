@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.enforce_manager_apr_budget() FROM PUBLIC, anon, authenticated;
