@@ -100,6 +100,13 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [presetContext, setPresetContext] = useState<DeltaContext | null>(null);
   const [uncoveredAreas, setUncoveredAreas] = useState<FlaggedArea[]>([]);
 
+  // Memoized so the child panel doesn't see a new array identity each render,
+  // which would loop: render → new array → effect → setState → render…
+  const requiredAreas = useMemo(
+    () => (currentAttempt ? flaggedAreas(previousAttempt, currentAttempt) : []),
+    [previousAttempt, currentAttempt],
+  );
+
   const [promotion, setPromotion] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [notes, setNotes] = useState("");
