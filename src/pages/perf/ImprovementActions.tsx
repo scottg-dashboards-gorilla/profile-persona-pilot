@@ -13,10 +13,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, AlertTriangle, CheckCircle2, Clock, CircleDashed, ExternalLink } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle2, Clock, CircleDashed, ExternalLink, Plus } from "lucide-react";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { usePermissions } from "@/hooks/usePermissions";
 import { competencyLabel } from "@/components/perf/ActionItemsPanel";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { dimensions } from "@/data/dimensions";
+import { useToast } from "@/hooks/use-toast";
 
 type ActionRow = {
   id: string;
