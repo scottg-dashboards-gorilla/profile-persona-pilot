@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -99,6 +99,13 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [previousAttempt, setPreviousAttempt] = useState<AttemptRow | null>(null);
   const [presetContext, setPresetContext] = useState<DeltaContext | null>(null);
   const [uncoveredAreas, setUncoveredAreas] = useState<FlaggedArea[]>([]);
+
+  // Memoized so the child panel doesn't see a new array identity each render,
+  // which would loop: render → new array → effect → setState → render…
+  const requiredAreas = useMemo(
+    () => (currentAttempt ? flaggedAreas(previousAttempt, currentAttempt) : []),
+    [previousAttempt, currentAttempt],
+  );
 
   const [promotion, setPromotion] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -250,7 +257,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
               reviewId={review.id}
               attemptId={currentAttempt.id}
               presetContext={presetContext}
-              requiredAreas={flaggedAreas(previousAttempt, currentAttempt)}
+              requiredAreas={requiredAreas}
               onCoverageChange={setUncoveredAreas}
               title="Improvement plan & action items"
             />
