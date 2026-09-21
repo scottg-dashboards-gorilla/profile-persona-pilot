@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -250,7 +250,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
               reviewId={review.id}
               attemptId={currentAttempt.id}
               presetContext={presetContext}
-              requiredAreas={flaggedAreas(previousAttempt, currentAttempt)}
+              requiredAreas={requiredAreas}
               onCoverageChange={setUncoveredAreas}
               title="Improvement plan & action items"
             />
