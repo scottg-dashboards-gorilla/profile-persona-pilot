@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -131,7 +131,13 @@ export function ActionItemsPanel({
     );
   }, [requiredAreas, items]);
 
+  const lastCoverageKey = useRef<string | null>(null);
   useEffect(() => {
+    // Only notify the parent when coverage actually changed — a new array with
+    // identical contents must not trigger a parent setState (render loop risk).
+    const key = uncovered.map((a) => a.matchKey).join("|");
+    if (key === lastCoverageKey.current) return;
+    lastCoverageKey.current = key;
     onCoverageChange?.(uncovered);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uncovered]);
