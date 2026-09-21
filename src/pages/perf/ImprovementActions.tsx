@@ -355,7 +355,10 @@ export default function ImprovementActions() {
                   <TableCell className="text-right tabular-nums">{p.open}</TableCell>
                   <TableCell className="text-right tabular-nums">{p.in_progress}</TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">{p.done}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right whitespace-nowrap">
+                    <Button size="sm" variant="outline" onClick={() => openDialog(uuid)}>
+                      Set action
+                    </Button>
                     <Button asChild size="sm" variant="ghost">
                       <Link to={`/people/${uuid}`}>
                         Open <ExternalLink className="h-3.5 w-3.5 ml-1" />
