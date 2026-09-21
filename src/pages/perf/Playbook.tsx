@@ -212,11 +212,124 @@ const employeeJourney: {
   },
 ];
 
+const managerJourney: {
+  n: number;
+  title: string;
+  when: string;
+  what: string;
+  href?: string;
+  linkLabel?: string;
+  icon: React.ElementType;
+}[] = [
+  {
+    n: 1,
+    title: "Align your team's objectives",
+    when: "Start of the year",
+    what:
+      "Each of your reports drafts objectives under Faster, Stronger, Better or L&D. Check every one is measurable and sits in the right category, then align it — or send it back with what needs changing. Once aligned, they're locked and only you can reopen them.",
+    href: "/pdr",
+    linkLabel: "Objective Setting",
+    icon: ClipboardCheck,
+  },
+  {
+    n: 2,
+    title: "Coach through the year",
+    when: "Day to day",
+    what:
+      "Comment on your reports' task cards and colour-code what to prioritise, and set team goals with real start and end dates. This is the evidence you'll rate on at year-end — don't save it up.",
+    href: "/tasks",
+    linkLabel: "Task Tracker",
+    icon: Repeat,
+  },
+  {
+    n: 3,
+    title: "Reply at mid-year",
+    when: "Mid-year",
+    what:
+      "Your report comments on each objective first; you reply on the same objective. No new form — the conversation stays attached to the objective it belongs to.",
+    href: "/pdr",
+    linkLabel: "Objective Setting",
+    icon: Users,
+  },
+  {
+    n: 4,
+    title: "Read their input and assessment",
+    when: "Dec 01–15 (theirs)",
+    what:
+      "Read the year-end self-input, the 360 feedback HR collected (names hidden), and the assessment for the period with its growth comparison. If the assessment is missing you can request a check-in — the review can't be completed without it.",
+    href: "/reviews",
+    linkLabel: "Reviews",
+    icon: UserSquare2,
+  },
+  {
+    n: 5,
+    title: "Write your feedback and set the rating",
+    when: "Dec 15 – Jan 10",
+    what:
+      "Record Managers Feedback and one 1–5 rating per person, thought through the Results, Impact and Leadership lenses and backed by evidence, not impressions. This rating is what sizes the merit that follows.",
+    href: "/pdr",
+    linkLabel: "Objective Setting",
+    icon: ClipboardCheck,
+  },
+  {
+    n: 6,
+    title: "Cover anything the assessment flagged",
+    when: "Before you can complete",
+    what:
+      "Weak skills, scores that dropped, or a tier drop are flagged automatically. Each flagged area needs an action and a date it should be achieved by before the review can be completed. Track status and overdue items in one place.",
+    href: "/improvement",
+    linkLabel: "Improvement actions",
+    icon: ShieldCheck,
+  },
+  {
+    n: 7,
+    title: "Enter pay inside your budget",
+    when: "January",
+    what:
+      "Set merit % and I/C score per person in the Pay Review Cycle. Merit must sit in the range for that rating, your team should average about 5%, I/C should average 105, and your combined increases can't exceed your approved merit budget — the grid blocks the save if they do.",
+    href: "/apr",
+    linkLabel: "Pay Review Cycle",
+    icon: CalendarRange,
+  },
+  {
+    n: 8,
+    title: "Submit to HR and wait for sign-off",
+    when: "After entry",
+    what:
+      "Submit the team for HR review. Nothing is visible to your reports while it's pending, and pay is signed off before you hold the conversation — so you walk in with a settled number.",
+    href: "/apr",
+    linkLabel: "Pay Review Cycle",
+    icon: Send,
+  },
+  {
+    n: 9,
+    title: "Hold the connect, then share",
+    when: "Feb 01–15",
+    what:
+      "Have the conversation, log it, then share the outcome. Sharing stays blocked until HR has approved any pay change. Your report confirms receipt on their own page.",
+    href: "/reviews",
+    linkLabel: "Reviews",
+    icon: Users,
+  },
+  {
+    n: 10,
+    title: "Handle a pay concern",
+    when: "Any time after sharing",
+    what:
+      "If your report disputes the amount, their reasons arrive on the review. You take it to HR and the decision comes back on the same page — visible to both of you, nothing settled off the record.",
+    href: "/reviews",
+    linkLabel: "Reviews",
+    icon: ShieldCheck,
+  },
+];
+
 export default function Playbook() {
   const { has, unconfigured } = usePermissions();
   const isAdminHr = unconfigured || has("admin") || has("hr");
   const forEmployee = !isAdminHr && !has("manager");
+  const forManager = !isAdminHr && has("manager");
   const visibleSteps = steps;
+
 
   if (forEmployee) {
     return (
