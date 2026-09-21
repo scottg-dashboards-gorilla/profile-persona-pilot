@@ -277,13 +277,18 @@ export default function ImprovementActions() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Improvement actions</h1>
-        <p className="text-sm text-muted-foreground">
-          Every action agreed off the back of an assessment{" "}
-          {isAdminHr ? "across the company" : "for your direct reports"} — so a flagged area can't
-          quietly vanish.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Improvement actions</h1>
+          <p className="text-sm text-muted-foreground">
+            Every action agreed off the back of an assessment{" "}
+            {isAdminHr ? "across the company" : "for your direct reports"} — so a flagged area can't
+            quietly vanish.
+          </p>
+        </div>
+        <Button onClick={() => openDialog()}>
+          <Plus className="h-4 w-4 mr-1" /> Set an action
+        </Button>
       </div>
 
       {counts.overdue > 0 && (
