@@ -278,7 +278,6 @@ export function RatingsGrid({ year }: { year: number }) {
     return { counts, rated: scored.length, topShare, topHeavy: scored.length >= 4 && topShare > 40 };
   }, [computed]);
 
-  const eligibleCount = rows.length;
   /** Total pay of the people shown, and the 5% pot that pay funds. */
   const teamPay = useMemo(
     () => rows.reduce((s, r) => s + Number(r.current_annual_comp ?? 0), 0),
