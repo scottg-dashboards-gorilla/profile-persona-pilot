@@ -1,611 +1,255 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Building2, Loader2, Network, UserRound, Users } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { formatMoney } from "@/lib/compensation";
-import { readableTier, pickLatestPair, compositeImprovement, type AttemptRow } from "@/lib/assessmentDeltas";
-import { ratingToNumber } from "@/lib/calibration";
-import { ChevronDown, ChevronRight, ArrowRight, Building2, Users } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type Employee = {
   uuid: string;
   first_name: string;
   last_name: string;
+  email: string | null;
   department: string | null;
   title: string | null;
   manager_uuid: string | null;
-  current_annual_comp: number | null;
-  terminated: boolean;
+  user_id: string | null;
 };
 
-type Review = {
-  id: string;
-  employee_uuid: string;
-  overall_rating: string | null;
-  status: string;
-  review_type: string | null;
-  comp_adjustment_amount: number | null;
-  comp_adjustment_percent: number | null;
-  cycle_id: string | null;
-};
+type OrgNode = Employee & { children: OrgNode[] };
 
+const fullName = (employee: Employee) => `${employee.first_name} ${employee.last_name}`.trim();
 
-type Goal = { id: string; employee_uuid: string; status: string };
-type KeyResult = {
-  goal_id: string;
-  starting_value: number;
-  target_value: number;
-  current_value: number;
-};
+function initials(employee: Employee) {
+  return `${employee.first_name[0] ?? ""}${employee.last_name[0] ?? ""}`.toUpperCase();
+}
 
-type Roll = {
-  key: string;
-  label: string;
-  sublabel?: string;
-  headcount: number;
-  payroll: number;
-  avgRating: number | null;
-  ratedCount: number;
-  goalProgress: number | null;
-  goalCount: number;
-  plannedRaises: number;
-  raisePercent: number | null;
-  avgAssessment: number | null;
-  growth: number | null;
-  members: MemberRow[];
-};
+function countPeople(node: OrgNode): number {
+  return node.children.reduce((total, child) => total + 1 + countPeople(child), 0);
+}
 
-type MemberRow = {
-  uuid: string;
-  name: string;
-  title: string | null;
-  comp: number;
-  rating: string | null;
-  ratingNum: number | null;
-  goalProgress: number | null;
-  raise: number;
-  raisePercent: number | null;
-  tier: string | null;
-  growth: number | null;
-};
+function countLevels(node: OrgNode): number {
+  return node.children.length ? 1 + Math.max(...node.children.map(countLevels)) : 1;
+}
 
-const ratingLabel: Record<string, string> = { exceeds: "Exceeds", meets: "Meets", below: "Below" };
-const ratingTone: Record<string, string> = {
-  exceeds: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  meets: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  below: "bg-amber-100 text-amber-900 border-amber-200",
-};
+function OrgPerson({ node, root = false }: { node: OrgNode; root?: boolean }) {
+  return (
+    <div className="flex min-w-max flex-col items-center">
+      <Link
+        to={`/people/${node.uuid}`}
+        className={`group block w-52 rounded-lg border bg-card p-3 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          root ? "border-primary/40 ring-1 ring-primary/10" : ""
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+              root ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+            }`}
+          >
+            {initials(node)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-semibold group-hover:text-primary">{fullName(node)}</div>
+            <div className="mt-0.5 line-clamp-2 min-h-8 text-xs leading-4 text-muted-foreground">
+              {node.title ?? "Team member"}
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between border-t pt-2 text-[11px] text-muted-foreground">
+          <span className="max-w-[120px] truncate">{node.department ?? "No department"}</span>
+          {node.children.length > 0 && (
+            <span className="flex items-center gap-1 font-medium text-foreground">
+              <Users className="h-3 w-3" /> {node.children.length}
+            </span>
+          )}
+        </div>
+      </Link>
 
-const avg = (v: number[]) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : null);
-const round1 = (n: number | null) => (n === null ? null : Math.round(n * 10) / 10);
+      {node.children.length > 0 && (
+        <>
+          <div className="h-6 border-l" aria-hidden="true" />
+          <div className="relative flex items-start justify-center gap-5 border-t pt-6">
+            {node.children.map((child) => (
+              <div
+                key={child.uuid}
+                className="relative before:absolute before:-top-6 before:left-1/2 before:h-6 before:border-l"
+              >
+                <OrgPerson node={child} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function OrgRollups() {
-  const [groupBy, setGroupBy] = useState<"department" | "manager">("department");
-  const [cycles, setCycles] = useState<{ id: string; name: string; status: string }[]>([]);
-  const [cycleId, setCycleId] = useState("all");
-  const [deptFilter, setDeptFilter] = useState("all");
-  const [managerFilter, setManagerFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const { viewMode } = usePermissions();
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
-
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [krs, setKrs] = useState<KeyResult[]>([]);
-  const [attempts, setAttempts] = useState<AttemptRow[]>([]);
-  const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [signedInEmployeeId, setSignedInEmployeeId] = useState<string | null>(null);
+  const [selectedManagerId, setSelectedManagerId] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const { data } = await supabase
-        .from("review_cycles")
-        .select("id,name,status")
-        .order("starts_at", { ascending: false });
-      setCycles((data ?? []) as any[]);
-    })();
-  }, []);
+        .from("employees")
+        .select("uuid,first_name,last_name,email,department,title,manager_uuid,user_id")
+        .eq("terminated", false)
+        .order("first_name");
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      let rq = supabase.from("performance_reviews").select("*");
-      if (cycleId !== "all") rq = rq.eq("cycle_id", cycleId);
-      const [{ data: emps }, { data: revs }, { data: gs }, { data: k }, { data: att }] =
-        await Promise.all([
-          supabase.from("employees").select("*").order("last_name"),
-          rq,
-          supabase.from("goals").select("id,employee_uuid,status"),
-          supabase.from("goal_key_results").select("goal_id,starting_value,target_value,current_value"),
-          supabase.from("assessment_attempts").select("*"),
-        ]);
-      setEmployees(((emps ?? []) as Employee[]).filter((e) => !e.terminated));
-      setReviews((revs ?? []) as Review[]);
-      setGoals((gs ?? []) as Goal[]);
-      setKrs((k ?? []) as KeyResult[]);
-      setAttempts((att ?? []) as AttemptRow[]);
+      if (!active) return;
+      const rows = (data ?? []) as Employee[];
+      setEmployees(rows);
+      setSignedInEmployeeId(rows.find((employee) => employee.user_id === user?.id)?.uuid ?? null);
       setLoading(false);
     })();
-  }, [cycleId]);
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  const departments = useMemo(
-    () =>
-      [...new Set(employees.map((e) => e.department ?? "Unassigned"))].sort((a, b) =>
-        a.localeCompare(b),
-      ),
+  const employeeById = useMemo(
+    () => new Map(employees.map((employee) => [employee.uuid, employee])),
     [employees],
   );
 
   const managers = useMemo(() => {
-    const ids = new Set(employees.map((e) => e.manager_uuid).filter(Boolean) as string[]);
-    return [...ids]
-      .map((id) => {
-        const e = employees.find((x) => x.uuid === id);
-        return { uuid: id, name: e ? `${e.first_name} ${e.last_name}` : "Unknown manager" };
-      })
-      .sort((a, b) => a.name.localeCompare(b.name));
+    const managerIds = new Set(employees.map((employee) => employee.manager_uuid).filter(Boolean));
+    return employees
+      .filter((employee) => managerIds.has(employee.uuid))
+      .sort((a, b) => fullName(a).localeCompare(fullName(b)));
   }, [employees]);
 
-  const reviewTypes = useMemo(
-    () => [...new Set(reviews.map((r) => r.review_type).filter(Boolean) as string[])].sort(),
-    [reviews],
-  );
-
-  /** Employees kept by the department/manager filters (drill-down uses the same list). */
-  const visibleEmployees = useMemo(
-    () =>
-      employees.filter((e) => {
-        if (deptFilter !== "all" && (e.department ?? "Unassigned") !== deptFilter) return false;
-        if (managerFilter !== "all" && e.manager_uuid !== managerFilter) return false;
-        return true;
-      }),
-    [employees, deptFilter, managerFilter],
-  );
-
-  /** Reviews kept by the review-type filter, scoped to the visible employees. */
-  const visibleReviews = useMemo(() => {
-    const ids = new Set(visibleEmployees.map((e) => e.uuid));
-    return reviews.filter(
-      (r) =>
-        ids.has(r.employee_uuid) && (typeFilter === "all" || r.review_type === typeFilter),
+  useEffect(() => {
+    if (viewMode !== "admin" || selectedManagerId || managers.length === 0) return;
+    const topManager = managers.find(
+      (manager) => !manager.manager_uuid || !employeeById.has(manager.manager_uuid),
     );
-  }, [reviews, visibleEmployees, typeFilter]);
+    setSelectedManagerId((topManager ?? managers[0]).uuid);
+  }, [employeeById, managers, selectedManagerId, viewMode]);
 
-  const rolls = useMemo<Roll[]>(() => {
+  const rootId = viewMode === "admin" ? selectedManagerId : signedInEmployeeId;
 
-    const nameOf = (u: string) => {
-      const e = employees.find((x) => x.uuid === u);
-      return e ? `${e.first_name} ${e.last_name}` : "Unassigned";
+  const tree = useMemo<OrgNode | null>(() => {
+    if (!rootId) return null;
+    const build = (id: string, path: Set<string>): OrgNode | null => {
+      const employee = employeeById.get(id);
+      if (!employee || path.has(id)) return null;
+      const nextPath = new Set(path).add(id);
+      const children = employees
+        .filter((candidate) => candidate.manager_uuid === id)
+        .sort((a, b) => fullName(a).localeCompare(fullName(b)))
+        .map((child) => build(child.uuid, nextPath))
+        .filter((child): child is OrgNode => child !== null);
+      return { ...employee, children };
     };
+    return build(rootId, new Set());
+  }, [employeeById, employees, rootId]);
 
-    const krByGoal = new Map<string, KeyResult[]>();
-    krs.forEach((r) => {
-      const list = krByGoal.get(r.goal_id) ?? [];
-      list.push(r);
-      krByGoal.set(r.goal_id, list);
-    });
-
-    const goalProgressFor = (uuid: string): { progress: number | null; count: number } => {
-      const mine = goals.filter((g) => g.employee_uuid === uuid);
-      if (!mine.length) return { progress: null, count: 0 };
-      const pcts: number[] = [];
-      mine.forEach((g) => {
-        const rows = krByGoal.get(g.id) ?? [];
-        if (!rows.length) {
-          pcts.push(g.status === "achieved" ? 100 : 0);
-          return;
-        }
-        const p = rows.map((r) => {
-          const span = r.target_value - r.starting_value;
-          if (span === 0) return r.current_value >= r.target_value ? 100 : 0;
-          return Math.max(0, Math.min(100, ((r.current_value - r.starting_value) / span) * 100));
-        });
-        pcts.push(p.reduce((a, b) => a + b, 0) / p.length);
-      });
-      return { progress: pcts.reduce((a, b) => a + b, 0) / pcts.length, count: mine.length };
+  const summary = useMemo(() => {
+    if (!tree) return { team: 0, direct: 0, levels: 0, departments: 0 };
+    const departments = new Set<string>();
+    const visit = (node: OrgNode) => {
+      if (node.department) departments.add(node.department);
+      node.children.forEach(visit);
     };
-
-    const attemptsBy = new Map<string, AttemptRow[]>();
-    attempts.forEach((a) => {
-      const list = attemptsBy.get(a.employee_uuid) ?? [];
-      list.push(a);
-      attemptsBy.set(a.employee_uuid, list);
-    });
-
-    const assessmentScore = (uuid: string) => {
-      const pair = pickLatestPair(attemptsBy.get(uuid) ?? []);
-      if (!pair.current) return { score: null as number | null, tier: null as string | null, growth: null as number | null };
-      const vals = Object.values(pair.current.technical_scores ?? {})
-        .map((v: any) => (typeof v === "number" ? v : v?.normalizedScore ?? v?.score))
-        .filter((n: any) => typeof n === "number") as number[];
-      return {
-        score: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null,
-        tier: pair.current.tier,
-        growth: pair.previous ? compositeImprovement(pair.previous, pair.current) : null,
-      };
-    };
-
-    const buildMember = (e: Employee): MemberRow => {
-      const rev = visibleReviews.find((r) => r.employee_uuid === e.uuid);
-      const comp = e.current_annual_comp ?? 0;
-      const gp = goalProgressFor(e.uuid);
-      const a = assessmentScore(e.uuid);
-      const raise = rev?.comp_adjustment_amount ?? 0;
-      return {
-        uuid: e.uuid,
-        name: `${e.first_name} ${e.last_name}`,
-        title: e.title,
-        comp,
-        rating: rev?.overall_rating ?? null,
-        ratingNum: rev?.overall_rating ? ratingToNumber[rev.overall_rating] ?? null : null,
-        goalProgress: round1(gp.progress),
-        raise,
-        raisePercent: rev?.comp_adjustment_percent ?? (comp && raise ? round1((raise / comp) * 100) : null),
-        tier: a.tier,
-        growth: round1(a.growth),
-      };
-    };
-
-    const groups = new Map<string, Employee[]>();
-    visibleEmployees.forEach((e) => {
-      const key =
-        groupBy === "department" ? e.department ?? "Unassigned" : e.manager_uuid ?? "unassigned";
-      const list = groups.get(key) ?? [];
-      list.push(e);
-      groups.set(key, list);
-    });
-
-    const out = [...groups.entries()].map(([key, list]) => {
-      const members = list.map(buildMember);
-      const payroll = members.reduce((s, m) => s + m.comp, 0);
-      const rated = members.filter((m) => m.ratingNum != null).map((m) => m.ratingNum!);
-      const gps = members.filter((m) => m.goalProgress != null).map((m) => m.goalProgress!);
-      const scores = list
-        .map((e) => assessmentScore(e.uuid).score)
-        .filter((n): n is number => n != null);
-      const growths = members.filter((m) => m.growth != null).map((m) => m.growth!);
-      const planned = members.reduce((s, m) => s + m.raise, 0);
-      return {
-        key,
-        label: groupBy === "department" ? key : key === "unassigned" ? "No manager" : nameOf(key),
-        sublabel:
-          groupBy === "manager" && key !== "unassigned"
-            ? employees.find((e) => e.uuid === key)?.title ?? undefined
-            : undefined,
-        headcount: members.length,
-        payroll,
-        avgRating: round1(avg(rated)),
-        ratedCount: rated.length,
-        goalProgress: round1(avg(gps)),
-        goalCount: goals.filter((g) => list.some((e) => e.uuid === g.employee_uuid)).length,
-        plannedRaises: planned,
-        raisePercent: payroll ? round1((planned / payroll) * 100) : null,
-        avgAssessment: round1(avg(scores)),
-        growth: round1(avg(growths)),
-        members: members.sort((a, b) => a.name.localeCompare(b.name)),
-      } as Roll;
-    });
-
-    return out.sort((a, b) => b.headcount - a.headcount);
-  }, [employees, visibleEmployees, visibleReviews, goals, krs, attempts, groupBy]);
-
-  const totals = useMemo(() => {
-    const headcount = rolls.reduce((s, r) => s + r.headcount, 0);
-    const payroll = rolls.reduce((s, r) => s + r.payroll, 0);
-    const planned = rolls.reduce((s, r) => s + r.plannedRaises, 0);
-    const gp = rolls.filter((r) => r.goalProgress != null).map((r) => r.goalProgress!);
+    visit(tree);
     return {
-      headcount,
-      payroll,
-      planned,
-      pct: payroll ? Math.round((planned / payroll) * 1000) / 10 : 0,
-      goalProgress: round1(avg(gp)),
+      team: countPeople(tree),
+      direct: tree.children.length,
+      levels: countLevels(tree),
+      departments: departments.size,
     };
-  }, [rolls]);
+  }, [tree]);
+
+  if (loading) {
+    return (
+      <div className="py-16 text-center text-sm text-muted-foreground">
+        <Loader2 className="mr-2 inline h-4 w-4 animate-spin" /> Loading your organization…
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="w-48">
-          <Label className="text-xs">Group by</Label>
-          <Select value={groupBy} onValueChange={(v) => setGroupBy(v as any)}>
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="department">Department</SelectItem>
-              <SelectItem value="manager">Manager (team)</SelectItem>
-            </SelectContent>
-          </Select>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">Organizational structure</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {viewMode === "admin"
+              ? "Choose a manager to see their complete reporting structure."
+              : "Your reporting structure, starting with you and the people in your team."}
+          </p>
         </div>
-        <div className="min-w-[220px]">
-          <Label className="text-xs">Cycle</Label>
-          <Select value={cycleId} onValueChange={setCycleId}>
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All cycles</SelectItem>
-              {cycles.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name} · {c.status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="w-48">
-          <Label className="text-xs">Department</Label>
-          <Select value={deptFilter} onValueChange={setDeptFilter}>
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All departments</SelectItem>
-              {departments.map((d) => (
-                <SelectItem key={d} value={d}>
-                  {d}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="w-52">
-          <Label className="text-xs">Manager / team</Label>
-          <Select value={managerFilter} onValueChange={setManagerFilter}>
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All teams</SelectItem>
-              {managers.map((m) => (
-                <SelectItem key={m.uuid} value={m.uuid}>
-                  {m.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="w-44">
-          <Label className="text-xs">Review type</Label>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
-              {reviewTypes.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t.replace(/_/g, " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {(deptFilter !== "all" || managerFilter !== "all" || typeFilter !== "all" || cycleId !== "all") && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setDeptFilter("all");
-              setManagerFilter("all");
-              setTypeFilter("all");
-              setCycleId("all");
-            }}
-          >
-            Clear filters
-          </Button>
+        {viewMode === "admin" && managers.length > 0 && (
+          <div className="w-full sm:w-72">
+            <Select value={selectedManagerId} onValueChange={setSelectedManagerId}>
+              <SelectTrigger aria-label="Choose manager">
+                <SelectValue placeholder="Choose a manager" />
+              </SelectTrigger>
+              <SelectContent>
+                {managers.map((manager) => (
+                  <SelectItem key={manager.uuid} value={manager.uuid}>
+                    {fullName(manager)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
       </div>
 
+      {tree ? (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: "People in structure", value: summary.team, icon: Users },
+              { label: "Direct reports", value: summary.direct, icon: UserRound },
+              { label: "Reporting levels", value: summary.levels, icon: Network },
+              { label: "Departments", value: summary.departments, icon: Building2 },
+            ].map((item) => (
+              <Card key={item.label}>
+                <CardContent className="flex items-center gap-3 p-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
+                    <item.icon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-semibold">{item.value}</div>
+                    <div className="text-xs text-muted-foreground">{item.label}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
-        {[
-          { label: "Active headcount", value: String(totals.headcount) },
-          { label: "Total payroll", value: formatMoney(totals.payroll) },
-          {
-            label: "Planned raises",
-            value: `${formatMoney(totals.planned)} · ${totals.pct}%`,
-          },
-          {
-            label: "Avg goal progress",
-            value: totals.goalProgress === null ? "—" : `${totals.goalProgress}%`,
-          },
-        ].map((t) => (
-          <Card key={t.label}>
-            <CardContent className="p-4">
-              <div className="text-xs text-muted-foreground">{t.label}</div>
-              <div className="text-xl font-semibold">{t.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            {groupBy === "department" ? (
-              <Building2 className="h-4 w-4 text-primary" />
-            ) : (
-              <Users className="h-4 w-4 text-primary" />
-            )}
-            {groupBy === "department" ? "Department rollups" : "Team rollups"} — click a row to drill
-            down
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-8"></TableHead>
-                <TableHead>{groupBy === "department" ? "Department" : "Manager"}</TableHead>
-                <TableHead className="text-right">People</TableHead>
-                <TableHead className="text-right">Avg rating</TableHead>
-                <TableHead className="text-right">Assessment</TableHead>
-                <TableHead className="text-right">Growth</TableHead>
-                <TableHead className="text-right">Goal progress</TableHead>
-                <TableHead className="text-right">Payroll</TableHead>
-                <TableHead className="text-right">Planned raises</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading && (
-                <TableRow>
-                  <TableCell colSpan={9} className="py-10 text-center text-muted-foreground">
-                    Loading org data…
-                  </TableCell>
-                </TableRow>
-              )}
-              {!loading && rolls.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={9} className="py-10 text-center text-muted-foreground">
-                    No active employees yet.
-                  </TableCell>
-                </TableRow>
-              )}
-              {rolls.map((r) => (
-                <Fragment key={r.key}>
-                  <TableRow
-                    className="cursor-pointer"
-                    onClick={() => setOpen((p) => ({ ...p, [r.key]: !p[r.key] }))}
-                  >
-                    <TableCell>
-                      {open[r.key] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {r.label}
-                      {r.sublabel && (
-                        <div className="text-xs text-muted-foreground">{r.sublabel}</div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">{r.headcount}</TableCell>
-                    <TableCell className="text-right">
-                      {r.avgRating === null ? (
-                        <span className="text-xs text-muted-foreground">unrated</span>
-                      ) : (
-                        <>
-                          {r.avgRating.toFixed(1)}
-                          <span className="text-xs text-muted-foreground"> ({r.ratedCount})</span>
-                        </>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {r.avgAssessment === null ? "—" : Math.round(r.avgAssessment)}
-                    </TableCell>
-                    <TableCell
-                      className={`text-right ${
-                        (r.growth ?? 0) > 0
-                          ? "text-emerald-700"
-                          : (r.growth ?? 0) < 0
-                            ? "text-red-600"
-                            : ""
-                      }`}
-                    >
-                      {r.growth === null ? "—" : `${r.growth > 0 ? "+" : ""}${r.growth.toFixed(1)}`}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {r.goalProgress === null ? (
-                        "—"
-                      ) : (
-                        <div className="flex items-center gap-2 justify-end">
-                          <Progress value={r.goalProgress} className="w-16 h-2" />
-                          {Math.round(r.goalProgress)}%
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">{formatMoney(r.payroll)}</TableCell>
-                    <TableCell className="text-right">
-                      {formatMoney(r.plannedRaises)}
-                      {r.raisePercent != null && r.plannedRaises > 0 && (
-                        <span className="text-xs text-muted-foreground"> · {r.raisePercent}%</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                  {open[r.key] &&
-                    r.members.map((m) => (
-                      <TableRow key={`${r.key}-${m.uuid}`} className="bg-muted/40">
-                        <TableCell></TableCell>
-                        <TableCell className="pl-8">
-                          <div className="font-medium text-sm">{m.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {m.title ?? "—"} · {readableTier(m.tier)}
-                          </div>
-                        </TableCell>
-                        <TableCell></TableCell>
-                        <TableCell className="text-right">
-                          {m.rating ? (
-                            <Badge variant="outline" className={ratingTone[m.rating]}>
-                              {ratingLabel[m.rating]}
-                            </Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">unrated</span>
-                          )}
-                        </TableCell>
-                        <TableCell></TableCell>
-                        <TableCell
-                          className={`text-right text-sm ${
-                            (m.growth ?? 0) > 0
-                              ? "text-emerald-700"
-                              : (m.growth ?? 0) < 0
-                                ? "text-red-600"
-                                : ""
-                          }`}
-                        >
-                          {m.growth === null ? "—" : `${m.growth > 0 ? "+" : ""}${m.growth.toFixed(1)}`}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {m.goalProgress === null ? "—" : `${Math.round(m.goalProgress)}%`}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">{formatMoney(m.comp)}</TableCell>
-                        <TableCell className="text-right text-sm">
-                          <div className="flex items-center justify-end gap-2">
-                            <span>
-                              {m.raise ? formatMoney(m.raise) : "—"}
-                              {m.raisePercent != null && m.raise ? ` · ${m.raisePercent}%` : ""}
-                            </span>
-                            <Button asChild size="icon" variant="ghost" className="h-7 w-7">
-                              <Link to={`/people/${m.uuid}`}>
-                                <ArrowRight className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </Fragment>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <p className="text-xs text-muted-foreground">
-        Ratings are normalised to a 1–5 scale, assessment is the average technical competency score
-        from each person's latest attempt, and growth compares that attempt with the one before it.
-        Planned raises come from the adjustments saved on the Compensation page.
-      </p>
+          <div className="overflow-x-auto rounded-lg border bg-muted/20 px-8 py-10">
+            <div className="flex min-w-max justify-center">
+              <OrgPerson node={tree} root />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Select any person to open their staff record. The number beside a person is their direct-report count.
+          </p>
+        </>
+      ) : (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Network className="mx-auto h-8 w-8 text-muted-foreground" />
+            <div className="mt-3 font-medium">No reporting structure found</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your sign-in must be linked to a staff record with reporting lines.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
