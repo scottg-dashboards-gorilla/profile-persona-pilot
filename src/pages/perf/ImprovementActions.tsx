@@ -13,10 +13,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, AlertTriangle, CheckCircle2, Clock, CircleDashed, ExternalLink } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle2, Clock, CircleDashed, ExternalLink, Plus } from "lucide-react";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { usePermissions } from "@/hooks/usePermissions";
 import { competencyLabel } from "@/components/perf/ActionItemsPanel";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { dimensions } from "@/data/dimensions";
+import { useToast } from "@/hooks/use-toast";
 
 type ActionRow = {
   id: string;
@@ -71,23 +89,42 @@ export default function ImprovementActions() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
+  const { toast } = useToast();
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // New-action dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formEmp, setFormEmp] = useState("");
+  const [formKind, setFormKind] = useState("technical");
+  const [formKey, setFormKey] = useState("");
+  const [formAction, setFormAction] = useState("");
+  const [formComment, setFormComment] = useState("");
+  const [formDue, setFormDue] = useState("");
+  const [formTarget, setFormTarget] = useState("");
+
+  const loadActions = async (allowed: Record<string, EmpRow>) => {
+    const { data, error } = await supabase
+      .from("assessment_action_items")
+      .select(
+        "id,employee_uuid,delta_kind,delta_key,delta_from,delta_to,action,comment,status,due_date,target_value,is_required,created_at",
+      )
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast({ title: "Couldn't load actions", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRows(((data ?? []) as ActionRow[]).filter((a) => allowed[a.employee_uuid]));
+  };
 
   useEffect(() => {
     if (permLoading) return;
     (async () => {
       setLoading(true);
-      const [{ data: empData }, { data: actionData }] = await Promise.all([
-        supabase
-          .from("employees")
-          .select("uuid,first_name,last_name,title,department,manager_uuid,user_id")
-          .eq("terminated", false),
-        supabase
-          .from("assessment_action_items")
-          .select(
-            "id,employee_uuid,delta_kind,delta_key,delta_from,delta_to,action,comment,status,due_date,target_value,is_required,created_at",
-          )
-          .order("created_at", { ascending: false }),
-      ]);
+      const { data: empData } = await supabase
+        .from("employees")
+        .select("uuid,first_name,last_name,title,department,manager_uuid,user_id")
+        .eq("terminated", false);
       let people = (empData ?? []) as EmpRow[];
       if (!isAdminHr) {
         // Managers see their direct reports only — never their own record.
@@ -100,10 +137,66 @@ export default function ImprovementActions() {
       const byUuid: Record<string, EmpRow> = {};
       for (const p of people) byUuid[p.uuid] = p;
       setEmps(byUuid);
-      setRows(((actionData ?? []) as ActionRow[]).filter((a) => byUuid[a.employee_uuid]));
+      await loadActions(byUuid);
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdminHr, permLoading]);
+
+  async function updateStatus(id: string, status: string) {
+    setBusyId(id);
+    const { error } = await supabase
+      .from("assessment_action_items")
+      .update({ status })
+      .eq("id", id);
+    setBusyId(null);
+    if (error)
+      return toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+    toast({ title: status === "done" ? "Marked as done" : "Status updated" });
+  }
+
+  function openDialog(employeeUuid?: string) {
+    setFormEmp(employeeUuid ?? "");
+    setFormKind("technical");
+    setFormKey("");
+    setFormAction("");
+    setFormComment("");
+    setFormDue("");
+    setFormTarget("");
+    setDialogOpen(true);
+  }
+
+  async function saveAction() {
+    if (!formEmp || !formAction.trim() || !formDue) {
+      toast({
+        title: "Fill in the essentials",
+        description: "Pick the person, write the action, and set a date to achieve it by.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSaving(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const { error } = await supabase.from("assessment_action_items").insert({
+      employee_uuid: formEmp,
+      delta_kind: formKind,
+      delta_key: formKind === "technical" || formKind === "disc" ? formKey || null : null,
+      action: formAction.trim(),
+      comment: formComment.trim() || null,
+      due_date: formDue,
+      target_value: formTarget === "" ? null : Number(formTarget),
+      is_required: true,
+      created_by: userData.user?.id ?? null,
+    });
+    setSaving(false);
+    if (error)
+      return toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+    setDialogOpen(false);
+    toast({ title: "Action set" });
+    await loadActions(emps);
+  }
+
 
   const counts = useMemo(() => {
     const c = { total: rows.length, open: 0, in_progress: 0, done: 0, overdue: 0, required: 0 };
@@ -184,13 +277,18 @@ export default function ImprovementActions() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Improvement actions</h1>
-        <p className="text-sm text-muted-foreground">
-          Every action agreed off the back of an assessment{" "}
-          {isAdminHr ? "across the company" : "for your direct reports"} — so a flagged area can't
-          quietly vanish.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Improvement actions</h1>
+          <p className="text-sm text-muted-foreground">
+            Every action agreed off the back of an assessment{" "}
+            {isAdminHr ? "across the company" : "for your direct reports"} — so a flagged area can't
+            quietly vanish.
+          </p>
+        </div>
+        <Button onClick={() => openDialog()}>
+          <Plus className="h-4 w-4 mr-1" /> Set an action
+        </Button>
       </div>
 
       {counts.overdue > 0 && (
@@ -257,7 +355,10 @@ export default function ImprovementActions() {
                   <TableCell className="text-right tabular-nums">{p.open}</TableCell>
                   <TableCell className="text-right tabular-nums">{p.in_progress}</TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">{p.done}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right whitespace-nowrap">
+                    <Button size="sm" variant="outline" onClick={() => openDialog(uuid)}>
+                      Set action
+                    </Button>
                     <Button asChild size="sm" variant="ghost">
                       <Link to={`/people/${uuid}`}>
                         Open <ExternalLink className="h-3.5 w-3.5 ml-1" />
@@ -296,12 +397,13 @@ export default function ImprovementActions() {
                 <TableHead>Action</TableHead>
                 <TableHead>Achieve by</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Update</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="text-sm text-muted-foreground">
                     Nothing here.
                   </TableCell>
                 </TableRow>
@@ -364,6 +466,34 @@ export default function ImprovementActions() {
                         {statusLabel[r.status] ?? r.status}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      {busyId === r.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin inline" />
+                      ) : r.status === "done" ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => updateStatus(r.id, "in_progress")}
+                        >
+                          Reopen
+                        </Button>
+                      ) : (
+                        <>
+                          {r.status !== "in_progress" && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => updateStatus(r.id, "in_progress")}
+                            >
+                              Start
+                            </Button>
+                          )}
+                          <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "done")}>
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Done
+                          </Button>
+                        </>
+                      )}
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -371,6 +501,128 @@ export default function ImprovementActions() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set an improvement action</DialogTitle>
+            <DialogDescription>
+              Agree what needs to improve and the date it should be achieved by. It shows on the
+              person's own review page straight away.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Person</label>
+              <Select value={formEmp} onValueChange={setFormEmp}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pick a person" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(emps)
+                    .sort((a, b) => (a.first_name ?? "").localeCompare(b.first_name ?? ""))
+                    .map((e) => (
+                      <SelectItem key={e.uuid} value={e.uuid}>
+                        {`${e.first_name ?? ""} ${e.last_name ?? ""}`.trim() || e.uuid}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Area</label>
+                <Select
+                  value={formKind}
+                  onValueChange={(v) => {
+                    setFormKind(v);
+                    setFormKey("");
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="technical">Skill</SelectItem>
+                    <SelectItem value="disc">Working style (DISC)</SelectItem>
+                    <SelectItem value="tier">Overall tier</SelectItem>
+                    <SelectItem value="general">General</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {formKind === "technical" ? "Which skill" : formKind === "disc" ? "Letter" : "Detail"}
+                </label>
+                {formKind === "technical" ? (
+                  <Select value={formKey} onValueChange={setFormKey}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pick a skill" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dimensions
+                        .filter((d) => d.category === "competency" || d.category === "comptia")
+                        .map((d) => (
+                          <SelectItem key={d.id} value={d.id}>
+                            {d.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={formKey}
+                    onChange={(e) => setFormKey(e.target.value)}
+                    placeholder={formKind === "disc" ? "D" : "optional"}
+                    disabled={formKind === "tier" || formKind === "general"}
+                  />
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Action</label>
+              <Textarea
+                rows={2}
+                value={formAction}
+                onChange={(e) => setFormAction(e.target.value)}
+                placeholder="What will be done, and by whom"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Why this matters (optional)</label>
+              <Textarea
+                rows={2}
+                value={formComment}
+                onChange={(e) => setFormComment(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Achieve by</label>
+                <Input type="date" value={formDue} onChange={(e) => setFormDue(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Target score (optional)</label>
+                <Input
+                  type="number"
+                  value={formTarget}
+                  onChange={(e) => setFormTarget(e.target.value)}
+                  placeholder="e.g. 70"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveAction} disabled={saving}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+              Save action
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
