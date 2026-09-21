@@ -397,12 +397,13 @@ export default function ImprovementActions() {
                 <TableHead>Action</TableHead>
                 <TableHead>Achieve by</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Update</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="text-sm text-muted-foreground">
                     Nothing here.
                   </TableCell>
                 </TableRow>
