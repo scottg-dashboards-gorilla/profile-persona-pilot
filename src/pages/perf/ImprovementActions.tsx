@@ -466,6 +466,34 @@ export default function ImprovementActions() {
                         {statusLabel[r.status] ?? r.status}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      {busyId === r.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin inline" />
+                      ) : r.status === "done" ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => updateStatus(r.id, "in_progress")}
+                        >
+                          Reopen
+                        </Button>
+                      ) : (
+                        <>
+                          {r.status !== "in_progress" && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => updateStatus(r.id, "in_progress")}
+                            >
+                              Start
+                            </Button>
+                          )}
+                          <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "done")}>
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Done
+                          </Button>
+                        </>
+                      )}
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -473,6 +501,128 @@ export default function ImprovementActions() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set an improvement action</DialogTitle>
+            <DialogDescription>
+              Agree what needs to improve and the date it should be achieved by. It shows on the
+              person's own review page straight away.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Person</label>
+              <Select value={formEmp} onValueChange={setFormEmp}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pick a person" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(emps)
+                    .sort((a, b) => (a.first_name ?? "").localeCompare(b.first_name ?? ""))
+                    .map((e) => (
+                      <SelectItem key={e.uuid} value={e.uuid}>
+                        {`${e.first_name ?? ""} ${e.last_name ?? ""}`.trim() || e.uuid}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Area</label>
+                <Select
+                  value={formKind}
+                  onValueChange={(v) => {
+                    setFormKind(v);
+                    setFormKey("");
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="technical">Skill</SelectItem>
+                    <SelectItem value="disc">Working style (DISC)</SelectItem>
+                    <SelectItem value="tier">Overall tier</SelectItem>
+                    <SelectItem value="general">General</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {formKind === "technical" ? "Which skill" : formKind === "disc" ? "Letter" : "Detail"}
+                </label>
+                {formKind === "technical" ? (
+                  <Select value={formKey} onValueChange={setFormKey}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pick a skill" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dimensions
+                        .filter((d) => d.category === "competency" || d.category === "comptia")
+                        .map((d) => (
+                          <SelectItem key={d.id} value={d.id}>
+                            {d.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={formKey}
+                    onChange={(e) => setFormKey(e.target.value)}
+                    placeholder={formKind === "disc" ? "D" : "optional"}
+                    disabled={formKind === "tier" || formKind === "general"}
+                  />
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Action</label>
+              <Textarea
+                rows={2}
+                value={formAction}
+                onChange={(e) => setFormAction(e.target.value)}
+                placeholder="What will be done, and by whom"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Why this matters (optional)</label>
+              <Textarea
+                rows={2}
+                value={formComment}
+                onChange={(e) => setFormComment(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Achieve by</label>
+                <Input type="date" value={formDue} onChange={(e) => setFormDue(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Target score (optional)</label>
+                <Input
+                  type="number"
+                  value={formTarget}
+                  onChange={(e) => setFormTarget(e.target.value)}
+                  placeholder="e.g. 70"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveAction} disabled={saving}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+              Save action
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
