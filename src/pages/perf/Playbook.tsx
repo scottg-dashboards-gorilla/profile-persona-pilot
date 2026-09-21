@@ -20,6 +20,8 @@ import {
   IC_PRINCIPLES,
   IC_TARGET,
   MERIT_PRINCIPLES,
+  MERIT_RANGES,
+  MERIT_AVERAGE_TARGET,
   PDR_CATEGORIES,
   PDR_STAGES,
   PMP_PILLARS,
@@ -212,11 +214,124 @@ const employeeJourney: {
   },
 ];
 
+const managerJourney: {
+  n: number;
+  title: string;
+  when: string;
+  what: string;
+  href?: string;
+  linkLabel?: string;
+  icon: React.ElementType;
+}[] = [
+  {
+    n: 1,
+    title: "Align your team's objectives",
+    when: "Start of the year",
+    what:
+      "Each of your reports drafts objectives under Faster, Stronger, Better or L&D. Check every one is measurable and sits in the right category, then align it — or send it back with what needs changing. Once aligned, they're locked and only you can reopen them.",
+    href: "/pdr",
+    linkLabel: "Objective Setting",
+    icon: ClipboardCheck,
+  },
+  {
+    n: 2,
+    title: "Coach through the year",
+    when: "Day to day",
+    what:
+      "Comment on your reports' task cards and colour-code what to prioritise, and set team goals with real start and end dates. This is the evidence you'll rate on at year-end — don't save it up.",
+    href: "/tasks",
+    linkLabel: "Task Tracker",
+    icon: Repeat,
+  },
+  {
+    n: 3,
+    title: "Reply at mid-year",
+    when: "Mid-year",
+    what:
+      "Your report comments on each objective first; you reply on the same objective. No new form — the conversation stays attached to the objective it belongs to.",
+    href: "/pdr",
+    linkLabel: "Objective Setting",
+    icon: Users,
+  },
+  {
+    n: 4,
+    title: "Read their input and assessment",
+    when: "Dec 01–15 (theirs)",
+    what:
+      "Read the year-end self-input, the 360 feedback HR collected (names hidden), and the assessment for the period with its growth comparison. If the assessment is missing you can request a check-in — the review can't be completed without it.",
+    href: "/reviews",
+    linkLabel: "Reviews",
+    icon: UserSquare2,
+  },
+  {
+    n: 5,
+    title: "Write your feedback and set the rating",
+    when: "Dec 15 – Jan 10",
+    what:
+      "Record Managers Feedback and one 1–5 rating per person, thought through the Results, Impact and Leadership lenses and backed by evidence, not impressions. This rating is what sizes the merit that follows.",
+    href: "/pdr",
+    linkLabel: "Objective Setting",
+    icon: ClipboardCheck,
+  },
+  {
+    n: 6,
+    title: "Cover anything the assessment flagged",
+    when: "Before you can complete",
+    what:
+      "Weak skills, scores that dropped, or a tier drop are flagged automatically. Each flagged area needs an action and a date it should be achieved by before the review can be completed. Track status and overdue items in one place.",
+    href: "/improvement",
+    linkLabel: "Improvement actions",
+    icon: ShieldCheck,
+  },
+  {
+    n: 7,
+    title: "Enter pay inside your budget",
+    when: "January",
+    what:
+      "Set merit % and I/C score per person in the Pay Review Cycle. Merit must sit in the range for that rating, your team should average about 5%, I/C should average 105, and your combined increases can't exceed your approved merit budget — the grid blocks the save if they do.",
+    href: "/apr",
+    linkLabel: "Pay Review Cycle",
+    icon: CalendarRange,
+  },
+  {
+    n: 8,
+    title: "Submit to HR and wait for sign-off",
+    when: "After entry",
+    what:
+      "Submit the team for HR review. Nothing is visible to your reports while it's pending, and pay is signed off before you hold the conversation — so you walk in with a settled number.",
+    href: "/apr",
+    linkLabel: "Pay Review Cycle",
+    icon: Send,
+  },
+  {
+    n: 9,
+    title: "Hold the connect, then share",
+    when: "Feb 01–15",
+    what:
+      "Have the conversation, log it, then share the outcome. Sharing stays blocked until HR has approved any pay change. Your report confirms receipt on their own page.",
+    href: "/reviews",
+    linkLabel: "Reviews",
+    icon: Users,
+  },
+  {
+    n: 10,
+    title: "Handle a pay concern",
+    when: "Any time after sharing",
+    what:
+      "If your report disputes the amount, their reasons arrive on the review. You take it to HR and the decision comes back on the same page — visible to both of you, nothing settled off the record.",
+    href: "/reviews",
+    linkLabel: "Reviews",
+    icon: ShieldCheck,
+  },
+];
+
 export default function Playbook() {
   const { has, unconfigured } = usePermissions();
   const isAdminHr = unconfigured || has("admin") || has("hr");
   const forEmployee = !isAdminHr && !has("manager");
+  const forManager = !isAdminHr && has("manager");
   const visibleSteps = steps;
+
 
   if (forEmployee) {
     return (
@@ -341,6 +456,317 @@ export default function Playbook() {
       </div>
     );
   }
+
+  if (forManager) {
+    return (
+      <div className="space-y-5 max-w-4xl">
+        <div>
+          <h1 className="text-xl font-semibold">Your manager playbook</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Everything that's yours to decide for your direct reports across the year — the order it happens
+            in, the limits you work inside, and the screen each step lives on.
+          </p>
+        </div>
+
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">You own the decision</CardTitle>
+            <CardDescription className="text-foreground">
+              Datapath gives managers flexibility and ownership on pay for their own team. HR supports and
+              signs off — it doesn't decide for you.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            {PMP_PILLARS.map((p) => (
+              <div key={p.id} className="rounded-md bg-background border p-3">
+                <div className="text-sm font-semibold text-primary">{p.label}</div>
+                <p className="text-xs text-muted-foreground mt-1">{p.what}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-3">
+          {managerJourney.map((s) => (
+            <Card key={s.n}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <s.icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                      <span className="text-muted-foreground">{s.n}.</span> {s.title}
+                      <Badge variant="secondary" className="text-[10px]">{s.when}</Badge>
+                    </CardTitle>
+                    <CardDescription className="mt-1">{s.what}</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              {s.href && (
+                <CardContent className="pt-0 pl-[3.6rem]">
+                  <Button asChild size="sm" variant="ghost" className="h-7 px-0 text-xs">
+                    <Link to={s.href}>
+                      {s.linkLabel} <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              )}
+            </Card>
+          ))}
+        </div>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Rating, then pay</CardTitle>
+            <CardDescription>
+              One rating per person on the 1–5 scale. The rating sets the merit range you can spend inside.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2 sm:grid-cols-5">
+              {[...RATING_SCALE].reverse().map((r) => {
+                const range = MERIT_RANGES[r.score];
+                return (
+                  <div key={r.score} className={`rounded-md border p-2 text-center ${r.tone}`}>
+                    <div className="text-lg font-semibold">{r.score}</div>
+                    <div className="text-[11px] leading-tight font-medium">{r.label}</div>
+                    <div className="mt-1 text-[11px] font-semibold">
+                      {range.min === range.max ? `${range.max}%` : `${range.min}–${range.max}%`}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3 text-xs">
+              <div className="rounded-md border p-2">
+                <div className="font-semibold">Team merit average</div>
+                <div className="text-muted-foreground">Aim for about {MERIT_AVERAGE_TARGET}%</div>
+              </div>
+              <div className="rounded-md border p-2">
+                <div className="font-semibold">I/C average</div>
+                <div className="text-muted-foreground">Target {IC_TARGET}</div>
+              </div>
+              <div className="rounded-md border p-2">
+                <div className="font-semibold">Merit budget</div>
+                <div className="text-muted-foreground">Hard cap — the grid won't save over it</div>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium">Think each rating through three lenses.</p>
+              <div className="grid gap-3 sm:grid-cols-3 mt-2">
+                {RATING_LENSES.map((l) => (
+                  <div key={l.id} className="rounded-md border p-3">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-primary">{l.label}</div>
+                    <ul className="mt-1 space-y-1">
+                      {l.questions.map((q) => (
+                        <li key={q} className="text-xs text-muted-foreground flex gap-1.5">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                          {q}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">What the evidence looks like at each rating</CardTitle>
+            <CardDescription>One set of objectives, rated five different ways.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-primary">Objectives</div>
+              {RATING_EXAMPLE.objectives.map((o) => {
+                const cat = PDR_CATEGORIES.find((c) => c.id === o.category);
+                return (
+                  <div key={o.category}>
+                    <div className="text-sm font-medium">{cat?.label ?? o.category}</div>
+                    <ul className="mt-0.5 space-y-0.5">
+                      {o.points.map((p) => (
+                        <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                          {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="grid gap-3 lg:grid-cols-5">
+              {RATING_EXAMPLE.evidence.map((e) => (
+                <div key={e.score} className="rounded-md border overflow-hidden">
+                  <div className={`px-2 py-1.5 text-center ${ratingMeta(e.score)?.tone ?? ""}`}>
+                    <div className="text-sm font-semibold">{e.score}</div>
+                    <div className="text-[11px] leading-tight font-medium">{ratingMeta(e.score)?.label}</div>
+                  </div>
+                  <ul className="p-2 space-y-1">
+                    {e.points.map((p) => (
+                      <li key={p} className="text-xs text-muted-foreground flex gap-1.5">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Merit increase</CardTitle>
+              <CardDescription>{MERIT_PRINCIPLES.what}</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-primary">Who is eligible?</div>
+                <p className="text-xs text-muted-foreground">{MERIT_PRINCIPLES.eligibility}</p>
+              </div>
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-2 space-y-1.5">
+                <div className="text-xs font-semibold text-amber-900">Watch outs</div>
+                {MERIT_PRINCIPLES.watchOuts.map((w) => (
+                  <div key={w} className="text-xs text-amber-900/90 flex gap-1.5">
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                    {w}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Individual Contribution (I/C) score</CardTitle>
+              <CardDescription>{IC_PRINCIPLES.what}</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-primary">Who is eligible?</div>
+                <p className="text-xs text-muted-foreground">{IC_PRINCIPLES.eligibility}</p>
+              </div>
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-2 space-y-1.5">
+                <div className="text-xs font-semibold text-amber-900">Watch outs</div>
+                {IC_PRINCIPLES.watchOuts.map((w) => (
+                  <div key={w} className="text-xs text-amber-900/90 flex gap-1.5">
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                    {w}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Unconscious bias</CardTitle>
+            <CardDescription>
+              A reminder to keep every rating tied to evidence rather than impressions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y">
+            {UNCONSCIOUS_BIASES.map((b) => (
+              <div key={b.label} className="grid gap-1 py-2 sm:grid-cols-[10rem_1fr] sm:gap-4">
+                <div className="text-sm font-semibold">{b.label}</div>
+                <p className="text-xs text-muted-foreground">{b.what}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">What will stop you</CardTitle>
+            <CardDescription>These aren't reminders — the system refuses to let them slide.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <Rule>You see and decide for your direct reports only — never your own review, never another manager's team.</Rule>
+            <Rule>A review can't be completed without that person's assessment from the period on file.</Rule>
+            <Rule>Every area the assessment flagged needs an action with a date before you can complete the review.</Rule>
+            <Rule>Merit outside the range for the rating you gave won't save.</Rule>
+            <Rule>Your combined increases can't exceed your approved merit budget, and positive increases need that budget approved first.</Rule>
+            <Rule>Objectives can only be aligned once every one maps to a category — and once aligned, you're the one who reopens them.</Rule>
+            <Rule>HR signs off pay before you hold the conversation; sharing is blocked until then.</Rule>
+            <Rule>360 feedback reaches you and the employee without names attached.</Rule>
+            <Rule>Every rating, pay change and objective decision is recorded with your name and the time.</Rule>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">The performance year</CardTitle>
+              <CardDescription>Objectives · <Link className="underline" to="/pdr">open your team's PDRs</Link></CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              {PDR_STAGES.map((s, i) => (
+                <div key={s.id} className="flex items-start gap-2">
+                  <span className="mt-0.5 text-xs text-muted-foreground w-4">{i + 1}.</span>
+                  <div>
+                    <div className="font-medium">{s.label}</div>
+                    <div className="text-xs text-muted-foreground">{s.owner} · {s.sla}</div>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">The pay review cycle</CardTitle>
+              <CardDescription>Pay and merit · <Link className="underline" to="/apr">open the pay review</Link></CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              {APR_STAGES.map((s, i) => (
+                <div key={s.id} className="flex items-start gap-2">
+                  <span className="mt-0.5 text-xs text-muted-foreground w-4">{i + 1}.</span>
+                  <div>
+                    <div className="font-medium">{s.label}</div>
+                    <div className="text-xs text-muted-foreground">{s.owner} · {s.window}</div>
+                    <div className="text-xs text-muted-foreground">{s.what}</div>
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground border-t pt-2">
+                Timing is per person from their start-date anniversary: your entry 3 weeks before, HR sign-off
+                2 weeks before, then your connect and the outcome shared 1 week before.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Where to go</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+            <Button asChild variant="outline" className="justify-between">
+              <Link to="/pdr">Objective Setting <ArrowRight className="h-3 w-3" /></Link>
+            </Button>
+            <Button asChild variant="outline" className="justify-between">
+              <Link to="/apr">Pay Review Cycle <ArrowRight className="h-3 w-3" /></Link>
+            </Button>
+            <Button asChild variant="outline" className="justify-between">
+              <Link to="/improvement">Improvement actions <ArrowRight className="h-3 w-3" /></Link>
+            </Button>
+            <Button asChild variant="outline" className="justify-between">
+              <Link to="/tasks">Task Tracker <ArrowRight className="h-3 w-3" /></Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="space-y-5 max-w-4xl">
