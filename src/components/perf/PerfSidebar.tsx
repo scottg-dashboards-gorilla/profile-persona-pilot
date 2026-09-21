@@ -41,7 +41,7 @@ const primary: Item[] = [
   { title: "Compensation", url: "/compensation", icon: DollarSign, area: "compensation" },
   { title: "Salary history", url: "/salary-history", icon: Lock, area: "salary" },
   { title: "Calibration", url: "/calibration", icon: Scale, area: "calibration" },
-  { title: "Org rollups", url: "/org", icon: Network, area: "org" },
+  { title: "Org structure", url: "/org", icon: Network, area: "org" },
 ];
 
 const secondary: Item[] = [

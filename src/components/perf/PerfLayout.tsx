@@ -29,7 +29,7 @@ const pageTitles: Record<string, string> = {
   "/profile": "My profile",
   "/compensation": "Compensation & Raises",
   "/calibration": "Reviewer Calibration",
-  "/org": "Org Rollups",
+  "/org": "Org structure",
   "/admin/audit": "Audit Log",
 };
 
