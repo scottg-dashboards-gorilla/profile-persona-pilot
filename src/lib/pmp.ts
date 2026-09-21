@@ -551,21 +551,24 @@ export type ManagerBudget = {
 
 
 /**
- * Merit draws from the manager's merit pot.
- * The gate only bites for managers with 5 or more eligible reports (mirrored in the database).
+ * Merit draws from the manager's approved merit pot. No team-size exception applies:
+ * a manager cannot save any increase without an approved budget or spend above it.
  */
 export function budgetGate(opts: {
   eligibleCount: number;
   budget: ManagerBudget | null;
   plannedMerit: number;
 }) {
-  const enforced = opts.eligibleCount >= 5 && !!opts.budget;
-  const meritOver = enforced ? opts.plannedMerit > (opts.budget?.merit_budget_amount ?? 0) : false;
+  const approved = opts.budget?.approval_status === "approved";
+  const meritBudget = approved ? Number(opts.budget?.merit_budget_amount ?? 0) : 0;
+  const budgetMissing = opts.plannedMerit > 0 && !approved;
+  const meritOver = opts.plannedMerit > meritBudget;
   return {
-    enforced,
+    enforced: approved,
+    budgetMissing,
     meritOver,
-    blocked: meritOver,
-    meritRemaining: (opts.budget?.merit_budget_amount ?? 0) - opts.plannedMerit,
+    blocked: budgetMissing || meritOver,
+    meritRemaining: meritBudget - opts.plannedMerit,
   };
 }
 

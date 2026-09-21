@@ -284,9 +284,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
             <div className="font-medium">Team budget</div>
             {!gate.enforced ? (
               <p className="text-xs text-muted-foreground">
-                {teamPlanned.eligible < 5
-                  ? `Budget block only applies to managers with 5 or more eligible reports (this team has ${teamPlanned.eligible}).`
-                  : "No budget has been set for this manager and year yet."}
+                No approved budget is available for this manager and year. An increase cannot be saved until HR approves the annual merit budget.
               </p>
             ) : (
               <>
@@ -307,7 +305,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
                 <div>
                   <div className="font-medium">Over budget — this can't be saved as it stands</div>
                   <p className="text-xs">
-                    Reduce the amount, or escalate to the next-level manager with a reason.
+                    Reduce the amount so the team's total stays within the approved annual merit budget.
                   </p>
                 </div>
               </div>
@@ -324,11 +322,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
         <DialogFooter className="flex-wrap gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
-          {(gate.blocked || blockedMsg) && (
-            <Button variant="secondary" onClick={() => save(true)} disabled={saving || !note.trim()}>
-              <ArrowUpRight className="h-4 w-4 mr-1" /> Escalate
-            </Button>
-          )}
           <Button onClick={() => save(false)} disabled={saving || gate.blocked || meritOutOfRange}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
             Save entry
