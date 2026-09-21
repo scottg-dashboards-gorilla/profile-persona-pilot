@@ -411,10 +411,10 @@ export const APR_STAGES: {
   },
   {
     id: "escalated",
-    label: "Over-budget exception",
+    label: "Budget correction",
     owner: "Manager",
     window: "Within the 3-week entry window",
-    what: "Entries above the team budget cannot be saved — they route to the next-level manager to approve or send back.",
+    what: "Entries above the team budget cannot be saved. The manager must reduce the proposed increases before sending them to HR.",
   },
   {
     id: "hr_review",

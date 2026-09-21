@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -68,7 +67,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   const [score, setScore] = useState<string>("3");
   const [meritPercent, setMeritPercent] = useState("");
   const [ic, setIc] = useState("");
-  const [note, setNote] = useState("");
   const [pdrScore, setPdrScore] = useState<number | null>(null);
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
   const [teamPlanned, setTeamPlanned] = useState({ merit: 0, eligible: 0 });
@@ -79,7 +77,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
     setScore(String(review.rating_score ?? 3));
     setMeritPercent(review.merit_percent?.toString() ?? "");
     setIc(review.ic_score?.toString() ?? "");
-    setNote(review.escalation_note ?? "");
     setBlockedMsg(null);
   }, [review]);
 
@@ -151,7 +148,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
     plannedMerit: teamPlanned.merit + meritAmount,
   });
 
-  async function save(escalate = false) {
+  async function save() {
     setSaving(true);
     setBlockedMsg(null);
     const body: Record<string, unknown> = {
@@ -163,12 +160,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       comp_adjustment_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
       comp_adjustment_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
       ic_score: ic === "" ? null : Number(ic),
-      escalation_note: note || null,
     };
-    if (escalate) {
-      body.escalation_status = "pending";
-      body.apr_stage = "escalated";
-    }
     const { error } = await supabase.from("performance_reviews").update(body).eq("id", review.id);
     setSaving(false);
     if (error) {
@@ -176,7 +168,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
         setBlockedMsg(error.message);
         toast({
           title: "Over budget — can't save",
-          description: "Escalate to the next-level manager for an exception.",
+          description: "Reduce one or more increases so the team total stays within budget.",
           variant: "destructive",
         });
         return;
@@ -185,8 +177,8 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       return;
     }
     toast({
-      title: escalate ? "Sent up for an exception" : "Pay entry saved",
-      description: escalate ? "The next-level manager can approve or send it back." : review.employee_name,
+      title: "Pay entry saved",
+      description: review.employee_name,
     });
     onSaved();
   }
@@ -309,7 +301,6 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
                   </p>
                 </div>
               </div>
-              <Textarea rows={2} placeholder="Reason for the exception…" value={note} onChange={(e) => setNote(e.target.value)} />
             </div>
           )}
 
@@ -322,7 +313,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
         <DialogFooter className="flex-wrap gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
-          <Button onClick={() => save(false)} disabled={saving || gate.blocked || meritOutOfRange}>
+          <Button onClick={save} disabled={saving || gate.blocked || meritOutOfRange}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
             Save entry
           </Button>

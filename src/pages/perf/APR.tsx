@@ -293,7 +293,7 @@ export default function APR() {
           <p className="text-sm text-muted-foreground">
             Each person's pay review runs on their own start-date anniversary. The manager enters the
             rating and pay, HR approves it, then it is shared with the employee before the
-            anniversary. Over-budget entries route to an exception first.
+             anniversary. The combined increases cannot exceed the approved annual merit budget.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -452,7 +452,7 @@ export default function APR() {
                                   Send back
                                 </Button>
                                 <Button size="sm" disabled={busy === r.id} onClick={() => decideEscalation(r, true)}>
-                                  Approve exception
+                                  Review correction
                                 </Button>
                               </>
                             )}
@@ -651,7 +651,7 @@ function ManagerBudgets({ year }: { year: number }) {
         <CardTitle className="text-base">Manager budgets · FY{year}</CardTitle>
         <p className="text-sm text-muted-foreground">
           Merit pots. Managers with 5 or more reports are hard-blocked from saving
-          entries above these amounts — exceptions route to the next-level manager.
+          entries above these amounts. Managers must remain within the approved annual merit budget.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
