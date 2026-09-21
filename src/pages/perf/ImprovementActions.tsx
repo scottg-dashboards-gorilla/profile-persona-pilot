@@ -89,23 +89,42 @@ export default function ImprovementActions() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
+  const { toast } = useToast();
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // New-action dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formEmp, setFormEmp] = useState("");
+  const [formKind, setFormKind] = useState("technical");
+  const [formKey, setFormKey] = useState("");
+  const [formAction, setFormAction] = useState("");
+  const [formComment, setFormComment] = useState("");
+  const [formDue, setFormDue] = useState("");
+  const [formTarget, setFormTarget] = useState("");
+
+  const loadActions = async (allowed: Record<string, EmpRow>) => {
+    const { data, error } = await supabase
+      .from("assessment_action_items")
+      .select(
+        "id,employee_uuid,delta_kind,delta_key,delta_from,delta_to,action,comment,status,due_date,target_value,is_required,created_at",
+      )
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast({ title: "Couldn't load actions", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRows(((data ?? []) as ActionRow[]).filter((a) => allowed[a.employee_uuid]));
+  };
 
   useEffect(() => {
     if (permLoading) return;
     (async () => {
       setLoading(true);
-      const [{ data: empData }, { data: actionData }] = await Promise.all([
-        supabase
-          .from("employees")
-          .select("uuid,first_name,last_name,title,department,manager_uuid,user_id")
-          .eq("terminated", false),
-        supabase
-          .from("assessment_action_items")
-          .select(
-            "id,employee_uuid,delta_kind,delta_key,delta_from,delta_to,action,comment,status,due_date,target_value,is_required,created_at",
-          )
-          .order("created_at", { ascending: false }),
-      ]);
+      const { data: empData } = await supabase
+        .from("employees")
+        .select("uuid,first_name,last_name,title,department,manager_uuid,user_id")
+        .eq("terminated", false);
       let people = (empData ?? []) as EmpRow[];
       if (!isAdminHr) {
         // Managers see their direct reports only — never their own record.
@@ -118,10 +137,66 @@ export default function ImprovementActions() {
       const byUuid: Record<string, EmpRow> = {};
       for (const p of people) byUuid[p.uuid] = p;
       setEmps(byUuid);
-      setRows(((actionData ?? []) as ActionRow[]).filter((a) => byUuid[a.employee_uuid]));
+      await loadActions(byUuid);
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdminHr, permLoading]);
+
+  async function updateStatus(id: string, status: string) {
+    setBusyId(id);
+    const { error } = await supabase
+      .from("assessment_action_items")
+      .update({ status })
+      .eq("id", id);
+    setBusyId(null);
+    if (error)
+      return toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+    toast({ title: status === "done" ? "Marked as done" : "Status updated" });
+  }
+
+  function openDialog(employeeUuid?: string) {
+    setFormEmp(employeeUuid ?? "");
+    setFormKind("technical");
+    setFormKey("");
+    setFormAction("");
+    setFormComment("");
+    setFormDue("");
+    setFormTarget("");
+    setDialogOpen(true);
+  }
+
+  async function saveAction() {
+    if (!formEmp || !formAction.trim() || !formDue) {
+      toast({
+        title: "Fill in the essentials",
+        description: "Pick the person, write the action, and set a date to achieve it by.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSaving(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const { error } = await supabase.from("assessment_action_items").insert({
+      employee_uuid: formEmp,
+      delta_kind: formKind,
+      delta_key: formKind === "technical" || formKind === "disc" ? formKey || null : null,
+      action: formAction.trim(),
+      comment: formComment.trim() || null,
+      due_date: formDue,
+      target_value: formTarget === "" ? null : Number(formTarget),
+      is_required: true,
+      created_by: userData.user?.id ?? null,
+    });
+    setSaving(false);
+    if (error)
+      return toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+    setDialogOpen(false);
+    toast({ title: "Action set" });
+    await loadActions(emps);
+  }
+
 
   const counts = useMemo(() => {
     const c = { total: rows.length, open: 0, in_progress: 0, done: 0, overdue: 0, required: 0 };
