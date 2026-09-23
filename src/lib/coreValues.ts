@@ -60,3 +60,35 @@ export function averageScore(scores: (number | null | undefined)[]) {
   if (!nums.length) return null;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
 }
+
+/** How much the core values count towards the overall performance rating. */
+export const VALUES_WEIGHT = 0.3;
+
+/**
+ * Blends what was delivered (the manager's results rating) with how it was
+ * delivered (the average core value score). The blended figure, rounded back to
+ * the 1–5 scale, is the overall rating that drives merit and I/C ranges.
+ */
+export function blendRating(
+  resultsScore: number | null | undefined,
+  valuesAvg: number | null | undefined,
+): { effective: number | null; raw: number | null; valuesAvg: number | null } {
+  if (resultsScore == null) return { effective: null, raw: null, valuesAvg: valuesAvg ?? null };
+  if (valuesAvg == null) {
+    return { effective: resultsScore, raw: resultsScore, valuesAvg: null };
+  }
+  const raw = resultsScore * (1 - VALUES_WEIGHT) + valuesAvg * VALUES_WEIGHT;
+  return {
+    effective: Math.min(5, Math.max(1, Math.round(raw))),
+    raw: Math.round(raw * 10) / 10,
+    valuesAvg,
+  };
+}
+
+/** Average of the manager's value scores held in review_value_ratings rows. */
+export function managerValuesAverage(
+  rows: { value_code: string; manager_score: number | null }[],
+) {
+  const byCode = new Map(rows.map((r) => [r.value_code, r.manager_score]));
+  return averageScore(CORE_VALUES.map((v) => byCode.get(v.code) ?? null));
+}
