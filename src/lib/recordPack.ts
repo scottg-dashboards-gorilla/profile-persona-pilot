@@ -1,17 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
+import { csvSafeCell } from "@/lib/csvSafe";
 
 /**
  * Builds the end-of-cycle record pack for one person: their objectives, what
  * they and their manager wrote, the rating and pay outcome, and their
  * assessment results — one file to keep on the employee's file.
  */
-function csvCell(v: unknown) {
-  const s = v == null ? "" : String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
 function toCsv(rows: (string | number | null)[][]) {
-  return rows.map((r) => r.map(csvCell).join(",")).join("\n");
+  return rows.map((r) => r.map(csvSafeCell).join(",")).join("\n");
 }
 
 export async function exportRecordPack(employeeUuid: string, employeeName: string) {

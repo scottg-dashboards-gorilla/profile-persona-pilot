@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { csvSafeCell } from "@/lib/csvSafe";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -60,9 +61,7 @@ function fmt(v: unknown) {
   return s.length > 40 ? `${s.slice(0, 40)}…` : s;
 }
 
-function csvCell(v: string) {
-  return `"${v.replace(/"/g, '""')}"`;
-}
+const csvCell = csvSafeCell;
 
 export default function AuditLog() {
   const [entries, setEntries] = useState<Entry[]>([]);
