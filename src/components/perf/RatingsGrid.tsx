@@ -47,6 +47,7 @@ import {
   type ManagerBudget,
   type PdrObjective,
 } from "@/lib/pmp";
+import { VALUES_WEIGHT, blendRating, managerValuesAverage } from "@/lib/coreValues";
 import { cn } from "@/lib/utils";
 
 type GridRow = {
