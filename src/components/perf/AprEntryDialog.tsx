@@ -155,12 +155,15 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       fiscal_year: fiscalYear,
       rating_score: Number(score),
       overall_rating: ratingBand(Number(score)),
-      merit_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
-      merit_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
-      comp_adjustment_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
-      comp_adjustment_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
       ic_score: ic === "" ? null : Number(ic),
     };
+    // Pay figures only save when the team stays inside an approved merit budget.
+    if (!gate.blocked) {
+      body.merit_percent = meritLocked ? 0 : meritPercent === "" ? null : meritPct;
+      body.merit_amount = meritLocked ? 0 : meritPercent === "" ? null : meritAmount;
+      body.comp_adjustment_amount = meritLocked ? 0 : meritPercent === "" ? null : meritAmount;
+      body.comp_adjustment_percent = meritLocked ? 0 : meritPercent === "" ? null : meritPct;
+    }
     const { error } = await supabase.from("performance_reviews").update(body).eq("id", review.id);
     setSaving(false);
     if (error) {
@@ -177,8 +180,10 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       return;
     }
     toast({
-      title: "Pay entry saved",
-      description: review.employee_name,
+      title: gate.blocked ? "Rating saved — increase not saved" : "Pay entry saved",
+      description: gate.blocked
+        ? `${review.employee_name} · the increase needs an approved budget with room left.`
+        : review.employee_name,
     });
     onSaved();
   }
@@ -295,9 +300,10 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
               <div className="flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                 <div>
-                  <div className="font-medium">Over budget — this can't be saved as it stands</div>
+                  <div className="font-medium">The increase can't be saved as it stands</div>
                   <p className="text-xs">
-                    Reduce the amount so the team's total stays within the approved annual merit budget.
+                    The rating and I/C score will still save. Reduce the amount so the team's total
+                    stays within the approved annual merit budget.
                   </p>
                 </div>
               </div>
@@ -313,7 +319,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
         <DialogFooter className="flex-wrap gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
-          <Button onClick={save} disabled={saving || gate.blocked || meritOutOfRange}>
+          <Button onClick={save} disabled={saving || meritOutOfRange}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
             Save entry
           </Button>

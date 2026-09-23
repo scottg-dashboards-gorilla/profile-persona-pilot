@@ -303,7 +303,9 @@ export function RatingsGrid({ year }: { year: number }) {
     (c) => c.meritOk === false || c.icOk === false,
   ).length;
 
-  const blocked = budgetMissing || meritOver || icOver || rangeBreaches > 0;
+  /** Budget problems stop pay figures only — ratings and I/C can still be recorded. */
+  const meritBlocked = budgetMissing || meritOver;
+  const blocked = icOver || rangeBreaches > 0;
 
   const dirty = changed.length > 0;
 
@@ -326,28 +328,28 @@ export function RatingsGrid({ year }: { year: number }) {
     if (blocked) {
       toast({
         title: "Entries can't be saved",
-        description: budgetMissing
-          ? "An approved merit budget is required before increases can be saved."
-          : meritOver
-          ? "Merit spend is higher than the merit budget."
-          : icOver
-            ? `The team I/C average is above the target of ${IC_TARGET}.`
-            : "Some entries fall outside the allowed range.",
+        description: icOver
+          ? `The team I/C average is above the target of ${IC_TARGET}.`
+          : "Some entries fall outside the allowed range.",
         variant: "destructive",
       });
       return;
     }
     setSaving(true);
     for (const c of changed) {
+      const payload: Record<string, unknown> = {
+        rating_score: c.score,
+        overall_rating: ratingBand(c.score) ?? undefined,
+        ic_score: c.ic,
+      };
+      // Pay figures only go in when the team's total stays inside an approved budget.
+      if (!meritBlocked) {
+        payload.merit_percent = c.meritPct;
+        payload.merit_amount = c.meritAmount;
+      }
       const { error } = await supabase
         .from("performance_reviews")
-        .update({
-          rating_score: c.score,
-          overall_rating: ratingBand(c.score) ?? undefined,
-          merit_percent: c.meritPct,
-          merit_amount: c.meritAmount,
-          ic_score: c.ic,
-        })
+        .update(payload)
         .eq("id", c.row.id);
       if (error) {
         setSaving(false);
@@ -356,7 +358,14 @@ export function RatingsGrid({ year }: { year: number }) {
       }
     }
     setSaving(false);
-    toast({ title: "Entries saved", description: `${changed.length} team member(s)` });
+    toast({
+      title: meritBlocked ? "Ratings saved — increases not saved" : "Entries saved",
+      description: meritBlocked
+        ? budgetMissing
+          ? "Ratings and I/C scores are saved. Increases need an approved merit budget."
+          : "Ratings and I/C scores are saved. Increases exceed the merit budget."
+        : `${changed.length} team member(s)`,
+    });
     await load();
   }
 
@@ -673,17 +682,16 @@ export function RatingsGrid({ year }: { year: number }) {
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2 border-t pt-3">
-              {blocked && (
+              {(blocked || meritBlocked) && (
                 <span className="mr-auto text-xs text-destructive flex items-center gap-1">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  {budgetMissing
-                    ? "An approved merit budget is required before increases can be saved."
-                    : meritOver
-                    ? "Total increases exceed the merit budget — entries can't be saved."
-                    : icOver
-                      ? `Team I/C average is above ${IC_TARGET} — entries can't be saved.`
-                      : `${rangeBreaches} entr${rangeBreaches === 1 ? "y is" : "ies are"} outside the allowed range.`}
-
+                  {icOver
+                    ? `Team I/C average is above ${IC_TARGET} — entries can't be saved.`
+                    : rangeBreaches > 0
+                      ? `${rangeBreaches} entr${rangeBreaches === 1 ? "y is" : "ies are"} outside the allowed range.`
+                      : budgetMissing
+                        ? "Ratings can be saved, but increases need an approved merit budget."
+                        : "Ratings can be saved, but total increases exceed the merit budget."}
                 </span>
               )}
               {!gateEnforced && spend.merit === 0 && (
