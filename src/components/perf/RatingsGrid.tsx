@@ -218,6 +218,26 @@ export function RatingsGrid({ year }: { year: number }) {
     } else {
       setGoalsByEmp({});
     }
+
+    // Core value scores the manager has given, which count for 30% of the
+    // overall rating.
+    if (list.length > 0) {
+      const { data: vals } = await supabase
+        .from("review_value_ratings")
+        .select("review_id, value_code, manager_score")
+        .in("review_id", list.map((r) => r.id));
+      const byReview: Record<string, { value_code: string; manager_score: number | null }[]> = {};
+      ((vals ?? []) as { review_id: string; value_code: string; manager_score: number | null }[]).forEach(
+        (v) => {
+          (byReview[v.review_id] ??= []).push({ value_code: v.value_code, manager_score: v.manager_score });
+        },
+      );
+      const avgs: Record<string, number | null> = {};
+      list.forEach((r) => (avgs[r.id] = managerValuesAverage(byReview[r.id] ?? [])));
+      setValuesByReview(avgs);
+    } else {
+      setValuesByReview({});
+    }
   }, [year, isAdminHr]);
 
   useEffect(() => {
