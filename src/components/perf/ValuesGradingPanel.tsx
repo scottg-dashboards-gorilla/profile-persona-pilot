@@ -157,23 +157,11 @@ export function ValuesGradingPanel({
             <Heart className="h-4 w-4 text-primary" /> DP INC core values
           </div>
           <div className="text-xs text-muted-foreground">
-            {side === "self" && !showOtherSide
-              ? null
-              : selfAverage != null && (
-                  <>
-                    {side === "self" && <span>self {selfAverage.toFixed(1)}</span>}
-                  </>
-                )}
-            {side === "self" && !showOtherSide ? null : selfAverage != null && managerAverage != null && " · "}
-            {side === "self" && !showOtherSide
-              ? null
-              : managerAverage != null && (
-                  <>
-                    {side === "manager" && <span>self </span>}
-                    {side === "self" && <span>manager </span>}
-                    {managerAverage.toFixed(1)}
-                  </>
-                )}
+            {selfAverage != null && <>self {selfAverage.toFixed(1)}</>}
+            {(side === "manager" || showOtherSide) && selfAverage != null && managerAverage != null && " · "}
+            {(side === "manager" || showOtherSide) && managerAverage != null && (
+              <>manager {managerAverage.toFixed(1)}</>
+            )}
           </div>
         </div>
 
