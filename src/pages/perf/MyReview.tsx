@@ -919,14 +919,16 @@ export default function MyReview() {
               {me && (
                 <div className="border-t pt-4">
                   <p className="text-xs text-muted-foreground mb-3">
-                    Score yourself against each core value and add an example. Your manager scores the
-                    same list, so you can see both side by side.
+                    {active.released_at
+                      ? "Score yourself against each core value and add an example. Your manager scores the same list, so you can see both side by side."
+                      : "Score yourself against each core value and add an example. Your manager's scores will appear here once the review is shared with you."}
                   </p>
                   <ValuesGradingPanel
                     reviewId={active.id}
                     employeeUuid={me.uuid}
                     department={me.department}
                     side="self"
+                    showOtherSide={!!active.released_at}
                   />
                 </div>
               )}

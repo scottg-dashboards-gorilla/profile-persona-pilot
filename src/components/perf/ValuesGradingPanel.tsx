@@ -49,12 +49,15 @@ export function ValuesGradingPanel({
   department,
   side,
   readOnly = false,
+  showOtherSide = true,
 }: {
   reviewId: string;
   employeeUuid: string;
   department?: string | null;
   side: "self" | "manager";
   readOnly?: boolean;
+  /** Hide the other side's draft scores until the review is shared. */
+  showOtherSide?: boolean;
 }) {
   const { toast } = useToast();
   const [values, setValues] = useState<Record<string, ValueRow>>({});
@@ -155,8 +158,10 @@ export function ValuesGradingPanel({
           </div>
           <div className="text-xs text-muted-foreground">
             {selfAverage != null && <>self {selfAverage.toFixed(1)}</>}
-            {selfAverage != null && managerAverage != null && " · "}
-            {managerAverage != null && <>manager {managerAverage.toFixed(1)}</>}
+            {(side === "manager" || showOtherSide) && selfAverage != null && managerAverage != null && " · "}
+            {(side === "manager" || showOtherSide) && managerAverage != null && (
+              <>manager {managerAverage.toFixed(1)}</>
+            )}
           </div>
         </div>
 
@@ -204,7 +209,7 @@ export function ValuesGradingPanel({
               {!editable && (row?.[commentKey] as string | null) && (
                 <div className="text-sm whitespace-pre-wrap">{row?.[commentKey] as string}</div>
               )}
-              {(theirs != null || theirComment) && (
+              {(showOtherSide && (theirs != null || theirComment)) && (
                 <div className="border-t pt-2 text-xs">
                   <span className="font-medium">{otherLabel}</span>
                   {theirs != null && <span> · {theirs}/5</span>}
@@ -269,7 +274,7 @@ export function ValuesGradingPanel({
                 ) : (
                   mineText && <div className="text-sm whitespace-pre-wrap">{mineText}</div>
                 )}
-                {(theirScore != null || theirText) && (
+                {(showOtherSide && (theirScore != null || theirText)) && (
                   <div className="border-t pt-2 text-xs">
                     <span className="font-medium">{otherLabel}</span>
                     {theirScore != null && <span> · {theirScore}/5</span>}
