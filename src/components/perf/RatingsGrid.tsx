@@ -250,7 +250,12 @@ export function RatingsGrid({ year }: { year: number }) {
   const computed = useMemo(() => {
     return rows.map((r) => {
       const d = drafts[r.id] ?? toDraft(r);
-      const score = d.rating ? Number(d.rating) : null;
+      const results = d.rating ? Number(d.rating) : null;
+      // How the work was done (core values) counts for 30% of the overall rating,
+      // and it is the overall rating that sets the merit and I/C ranges.
+      const valuesAvg = valuesByReview[r.id] ?? null;
+      const blend = blendRating(results, valuesAvg);
+      const score = blend.effective;
       const mRange = meritRange(score);
       const iRange = icRange(score);
       const meritPct = score === 1 ? 0 : d.merit === "" ? null : Number(d.merit);
