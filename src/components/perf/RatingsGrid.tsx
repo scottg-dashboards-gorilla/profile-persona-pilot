@@ -328,28 +328,28 @@ export function RatingsGrid({ year }: { year: number }) {
     if (blocked) {
       toast({
         title: "Entries can't be saved",
-        description: budgetMissing
-          ? "An approved merit budget is required before increases can be saved."
-          : meritOver
-          ? "Merit spend is higher than the merit budget."
-          : icOver
-            ? `The team I/C average is above the target of ${IC_TARGET}.`
-            : "Some entries fall outside the allowed range.",
+        description: icOver
+          ? `The team I/C average is above the target of ${IC_TARGET}.`
+          : "Some entries fall outside the allowed range.",
         variant: "destructive",
       });
       return;
     }
     setSaving(true);
     for (const c of changed) {
+      const payload: Record<string, unknown> = {
+        rating_score: c.score,
+        overall_rating: ratingBand(c.score) ?? undefined,
+        ic_score: c.ic,
+      };
+      // Pay figures only go in when the team's total stays inside an approved budget.
+      if (!meritBlocked) {
+        payload.merit_percent = c.meritPct;
+        payload.merit_amount = c.meritAmount;
+      }
       const { error } = await supabase
         .from("performance_reviews")
-        .update({
-          rating_score: c.score,
-          overall_rating: ratingBand(c.score) ?? undefined,
-          merit_percent: c.meritPct,
-          merit_amount: c.meritAmount,
-          ic_score: c.ic,
-        })
+        .update(payload)
         .eq("id", c.row.id);
       if (error) {
         setSaving(false);
@@ -358,7 +358,14 @@ export function RatingsGrid({ year }: { year: number }) {
       }
     }
     setSaving(false);
-    toast({ title: "Entries saved", description: `${changed.length} team member(s)` });
+    toast({
+      title: meritBlocked ? "Ratings saved — increases not saved" : "Entries saved",
+      description: meritBlocked
+        ? budgetMissing
+          ? "Ratings and I/C scores are saved. Increases need an approved merit budget."
+          : "Ratings and I/C scores are saved. Increases exceed the merit budget."
+        : `${changed.length} team member(s)`,
+    });
     await load();
   }
 
