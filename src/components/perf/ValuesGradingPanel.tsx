@@ -49,12 +49,15 @@ export function ValuesGradingPanel({
   department,
   side,
   readOnly = false,
+  showOtherSide = true,
 }: {
   reviewId: string;
   employeeUuid: string;
   department?: string | null;
   side: "self" | "manager";
   readOnly?: boolean;
+  /** Hide the other side's draft scores until the review is shared. */
+  showOtherSide?: boolean;
 }) {
   const { toast } = useToast();
   const [values, setValues] = useState<Record<string, ValueRow>>({});
