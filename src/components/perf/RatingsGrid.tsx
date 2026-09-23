@@ -47,6 +47,7 @@ import {
   type ManagerBudget,
   type PdrObjective,
 } from "@/lib/pmp";
+import { VALUES_WEIGHT, blendRating, managerValuesAverage } from "@/lib/coreValues";
 import { cn } from "@/lib/utils";
 
 type GridRow = {
@@ -129,6 +130,8 @@ export function RatingsGrid({ year }: { year: number }) {
   const [saving, setSaving] = useState(false);
   /** Goals for each person shown, keyed by employee uuid. */
   const [goalsByEmp, setGoalsByEmp] = useState<Record<string, PdrObjective[]>>({});
+  /** Manager's average core value score for each review shown, keyed by review id. */
+  const [valuesByReview, setValuesByReview] = useState<Record<string, number | null>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -215,6 +218,26 @@ export function RatingsGrid({ year }: { year: number }) {
     } else {
       setGoalsByEmp({});
     }
+
+    // Core value scores the manager has given, which count for 30% of the
+    // overall rating.
+    if (list.length > 0) {
+      const { data: vals } = await supabase
+        .from("review_value_ratings")
+        .select("review_id, value_code, manager_score")
+        .in("review_id", list.map((r) => r.id));
+      const byReview: Record<string, { value_code: string; manager_score: number | null }[]> = {};
+      ((vals ?? []) as { review_id: string; value_code: string; manager_score: number | null }[]).forEach(
+        (v) => {
+          (byReview[v.review_id] ??= []).push({ value_code: v.value_code, manager_score: v.manager_score });
+        },
+      );
+      const avgs: Record<string, number | null> = {};
+      list.forEach((r) => (avgs[r.id] = managerValuesAverage(byReview[r.id] ?? [])));
+      setValuesByReview(avgs);
+    } else {
+      setValuesByReview({});
+    }
   }, [year, isAdminHr]);
 
   useEffect(() => {
@@ -227,7 +250,12 @@ export function RatingsGrid({ year }: { year: number }) {
   const computed = useMemo(() => {
     return rows.map((r) => {
       const d = drafts[r.id] ?? toDraft(r);
-      const score = d.rating ? Number(d.rating) : null;
+      const results = d.rating ? Number(d.rating) : null;
+      // How the work was done (core values) counts for 30% of the overall rating,
+      // and it is the overall rating that sets the merit and I/C ranges.
+      const valuesAvg = valuesByReview[r.id] ?? null;
+      const blend = blendRating(results, valuesAvg);
+      const score = blend.effective;
       const mRange = meritRange(score);
       const iRange = icRange(score);
       const meritPct = score === 1 ? 0 : d.merit === "" ? null : Number(d.merit);
@@ -237,6 +265,9 @@ export function RatingsGrid({ year }: { year: number }) {
       return {
         row: r,
         draft: d,
+        results,
+        valuesAvg,
+        blendRaw: blend.raw,
         score,
         mRange,
         iRange,
@@ -247,7 +278,7 @@ export function RatingsGrid({ year }: { year: number }) {
         icOk: withinRange(ic, iRange),
       };
     });
-  }, [rows, drafts, year]);
+  }, [rows, drafts, valuesByReview, year]);
 
   const spend = useMemo(() => {
     const merit = computed.reduce((s, c) => s + (c.meritAmount ?? 0), 0);
@@ -338,7 +369,11 @@ export function RatingsGrid({ year }: { year: number }) {
     setSaving(true);
     for (const c of changed) {
       const payload: Record<string, unknown> = {
-        rating_score: c.score,
+        // What was delivered, as entered by the manager…
+        rating_score: c.results,
+        // …and the overall rating once the core values are folded in.
+        values_avg_score: c.valuesAvg,
+        effective_rating_score: c.score,
         overall_rating: ratingBand(c.score) ?? undefined,
         ic_score: c.ic,
       };
@@ -423,7 +458,9 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score and merit. 5% is the mid point — a
+              Enter the results rating; the DP INC core value scores you gave in the
+              review add {Math.round(VALUES_WEIGHT * 100)}% to it, and that overall
+              rating is what sets the ranges below. Then the I/C score and merit. 5% is the mid point — a
               3 (Overall Met) rating can be awarded 4–6%. A rating of 1 receives 0% — no
               increase, and a rating of 2 (Partially Met) can be awarded between 0% and
               3%. The team should average 5%, and values outside a range, or spend
@@ -509,7 +546,13 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead rowSpan={2} className="align-bottom">Employee</TableHead>
                     <TableHead rowSpan={2} className="align-bottom w-[140px]">Goal progress</TableHead>
                     <TableHead rowSpan={2} className="align-bottom w-[150px] bg-primary/10">
-                      Performance Rating
+                      Results rating (70%)
+                    </TableHead>
+                    <TableHead rowSpan={2} className="align-bottom w-[110px]">
+                      Core values (30%)
+                    </TableHead>
+                    <TableHead rowSpan={2} className="align-bottom w-[110px] bg-primary/10">
+                      Overall rating
                     </TableHead>
                     <TableHead colSpan={4} className="text-center bg-muted">I/C SCORE</TableHead>
                     <TableHead colSpan={6} className="text-center bg-muted/60">MERIT</TableHead>
@@ -592,6 +635,40 @@ export function RatingsGrid({ year }: { year: number }) {
                             ))}
                           </SelectContent>
                         </Select>
+                      </TableCell>
+                      <TableCell>
+                        {c.valuesAvg == null ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help text-[11px] text-muted-foreground">
+                                Not graded
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              Score this person against the five DP INC values in their review.
+                              Until then the overall rating is just the results rating.
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <div>
+                            <div className="font-medium">{c.valuesAvg.toFixed(1)}/5</div>
+                            <div className="text-[11px] text-muted-foreground">your scores</div>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="bg-primary/5">
+                        {c.score == null ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <div>
+                            <div className="text-sm font-semibold">{c.score}</div>
+                            <div className="text-[11px] text-muted-foreground">
+                              {c.blendRaw != null && c.valuesAvg != null
+                                ? `blend ${c.blendRaw.toFixed(1)}`
+                                : "results only"}
+                            </div>
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground">{c.iRange?.min ?? "—"}</TableCell>
                       <TableCell className="text-right text-muted-foreground">{c.iRange?.max ?? "—"}</TableCell>

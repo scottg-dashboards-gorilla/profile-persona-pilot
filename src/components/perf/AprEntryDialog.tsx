@@ -33,6 +33,7 @@ import {
   ratingBand,
   type ManagerBudget,
 } from "@/lib/pmp";
+import { VALUES_WEIGHT, blendRating, managerValuesAverage } from "@/lib/coreValues";
 
 export type AprReview = {
   id: string;
@@ -68,6 +69,8 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   const [meritPercent, setMeritPercent] = useState("");
   const [ic, setIc] = useState("");
   const [pdrScore, setPdrScore] = useState<number | null>(null);
+  /** Average of the manager's DP INC value scores — 30% of the overall rating. */
+  const [valuesAvg, setValuesAvg] = useState<number | null>(null);
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
   const [teamPlanned, setTeamPlanned] = useState({ merit: 0, eligible: 0 });
   const [blockedMsg, setBlockedMsg] = useState<string | null>(null);
@@ -89,7 +92,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       .maybeSingle();
     const mgr = (emp as { manager_uuid: string | null } | null)?.manager_uuid ?? null;
 
-    const [{ data: pdr }, budgetRes, teamRes] = await Promise.all([
+    const [{ data: pdr }, budgetRes, teamRes, { data: valueRows }] = await Promise.all([
       supabase
         .from("pdr_forms")
         .select("year_end_score")
@@ -102,7 +105,16 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       mgr
         ? supabase.from("employees").select("uuid").eq("manager_uuid", mgr).eq("terminated", false)
         : Promise.resolve({ data: [] }),
+      supabase
+        .from("review_value_ratings")
+        .select("value_code, manager_score")
+        .eq("review_id", review.id),
     ]);
+    setValuesAvg(
+      managerValuesAverage(
+        (valueRows ?? []) as { value_code: string; manager_score: number | null }[],
+      ),
+    );
 
     setPdrScore((pdr as { year_end_score: number | null } | null)?.year_end_score ?? null);
     setBudget((budgetRes.data as ManagerBudget) ?? null);
@@ -134,7 +146,11 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
   const comp = Number(review.current_annual_comp ?? 0);
   const meritPct = meritPercent === "" ? 0 : Number(meritPercent);
-  const scoreNum = Number(score);
+  const resultsScore = Number(score);
+  // The core values count for 30% of the overall rating, and the overall rating
+  // sets the merit range.
+  const blend = blendRating(resultsScore, valuesAvg);
+  const scoreNum = blend.effective ?? resultsScore;
   const meritRange = (MERIT_RANGES as Record<number, { min: number; max: number }>)[scoreNum] ?? null;
   const meritLocked = !!meritRange && meritRange.max === 0;
   const effectiveMeritPct = meritLocked ? 0 : meritPct;
@@ -153,8 +169,10 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
     setBlockedMsg(null);
     const body: Record<string, unknown> = {
       fiscal_year: fiscalYear,
-      rating_score: Number(score),
-      overall_rating: ratingBand(Number(score)),
+      rating_score: resultsScore,
+      values_avg_score: valuesAvg,
+      effective_rating_score: scoreNum,
+      overall_rating: ratingBand(scoreNum),
       ic_score: ic === "" ? null : Number(ic),
     };
     // Pay figures only save when the team stays inside an approved merit budget.
@@ -200,7 +218,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label>Performance rating</Label>
+            <Label>Results rating ({Math.round((1 - VALUES_WEIGHT) * 100)}% of the overall rating)</Label>
             <Select value={score} onValueChange={setScore}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -209,6 +227,30 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
                 ))}
               </SelectContent>
             </Select>
+            <div className="rounded-md border bg-muted/40 p-2 text-xs">
+              <div className="flex justify-between">
+                <span>Core value scores you gave ({Math.round(VALUES_WEIGHT * 100)}%)</span>
+                <span className="font-medium">
+                  {valuesAvg != null ? `${valuesAvg.toFixed(1)} / 5` : "not graded yet"}
+                </span>
+              </div>
+              <div className="mt-1 flex justify-between">
+                <span className="font-medium">Overall rating</span>
+                <span className="font-semibold">
+                  {scoreNum}
+                  {blend.raw != null && valuesAvg != null && (
+                    <span className="ml-1 font-normal text-muted-foreground">
+                      (blend {blend.raw.toFixed(1)})
+                    </span>
+                  )}
+                </span>
+              </div>
+              {valuesAvg == null && (
+                <p className="mt-1 text-muted-foreground">
+                  Score the five DP INC values in the review to fold behaviour into the rating.
+                </p>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               {pdrScore != null
                 ? `Year-end PDR score on file: ${pdrScore} / 5.`

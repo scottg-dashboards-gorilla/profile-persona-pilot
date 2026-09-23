@@ -1199,6 +1199,7 @@ export type Database = {
           current_annual_comp: number | null
           cycle_id: string | null
           department: string | null
+          effective_rating_score: number | null
           employee_ack_at: string | null
           employee_ack_comment: string | null
           employee_email: string | null
@@ -1249,6 +1250,7 @@ export type Database = {
           status: string
           title: string | null
           updated_at: string
+          values_avg_score: number | null
         }
         Insert: {
           aggregation_method?: string
@@ -1273,6 +1275,7 @@ export type Database = {
           current_annual_comp?: number | null
           cycle_id?: string | null
           department?: string | null
+          effective_rating_score?: number | null
           employee_ack_at?: string | null
           employee_ack_comment?: string | null
           employee_email?: string | null
@@ -1323,6 +1326,7 @@ export type Database = {
           status?: string
           title?: string | null
           updated_at?: string
+          values_avg_score?: number | null
         }
         Update: {
           aggregation_method?: string
@@ -1347,6 +1351,7 @@ export type Database = {
           current_annual_comp?: number | null
           cycle_id?: string | null
           department?: string | null
+          effective_rating_score?: number | null
           employee_ack_at?: string | null
           employee_ack_comment?: string | null
           employee_email?: string | null
@@ -1397,6 +1402,7 @@ export type Database = {
           status?: string
           title?: string | null
           updated_at?: string
+          values_avg_score?: number | null
         }
         Relationships: [
           {
