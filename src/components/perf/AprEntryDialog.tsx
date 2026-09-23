@@ -105,7 +105,16 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       mgr
         ? supabase.from("employees").select("uuid").eq("manager_uuid", mgr).eq("terminated", false)
         : Promise.resolve({ data: [] }),
+      supabase
+        .from("review_value_ratings")
+        .select("value_code, manager_score")
+        .eq("review_id", review.id),
     ]);
+    setValuesAvg(
+      managerValuesAverage(
+        (valueRows ?? []) as { value_code: string; manager_score: number | null }[],
+      ),
+    );
 
     setPdrScore((pdr as { year_end_score: number | null } | null)?.year_end_score ?? null);
     setBudget((budgetRes.data as ManagerBudget) ?? null);
