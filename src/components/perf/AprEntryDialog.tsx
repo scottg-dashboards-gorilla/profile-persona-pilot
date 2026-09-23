@@ -169,8 +169,10 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
     setBlockedMsg(null);
     const body: Record<string, unknown> = {
       fiscal_year: fiscalYear,
-      rating_score: Number(score),
-      overall_rating: ratingBand(Number(score)),
+      rating_score: resultsScore,
+      values_avg_score: valuesAvg,
+      effective_rating_score: scoreNum,
+      overall_rating: ratingBand(scoreNum),
       ic_score: ic === "" ? null : Number(ic),
     };
     // Pay figures only save when the team stays inside an approved merit budget.
