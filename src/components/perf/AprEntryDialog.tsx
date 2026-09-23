@@ -155,12 +155,15 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       fiscal_year: fiscalYear,
       rating_score: Number(score),
       overall_rating: ratingBand(Number(score)),
-      merit_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
-      merit_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
-      comp_adjustment_amount: meritLocked ? 0 : meritPercent === "" ? null : meritAmount,
-      comp_adjustment_percent: meritLocked ? 0 : meritPercent === "" ? null : meritPct,
       ic_score: ic === "" ? null : Number(ic),
     };
+    // Pay figures only save when the team stays inside an approved merit budget.
+    if (!gate.blocked) {
+      body.merit_percent = meritLocked ? 0 : meritPercent === "" ? null : meritPct;
+      body.merit_amount = meritLocked ? 0 : meritPercent === "" ? null : meritAmount;
+      body.comp_adjustment_amount = meritLocked ? 0 : meritPercent === "" ? null : meritAmount;
+      body.comp_adjustment_percent = meritLocked ? 0 : meritPercent === "" ? null : meritPct;
+    }
     const { error } = await supabase.from("performance_reviews").update(body).eq("id", review.id);
     setSaving(false);
     if (error) {
