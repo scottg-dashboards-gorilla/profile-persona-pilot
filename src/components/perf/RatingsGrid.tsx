@@ -682,17 +682,16 @@ export function RatingsGrid({ year }: { year: number }) {
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2 border-t pt-3">
-              {blocked && (
+              {(blocked || meritBlocked) && (
                 <span className="mr-auto text-xs text-destructive flex items-center gap-1">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  {budgetMissing
-                    ? "An approved merit budget is required before increases can be saved."
-                    : meritOver
-                    ? "Total increases exceed the merit budget — entries can't be saved."
-                    : icOver
-                      ? `Team I/C average is above ${IC_TARGET} — entries can't be saved.`
-                      : `${rangeBreaches} entr${rangeBreaches === 1 ? "y is" : "ies are"} outside the allowed range.`}
-
+                  {icOver
+                    ? `Team I/C average is above ${IC_TARGET} — entries can't be saved.`
+                    : rangeBreaches > 0
+                      ? `${rangeBreaches} entr${rangeBreaches === 1 ? "y is" : "ies are"} outside the allowed range.`
+                      : budgetMissing
+                        ? "Ratings can be saved, but increases need an approved merit budget."
+                        : "Ratings can be saved, but total increases exceed the merit budget."}
                 </span>
               )}
               {!gateEnforced && spend.merit === 0 && (
