@@ -303,7 +303,9 @@ export function RatingsGrid({ year }: { year: number }) {
     (c) => c.meritOk === false || c.icOk === false,
   ).length;
 
-  const blocked = budgetMissing || meritOver || icOver || rangeBreaches > 0;
+  /** Budget problems stop pay figures only — ratings and I/C can still be recorded. */
+  const meritBlocked = budgetMissing || meritOver;
+  const blocked = icOver || rangeBreaches > 0;
 
   const dirty = changed.length > 0;
 
