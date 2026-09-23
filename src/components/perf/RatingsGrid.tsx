@@ -636,6 +636,40 @@ export function RatingsGrid({ year }: { year: number }) {
                           </SelectContent>
                         </Select>
                       </TableCell>
+                      <TableCell>
+                        {c.valuesAvg == null ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help text-[11px] text-muted-foreground">
+                                Not graded
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              Score this person against the five DP INC values in their review.
+                              Until then the overall rating is just the results rating.
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <div>
+                            <div className="font-medium">{c.valuesAvg.toFixed(1)}/5</div>
+                            <div className="text-[11px] text-muted-foreground">your scores</div>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="bg-primary/5">
+                        {c.score == null ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <div>
+                            <div className="text-sm font-semibold">{c.score}</div>
+                            <div className="text-[11px] text-muted-foreground">
+                              {c.blendRaw != null && c.valuesAvg != null
+                                ? `blend ${c.blendRaw.toFixed(1)}`
+                                : "results only"}
+                            </div>
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right text-muted-foreground">{c.iRange?.min ?? "—"}</TableCell>
                       <TableCell className="text-right text-muted-foreground">{c.iRange?.max ?? "—"}</TableCell>
                       <TableCell className="text-right">
