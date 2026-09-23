@@ -7,6 +7,15 @@ type EmployeeMeta = {
   department?: string | null;
 };
 
+function esc(v: unknown) {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function deltaColor(d: number) {
   if (d > 0) return "#059669";
   if (d < 0) return "#dc2626";
@@ -36,7 +45,7 @@ export function exportCycleComparisonPdf(employee: EmployeeMeta, attempts: Attem
   const generatedAt = format(new Date(), "MMM d, yyyy h:mma");
 
   const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8" /><title>Cycle comparison · ${employee.name}</title>
+<html><head><meta charset="utf-8" /><title>Cycle comparison · ${esc(employee.name)}</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #111; margin: 32px; }
@@ -55,7 +64,7 @@ export function exportCycleComparisonPdf(employee: EmployeeMeta, attempts: Attem
 <body>
   <button onclick="window.print()">Print / Save as PDF</button>
   <h1>Cycle-to-cycle assessment comparison</h1>
-  <div class="sub">${employee.name}${employee.title ? ` · ${employee.title}` : ""}${employee.department ? ` · ${employee.department}` : ""}</div>
+  <div class="sub">${esc(employee.name)}${employee.title ? ` · ${esc(employee.title)}` : ""}${employee.department ? ` · ${esc(employee.department)}` : ""}</div>
   <div class="meta">${attempts.length} attempt${attempts.length === 1 ? "" : "s"} on file · generated ${generatedAt}</div>
 
   ${rows.length === 0 ? `<p>No assessment attempts on file.</p>` : `
@@ -78,16 +87,16 @@ export function exportCycleComparisonPdf(employee: EmployeeMeta, attempts: Attem
             <div><strong>${format(parseISO(curr.taken_at), "MMM d, yyyy")}</strong></div>
             ${prev ? `<div style="color:#777">vs ${format(parseISO(prev.taken_at), "MMM d, yyyy")}</div>` : ""}
           </td>
-          <td>${prev ? `${readableTier(tier.from)} → ${readableTier(tier.to)}` : readableTier(tier.to)}</td>
+          <td>${prev ? `${esc(readableTier(tier.from))} → ${esc(readableTier(tier.to))}` : esc(readableTier(tier.to))}</td>
           <td>${disc
             .map(
               (d) =>
-                `<span class="chip" style="color:${deltaColor(d.delta)}">${d.letter} ${d.delta >= 0 ? "+" : ""}${d.delta.toFixed(0)}</span>`,
+                `<span class="chip" style="color:${deltaColor(d.delta)}">${esc(d.letter)} ${d.delta >= 0 ? "+" : ""}${d.delta.toFixed(0)}</span>`,
             )
             .join("")}</td>
           <td style="color:${deltaColor(techAvg)}">${prev ? `${techAvg >= 0 ? "+" : ""}${techAvg.toFixed(1)}` : "—"}</td>
-          <td style="color:#059669">${topUp?.delta != null && topUp.delta > 0 ? `${topUp.id} +${topUp.delta.toFixed(0)}` : "—"}</td>
-          <td style="color:#dc2626">${topDown?.delta != null && topDown.delta < 0 ? `${topDown.id} ${topDown.delta.toFixed(0)}` : "—"}</td>
+          <td style="color:#059669">${topUp?.delta != null && topUp.delta > 0 ? `${esc(topUp.id)} +${topUp.delta.toFixed(0)}` : "—"}</td>
+          <td style="color:#dc2626">${topDown?.delta != null && topDown.delta < 0 ? `${esc(topDown.id)} ${topDown.delta.toFixed(0)}` : "—"}</td>
         </tr>`,
         )
         .join("")}
@@ -104,7 +113,7 @@ export function exportCycleComparisonPdf(employee: EmployeeMeta, attempts: Attem
         ${latest.tech
           .map(
             (d) => `<tr>
-              <td>${d.id}</td>
+              <td>${esc(d.id)}</td>
               <td>${d.from != null ? d.from.toFixed(0) : "—"}</td>
               <td>${d.to.toFixed(0)}</td>
               <td style="color:${d.delta != null ? deltaColor(d.delta) : "#6b7280"}">
