@@ -265,6 +265,9 @@ export function RatingsGrid({ year }: { year: number }) {
       return {
         row: r,
         draft: d,
+        results,
+        valuesAvg,
+        blendRaw: blend.raw,
         score,
         mRange,
         iRange,
@@ -275,7 +278,7 @@ export function RatingsGrid({ year }: { year: number }) {
         icOk: withinRange(ic, iRange),
       };
     });
-  }, [rows, drafts, year]);
+  }, [rows, drafts, valuesByReview, year]);
 
   const spend = useMemo(() => {
     const merit = computed.reduce((s, c) => s + (c.meritAmount ?? 0), 0);
