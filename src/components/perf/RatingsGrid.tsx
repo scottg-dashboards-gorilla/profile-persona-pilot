@@ -458,7 +458,9 @@ export function RatingsGrid({ year }: { year: number }) {
           <div>
             <CardTitle className="text-base">My team ratings · FY{year}</CardTitle>
             <CardDescription>
-              Enter the rating, then the I/C score and merit. 5% is the mid point — a
+              Enter the results rating; the DP INC core value scores you gave in the
+              review add {Math.round(VALUES_WEIGHT * 100)}% to it, and that overall
+              rating is what sets the ranges below. Then the I/C score and merit. 5% is the mid point — a
               3 (Overall Met) rating can be awarded 4–6%. A rating of 1 receives 0% — no
               increase, and a rating of 2 (Partially Met) can be awarded between 0% and
               3%. The team should average 5%, and values outside a range, or spend
