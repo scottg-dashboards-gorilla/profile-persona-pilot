@@ -218,7 +218,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label>Performance rating</Label>
+            <Label>Results rating ({Math.round((1 - VALUES_WEIGHT) * 100)}% of the overall rating)</Label>
             <Select value={score} onValueChange={setScore}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -227,6 +227,30 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
                 ))}
               </SelectContent>
             </Select>
+            <div className="rounded-md border bg-muted/40 p-2 text-xs">
+              <div className="flex justify-between">
+                <span>Core value scores you gave ({Math.round(VALUES_WEIGHT * 100)}%)</span>
+                <span className="font-medium">
+                  {valuesAvg != null ? `${valuesAvg.toFixed(1)} / 5` : "not graded yet"}
+                </span>
+              </div>
+              <div className="mt-1 flex justify-between">
+                <span className="font-medium">Overall rating</span>
+                <span className="font-semibold">
+                  {scoreNum}
+                  {blend.raw != null && valuesAvg != null && (
+                    <span className="ml-1 font-normal text-muted-foreground">
+                      (blend {blend.raw.toFixed(1)})
+                    </span>
+                  )}
+                </span>
+              </div>
+              {valuesAvg == null && (
+                <p className="mt-1 text-muted-foreground">
+                  Score the five DP INC values in the review to fold behaviour into the rating.
+                </p>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               {pdrScore != null
                 ? `Year-end PDR score on file: ${pdrScore} / 5.`
