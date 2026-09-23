@@ -546,7 +546,13 @@ export function RatingsGrid({ year }: { year: number }) {
                     <TableHead rowSpan={2} className="align-bottom">Employee</TableHead>
                     <TableHead rowSpan={2} className="align-bottom w-[140px]">Goal progress</TableHead>
                     <TableHead rowSpan={2} className="align-bottom w-[150px] bg-primary/10">
-                      Performance Rating
+                      Results rating (70%)
+                    </TableHead>
+                    <TableHead rowSpan={2} className="align-bottom w-[110px]">
+                      Core values (30%)
+                    </TableHead>
+                    <TableHead rowSpan={2} className="align-bottom w-[110px] bg-primary/10">
+                      Overall rating
                     </TableHead>
                     <TableHead colSpan={4} className="text-center bg-muted">I/C SCORE</TableHead>
                     <TableHead colSpan={6} className="text-center bg-muted/60">MERIT</TableHead>
