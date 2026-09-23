@@ -597,6 +597,48 @@ export type Database = {
         }
         Relationships: []
       }
+      department_questions: {
+        Row: {
+          audience: string
+          created_at: string
+          created_by: string | null
+          department: string | null
+          help_text: string | null
+          id: string
+          is_active: boolean
+          prompt: string
+          response_type: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          help_text?: string | null
+          id?: string
+          is_active?: boolean
+          prompt: string
+          response_type?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          help_text?: string | null
+          id?: string
+          is_active?: boolean
+          prompt?: string
+          response_type?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       employee_profiles: {
         Row: {
           created_at: string
@@ -1657,6 +1699,60 @@ export type Database = {
         }
         Relationships: []
       }
+      review_question_responses: {
+        Row: {
+          created_at: string
+          employee_uuid: string
+          id: string
+          manager_score: number | null
+          manager_text: string | null
+          question_id: string
+          review_id: string
+          self_score: number | null
+          self_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_uuid: string
+          id?: string
+          manager_score?: number | null
+          manager_text?: string | null
+          question_id: string
+          review_id: string
+          self_score?: number | null
+          self_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_uuid?: string
+          id?: string
+          manager_score?: number | null
+          manager_text?: string | null
+          question_id?: string
+          review_id?: string
+          self_score?: number | null
+          self_text?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_question_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "department_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_question_responses_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_reminders: {
         Row: {
           attempts: number
@@ -1783,6 +1879,53 @@ export type Database = {
             foreignKeyName: "review_self_assessments_review_id_fkey"
             columns: ["review_id"]
             isOneToOne: true
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_value_ratings: {
+        Row: {
+          created_at: string
+          employee_uuid: string
+          id: string
+          manager_comment: string | null
+          manager_score: number | null
+          review_id: string
+          self_comment: string | null
+          self_score: number | null
+          updated_at: string
+          value_code: string
+        }
+        Insert: {
+          created_at?: string
+          employee_uuid: string
+          id?: string
+          manager_comment?: string | null
+          manager_score?: number | null
+          review_id: string
+          self_comment?: string | null
+          self_score?: number | null
+          updated_at?: string
+          value_code: string
+        }
+        Update: {
+          created_at?: string
+          employee_uuid?: string
+          id?: string
+          manager_comment?: string | null
+          manager_score?: number | null
+          review_id?: string
+          self_comment?: string | null
+          self_score?: number | null
+          updated_at?: string
+          value_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_value_ratings_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
             referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
