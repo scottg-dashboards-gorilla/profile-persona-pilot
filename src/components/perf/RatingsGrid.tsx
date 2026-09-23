@@ -130,6 +130,8 @@ export function RatingsGrid({ year }: { year: number }) {
   const [saving, setSaving] = useState(false);
   /** Goals for each person shown, keyed by employee uuid. */
   const [goalsByEmp, setGoalsByEmp] = useState<Record<string, PdrObjective[]>>({});
+  /** Manager's average core value score for each review shown, keyed by review id. */
+  const [valuesByReview, setValuesByReview] = useState<Record<string, number | null>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
