@@ -27,8 +27,15 @@ import {
 } from "@/components/ui/select";
 import { formatCompDelta } from "@/data/mockEmployees";
 import { usePermissions } from "@/hooks/usePermissions";
+import { ValuesGradingPanel } from "@/components/perf/ValuesGradingPanel";
 
-type Employee = { uuid: string; first_name: string; last_name: string; title: string | null };
+type Employee = {
+  uuid: string;
+  first_name: string;
+  last_name: string;
+  title: string | null;
+  department: string | null;
+};
 
 type Review = {
   id: string;
@@ -182,7 +189,7 @@ export default function MyReview() {
     }
     const { data: emp } = await supabase
       .from("employees")
-      .select("uuid, first_name, last_name, title")
+      .select("uuid, first_name, last_name, title, department")
       .eq("user_id", user.id)
       .maybeSingle();
     if (!emp) {
@@ -909,6 +916,20 @@ export default function MyReview() {
                 <Label>What support do you need?</Label>
                 <Textarea rows={2} value={support} onChange={(e) => setSupport(e.target.value)} />
               </div>
+              {me && (
+                <div className="border-t pt-4">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Score yourself against each core value and add an example. Your manager scores the
+                    same list, so you can see both side by side.
+                  </p>
+                  <ValuesGradingPanel
+                    reviewId={active.id}
+                    employeeUuid={me.uuid}
+                    department={me.department}
+                    side="self"
+                  />
+                </div>
+              )}
               <div className="flex justify-end">
                 <Button onClick={saveSelfAssessment} disabled={saving}>
                   {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}

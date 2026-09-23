@@ -41,6 +41,7 @@ import {
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
 import { SelfAssessmentPanel } from "@/components/perf/SelfAssessmentPanel";
+import { ValuesGradingPanel } from "@/components/perf/ValuesGradingPanel";
 
 
 export type ReviewRow = {
@@ -245,6 +246,14 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
 
         <div className="grid gap-4">
           <SelfAssessmentPanel reviewId={review.id} canReply />
+          <div className="rounded-md border p-3">
+            <ValuesGradingPanel
+              reviewId={review.id}
+              employeeUuid={review.employee_uuid}
+              department={review.department}
+              side="manager"
+            />
+          </div>
           <AssessmentDelta
 
             current={currentAttempt}

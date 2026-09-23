@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.guard_review_grading_sides() FROM PUBLIC, anon, authenticated;
