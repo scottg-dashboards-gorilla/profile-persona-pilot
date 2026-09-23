@@ -369,7 +369,11 @@ export function RatingsGrid({ year }: { year: number }) {
     setSaving(true);
     for (const c of changed) {
       const payload: Record<string, unknown> = {
-        rating_score: c.score,
+        // What was delivered, as entered by the manager…
+        rating_score: c.results,
+        // …and the overall rating once the core values are folded in.
+        values_avg_score: c.valuesAvg,
+        effective_rating_score: c.score,
         overall_rating: ratingBand(c.score) ?? undefined,
         ic_score: c.ic,
       };
