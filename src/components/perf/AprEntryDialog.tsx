@@ -300,9 +300,10 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
               <div className="flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                 <div>
-                  <div className="font-medium">Over budget — this can't be saved as it stands</div>
+                  <div className="font-medium">The increase can't be saved as it stands</div>
                   <p className="text-xs">
-                    Reduce the amount so the team's total stays within the approved annual merit budget.
+                    The rating and I/C score will still save. Reduce the amount so the team's total
+                    stays within the approved annual merit budget.
                   </p>
                 </div>
               </div>
