@@ -69,6 +69,8 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
   const [meritPercent, setMeritPercent] = useState("");
   const [ic, setIc] = useState("");
   const [pdrScore, setPdrScore] = useState<number | null>(null);
+  /** Average of the manager's DP INC value scores — 30% of the overall rating. */
+  const [valuesAvg, setValuesAvg] = useState<number | null>(null);
   const [budget, setBudget] = useState<ManagerBudget | null>(null);
   const [teamPlanned, setTeamPlanned] = useState({ merit: 0, eligible: 0 });
   const [blockedMsg, setBlockedMsg] = useState<string | null>(null);
