@@ -27,8 +27,15 @@ import {
 } from "@/components/ui/select";
 import { formatCompDelta } from "@/data/mockEmployees";
 import { usePermissions } from "@/hooks/usePermissions";
+import { ValuesGradingPanel } from "@/components/perf/ValuesGradingPanel";
 
-type Employee = { uuid: string; first_name: string; last_name: string; title: string | null };
+type Employee = {
+  uuid: string;
+  first_name: string;
+  last_name: string;
+  title: string | null;
+  department: string | null;
+};
 
 type Review = {
   id: string;
@@ -182,7 +189,7 @@ export default function MyReview() {
     }
     const { data: emp } = await supabase
       .from("employees")
-      .select("uuid, first_name, last_name, title")
+      .select("uuid, first_name, last_name, title, department")
       .eq("user_id", user.id)
       .maybeSingle();
     if (!emp) {
