@@ -157,9 +157,23 @@ export function ValuesGradingPanel({
             <Heart className="h-4 w-4 text-primary" /> DP INC core values
           </div>
           <div className="text-xs text-muted-foreground">
-            {selfAverage != null && <>self {selfAverage.toFixed(1)}</>}
-            {selfAverage != null && managerAverage != null && " · "}
-            {managerAverage != null && <>manager {managerAverage.toFixed(1)}</>}
+            {side === "self" && !showOtherSide
+              ? null
+              : selfAverage != null && (
+                  <>
+                    {side === "self" && <span>self {selfAverage.toFixed(1)}</span>}
+                  </>
+                )}
+            {side === "self" && !showOtherSide ? null : selfAverage != null && managerAverage != null && " · "}
+            {side === "self" && !showOtherSide
+              ? null
+              : managerAverage != null && (
+                  <>
+                    {side === "manager" && <span>self </span>}
+                    {side === "self" && <span>manager </span>}
+                    {managerAverage.toFixed(1)}
+                  </>
+                )}
           </div>
         </div>
 
@@ -207,7 +221,7 @@ export function ValuesGradingPanel({
               {!editable && (row?.[commentKey] as string | null) && (
                 <div className="text-sm whitespace-pre-wrap">{row?.[commentKey] as string}</div>
               )}
-              {(theirs != null || theirComment) && (
+              {(showOtherSide && (theirs != null || theirComment)) && (
                 <div className="border-t pt-2 text-xs">
                   <span className="font-medium">{otherLabel}</span>
                   {theirs != null && <span> · {theirs}/5</span>}
@@ -272,7 +286,7 @@ export function ValuesGradingPanel({
                 ) : (
                   mineText && <div className="text-sm whitespace-pre-wrap">{mineText}</div>
                 )}
-                {(theirScore != null || theirText) && (
+                {(showOtherSide && (theirScore != null || theirText)) && (
                   <div className="border-t pt-2 text-xs">
                     <span className="font-medium">{otherLabel}</span>
                     {theirScore != null && <span> · {theirScore}/5</span>}
