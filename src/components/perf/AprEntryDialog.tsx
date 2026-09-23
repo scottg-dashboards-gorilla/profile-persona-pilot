@@ -92,7 +92,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       .maybeSingle();
     const mgr = (emp as { manager_uuid: string | null } | null)?.manager_uuid ?? null;
 
-    const [{ data: pdr }, budgetRes, teamRes] = await Promise.all([
+    const [{ data: pdr }, budgetRes, teamRes, { data: valueRows }] = await Promise.all([
       supabase
         .from("pdr_forms")
         .select("year_end_score")
