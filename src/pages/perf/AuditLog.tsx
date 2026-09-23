@@ -60,9 +60,7 @@ function fmt(v: unknown) {
   return s.length > 40 ? `${s.slice(0, 40)}…` : s;
 }
 
-function csvCell(v: string) {
-  return `"${v.replace(/"/g, '""')}"`;
-}
+const csvCell = csvSafeCell;
 
 export default function AuditLog() {
   const [entries, setEntries] = useState<Entry[]>([]);
