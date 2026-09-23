@@ -33,6 +33,7 @@ import {
   ratingBand,
   type ManagerBudget,
 } from "@/lib/pmp";
+import { VALUES_WEIGHT, blendRating, managerValuesAverage } from "@/lib/coreValues";
 
 export type AprReview = {
   id: string;
