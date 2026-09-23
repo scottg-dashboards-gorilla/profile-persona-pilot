@@ -180,8 +180,10 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       return;
     }
     toast({
-      title: "Pay entry saved",
-      description: review.employee_name,
+      title: gate.blocked ? "Rating saved — increase not saved" : "Pay entry saved",
+      description: gate.blocked
+        ? `${review.employee_name} · the increase needs an approved budget with room left.`
+        : review.employee_name,
     });
     onSaved();
   }
