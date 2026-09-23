@@ -245,6 +245,14 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
 
         <div className="grid gap-4">
           <SelfAssessmentPanel reviewId={review.id} canReply />
+          <div className="rounded-md border p-3">
+            <ValuesGradingPanel
+              reviewId={review.id}
+              employeeUuid={review.employee_uuid}
+              department={review.department}
+              side="manager"
+            />
+          </div>
           <AssessmentDelta
 
             current={currentAttempt}
