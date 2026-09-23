@@ -16,7 +16,9 @@ import {
   Scale,
   ShieldAlert,
   CalendarDays,
+  ListChecks,
 } from "lucide-react";
+import DepartmentQuestions from "@/components/perf/DepartmentQuestions";
 import ReviewCalendar from "@/components/perf/ReviewCalendar";
 import FairnessCheck from "@/components/perf/FairnessCheck";
 import DataHealth from "@/components/perf/DataHealth";
@@ -402,6 +404,9 @@ export default function AdminPanel() {
           <TabsTrigger value="fairness" className="gap-1.5">
             <Scale className="h-4 w-4" /> Fairness check
           </TabsTrigger>
+          <TabsTrigger value="questions" className="gap-1.5">
+            <ListChecks className="h-4 w-4" /> Review questions
+          </TabsTrigger>
           <TabsTrigger value="records" className="gap-1.5">
             <ShieldAlert className="h-4 w-4" /> Records
           </TabsTrigger>
@@ -420,6 +425,9 @@ export default function AdminPanel() {
         </TabsContent>
         <TabsContent value="fairness" className="mt-4">
           <FairnessCheck year={FISCAL_YEAR} />
+        </TabsContent>
+        <TabsContent value="questions" className="mt-4">
+          <DepartmentQuestions />
         </TabsContent>
         <TabsContent value="records" className="mt-4">
           <DataHealth year={FISCAL_YEAR} />

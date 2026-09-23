@@ -41,6 +41,7 @@ import {
 import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
 import { SelfAssessmentPanel } from "@/components/perf/SelfAssessmentPanel";
+import { ValuesGradingPanel } from "@/components/perf/ValuesGradingPanel";
 
 
 export type ReviewRow = {
