@@ -319,7 +319,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
         <DialogFooter className="flex-wrap gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
-          <Button onClick={save} disabled={saving || gate.blocked || meritOutOfRange}>
+          <Button onClick={save} disabled={saving || meritOutOfRange}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
             Save entry
           </Button>
