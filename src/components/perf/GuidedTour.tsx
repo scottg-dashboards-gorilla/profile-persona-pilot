@@ -43,7 +43,7 @@ export const startTour = () => window.dispatchEvent(new Event(TOUR_EVENT));
 type Rect = { top: number; left: number; width: number; height: number };
 
 export function GuidedTour({ userId }: { userId: string }) {
-  const { viewMode, loading } = usePermissions();
+  const { viewMode, availableModes, loading } = usePermissions();
   // One tour per view (employee / manager / admin), so switching views shows that view's buttons.
   const storageKey = `perf-tour-done:${userId}:${viewMode}`;
   const [steps, setSteps] = useState<string[]>([]);
@@ -55,11 +55,13 @@ export function GuidedTour({ userId }: { userId: string }) {
     const found = Array.from(document.querySelectorAll<HTMLElement>("[data-tour]"))
       .filter((el) => el.offsetParent !== null)
       .map((el) => el.dataset.tour!)
-      .filter((k, i, a) => STEP_TEXT[k] && a.indexOf(k) === i);
+      .filter((k, i, a) => STEP_TEXT[k] && a.indexOf(k) === i)
+      // People with a single view never see the view switcher, so skip that step.
+      .filter((k) => k !== "view-mode" || availableModes.length > 1);
     setSteps(["welcome", ...found]);
     setIndex(0);
     setOpen(true);
-  }, []);
+  }, [availableModes.length]);
 
   useEffect(() => {
     const h = () => begin();
