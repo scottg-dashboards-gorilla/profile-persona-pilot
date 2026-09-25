@@ -124,7 +124,7 @@ export function GuidedTour({ userId }: { userId: string }) {
         style={cardStyle}
       >
         <div className="flex items-start justify-between gap-2">
-          <h2 className="font-semibold text-sm">{step.title}</h2>
+          <h2 className="font-semibold text-sm">{step.title}{key === "welcome" && <span className="block text-xs font-normal text-muted-foreground">{viewModeLabels[viewMode]} tour</span>}</h2>
           <button onClick={close} aria-label="Close tour" className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
