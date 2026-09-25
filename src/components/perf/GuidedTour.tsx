@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { viewModeLabels } from "@/hooks/useViewMode";
 
 type StepDef = { title: string; body: string };
 
@@ -41,7 +43,9 @@ export const startTour = () => window.dispatchEvent(new Event(TOUR_EVENT));
 type Rect = { top: number; left: number; width: number; height: number };
 
 export function GuidedTour({ userId }: { userId: string }) {
-  const storageKey = `perf-tour-done:${userId}`;
+  const { viewMode, loading } = usePermissions();
+  // One tour per view (employee / manager / admin), so switching views shows that view's buttons.
+  const storageKey = `perf-tour-done:${userId}:${viewMode}`;
   const [steps, setSteps] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
   const [open, setOpen] = useState(false);
@@ -61,12 +65,12 @@ export function GuidedTour({ userId }: { userId: string }) {
     const h = () => begin();
     window.addEventListener(TOUR_EVENT, h);
     let t: number | undefined;
-    if (!localStorage.getItem(storageKey)) t = window.setTimeout(begin, 1200);
+    if (!loading && !localStorage.getItem(storageKey)) t = window.setTimeout(begin, 1200);
     return () => {
       window.removeEventListener(TOUR_EVENT, h);
       if (t) clearTimeout(t);
     };
-  }, [begin, storageKey]);
+  }, [begin, storageKey, loading]);
 
   const key = steps[index];
 
