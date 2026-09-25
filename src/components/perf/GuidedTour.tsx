@@ -43,7 +43,7 @@ export const startTour = () => window.dispatchEvent(new Event(TOUR_EVENT));
 type Rect = { top: number; left: number; width: number; height: number };
 
 export function GuidedTour({ userId }: { userId: string }) {
-  const { viewMode, loading } = usePermissions();
+  const { viewMode, availableModes, loading } = usePermissions();
   // One tour per view (employee / manager / admin), so switching views shows that view's buttons.
   const storageKey = `perf-tour-done:${userId}:${viewMode}`;
   const [steps, setSteps] = useState<string[]>([]);
