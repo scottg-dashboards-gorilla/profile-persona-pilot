@@ -61,7 +61,7 @@ export function GuidedTour({ userId }: { userId: string }) {
     setSteps(["welcome", ...found]);
     setIndex(0);
     setOpen(true);
-  }, []);
+  }, [availableModes.length]);
 
   useEffect(() => {
     const h = () => begin();
