@@ -2,7 +2,8 @@ import { Outlet, useLocation, Navigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { PerfSidebar } from "./PerfSidebar";
-import { Search, Loader2, LogOut, UserSquare2 } from "lucide-react";
+import { Search, Loader2, LogOut, UserSquare2, Compass } from "lucide-react";
+import { GuidedTour, startTour } from "./GuidedTour";
 import { NotificationsBell } from "./NotificationsBell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -99,20 +100,21 @@ export default function PerfLayout() {
           <PerfSidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <header className="sticky top-0 z-20 h-14 border-b border-border bg-background/80 backdrop-blur flex items-center gap-3 px-4">
-              <SidebarTrigger />
+              <SidebarTrigger data-tour="sidebar-toggle" />
               <h1 className="text-base font-semibold tracking-tight"><HeaderTitle /></h1>
               <div className="ml-auto flex items-center gap-3">
-                <ViewModeBadge />
+                <span data-tour="view-mode" className="inline-flex"><ViewModeBadge /></span>
                 <div className="relative hidden md:block">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input placeholder="Search people, reviews…" className="pl-8 w-72 h-9" />
                 </div>
-                <NotificationsBell />
+                <span data-tour="notifications" className="inline-flex"><NotificationsBell /></span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
                       className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold"
                       aria-label="Your account"
+                      data-tour="account"
                     >
                       {initials}
                     </button>
@@ -138,6 +140,9 @@ export default function PerfLayout() {
                         <UserSquare2 className="h-4 w-4" /> My profile
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => startTour()} className="flex items-center gap-2">
+                      <Compass className="h-4 w-4" /> Take the tour
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2">
                       <LogOut className="h-4 w-4" /> Sign out
                     </DropdownMenuItem>
@@ -147,6 +152,7 @@ export default function PerfLayout() {
             </header>
             <main className="flex-1 p-6 max-w-[1400px] w-full mx-auto">
               <Outlet />
+              <GuidedTour userId={session.user.id} />
             </main>
           </div>
         </div>

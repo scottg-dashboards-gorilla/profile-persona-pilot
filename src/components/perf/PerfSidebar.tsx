@@ -102,7 +102,7 @@ export function PerfSidebar() {
               {primaryItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={labelFor(item)}>
-                    <NavLink to={item.url} end={item.url === "/"} className="flex items-center gap-2">
+                    <NavLink to={item.url} data-tour={item.url} end={item.url === "/"} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       <span>{labelFor(item)}</span>
                     </NavLink>
@@ -119,7 +119,7 @@ export function PerfSidebar() {
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={labelFor(item)}>
-                    <NavLink to={item.url} className="flex items-center gap-2">
+                    <NavLink to={item.url} data-tour={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       <span>{labelFor(item)}</span>
                     </NavLink>
