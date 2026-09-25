@@ -55,7 +55,9 @@ export function GuidedTour({ userId }: { userId: string }) {
     const found = Array.from(document.querySelectorAll<HTMLElement>("[data-tour]"))
       .filter((el) => el.offsetParent !== null)
       .map((el) => el.dataset.tour!)
-      .filter((k, i, a) => STEP_TEXT[k] && a.indexOf(k) === i);
+      .filter((k, i, a) => STEP_TEXT[k] && a.indexOf(k) === i)
+      // People with a single view never see the view switcher, so skip that step.
+      .filter((k) => k !== "view-mode" || availableModes.length > 1);
     setSteps(["welcome", ...found]);
     setIndex(0);
     setOpen(true);
