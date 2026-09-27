@@ -34,9 +34,29 @@ type QuickLink = {
   icon: typeof Target;
 };
 
-const employeeSteps = ["Objectives", "Everyday work", "Your feedback", "Assessment", "Outcome"];
-const managerSteps = ["Align objectives", "Coach & track", "Review feedback", "Rate & recommend pay", "Share outcome"];
-const adminSteps = ["Set up cycle", "Monitor input", "Check fairness", "Approve pay", "Release & close"];
+type JourneyStep = { title: string; when: string; href: string };
+
+const employeeSteps: JourneyStep[] = [
+  { title: "Set objectives", when: "Start of year", href: "/pdr" },
+  { title: "Track everyday work", when: "Throughout year", href: "/tasks" },
+  { title: "Write your feedback", when: "Dec 1–15", href: "/me" },
+  { title: "Complete assessment", when: "Review period", href: "/me" },
+  { title: "Confirm outcome", when: "Feb 1–15", href: "/me" },
+];
+const managerSteps: JourneyStep[] = [
+  { title: "Align objectives", when: "Start of year", href: "/pdr" },
+  { title: "Coach and track", when: "Throughout year", href: "/tasks" },
+  { title: "Review feedback", when: "Dec 15–Jan 10", href: "/reviews" },
+  { title: "Rate and recommend pay", when: "January", href: "/apr" },
+  { title: "Share approved outcome", when: "Feb 1–15", href: "/reviews" },
+];
+const adminSteps: JourneyStep[] = [
+  { title: "Set up cycle", when: "Before launch", href: "/admin/panel?tab=calendar" },
+  { title: "Monitor input", when: "Dec–Jan", href: "/reviews" },
+  { title: "Check fairness", when: "January", href: "/calibration" },
+  { title: "Approve pay", when: "Before conversations", href: "/admin/panel?tab=approvals" },
+  { title: "Release and close", when: "Feb 1–15", href: "/reviews" },
+];
 
 const employeeLinks: QuickLink[] = [
   { title: "Objectives", detail: "Set annual goals and add mid-year or year-end progress.", href: "/pdr", label: "Open objectives", icon: Target },
@@ -53,21 +73,26 @@ const managerLinks: QuickLink[] = [
 ];
 
 const adminLinks: QuickLink[] = [
-  { title: "Set up the cycle", detail: "Manage dates, questions, people, and approved budgets.", href: "/admin/panel", label: "Open administration", icon: ClipboardCheck },
-  { title: "Monitor reviews", detail: "Track employee input, manager feedback, and completion.", href: "/reviews", label: "View all reviews", icon: Users },
-  { title: "Approve pay", detail: "Review submitted recommendations before outcomes are shared.", href: "/admin/panel", label: "Review approvals", icon: Wallet },
+  { title: "Pay approvals", detail: "Approve or return submitted merit recommendations before outcomes are shared.", href: "/admin/panel?tab=approvals", label: "Review pay approvals", icon: Wallet },
+  { title: "Records needing attention", detail: "Find missing pay, manager, reviewer, sign-in, or hire-date details.", href: "/admin/panel?tab=records", label: "Check records", icon: ClipboardCheck },
+  { title: "Review progress", detail: "Track employee input, manager feedback, and completion across the company.", href: "/reviews", label: "Monitor reviews", icon: Users },
 ];
 
-function Journey({ steps }: { steps: string[] }) {
+function Journey({ steps, current }: { steps: JourneyStep[]; current: number }) {
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-5" aria-label="Review cycle stages">
       {steps.map((step, index) => (
-        <div key={step} className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-background px-3 py-2.5">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+        <Link
+          key={step.title}
+          to={step.href}
+          aria-current={index === current ? "step" : undefined}
+          className={`flex min-w-0 items-center gap-2 rounded-md border px-3 py-2.5 transition-colors hover:border-primary/50 hover:bg-primary/5 ${index === current ? "border-primary bg-primary/5" : "border-border bg-background"}`}
+        >
+          <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${index === current ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
             {index + 1}
           </span>
-          <span className="text-xs font-medium leading-tight">{step}</span>
-        </div>
+          <span className="min-w-0"><span className="block text-xs font-medium leading-tight">{step.title}</span><span className="mt-0.5 block text-[11px] text-muted-foreground">{step.when}</span></span>
+        </Link>
       ))}
     </div>
   );
@@ -146,7 +171,7 @@ function RoleHome() {
       if (ids.length) {
         const [{ data: forms }, { data: reviews }, { data: tasks }, { data: improvements }] = await Promise.all([
           supabase.from("pdr_forms").select("id,objectives_submitted_at,objectives_approved_at,midyear_self_submitted_at,midyear_manager_submitted_at,self_input_submitted_at,comments_finalized_at").in("employee_uuid", ids).eq("fiscal_year", year),
-          supabase.from("performance_reviews").select("id,status,assessment_attempt_id,comp_approval_status,released_at").in("employee_uuid", ids),
+          supabase.from("performance_reviews").select("id,status,assessment_attempt_id,comp_approval_status,released_at,rating_score").in("employee_uuid", ids),
           supabase.from("daily_tasks").select("id").in("employee_uuid", ids).eq("status", "blocked"),
           supabase.from("assessment_action_items").select("id,status,due_date").in("employee_uuid", ids).neq("status", "done"),
         ]);
@@ -159,6 +184,8 @@ function RoleHome() {
         const dueActions = (improvements ?? []).filter((item) => item.due_date && item.due_date < today).length;
         if (dueActions) next.push({ id: "improvements", title: `${dueActions} improvement action${dueActions === 1 ? "" : "s"} overdue`, detail: "Follow up assessment-based commitments before closing the review.", href: "/improvement", label: "Check actions" });
         if ((tasks ?? []).length) next.push({ id: "blocked", title: `${tasks?.length} blocked team task${tasks?.length === 1 ? "" : "s"}`, detail: "Review blockers and leave guidance on the person's work board.", href: "/tasks", label: "Review blockers" });
+        const unrated = (reviews ?? []).filter((review) => review.status === "in_progress" && review.rating_score == null && review.assessment_attempt_id).length;
+        if (unrated) next.push({ id: "pay", title: `Enter ratings for ${unrated} team review${unrated === 1 ? "" : "s"}`, detail: "Record the results rating, DP INC value score, I/C, and merit recommendation in Pay review.", href: "/apr", label: "Open pay review" });
         const approved = (reviews ?? []).filter((review) => review.comp_approval_status === "approved" && !review.released_at).length;
         if (approved) next.push({ id: "share", title: `${approved} approved outcome${approved === 1 ? "" : "s"} ready to share`, detail: "Hold the review conversation, then share the approved outcome with the employee.", href: "/reviews", label: "Share outcomes" });
       }
@@ -175,6 +202,10 @@ function RoleHome() {
     ? "Start with the first item below. Your objectives, everyday tasks, and review feedback each have their own place."
     : "Start with the first team item below, then follow the review cycle from objectives through the approved outcome.";
   const primary = actions[0];
+  const stageByAction: Record<string, number> = viewMode === "employee"
+    ? { objectives: 0, tasks: 1, feedback: 2, assessment: 3, ack: 4 }
+    : { align: 0, blocked: 1, reviews: 2, assessments: 2, improvements: 2, pay: 3, share: 4 };
+  const currentStage = primary ? (stageByAction[primary.id] ?? 0) : steps.length - 1;
 
   return (
     <div className="space-y-6">
@@ -221,8 +252,8 @@ function RoleHome() {
       )}
 
       <section aria-labelledby="cycle-title" className="space-y-3">
-        <div><h2 id="cycle-title" className="text-sm font-semibold">Your review cycle</h2><p className="text-xs text-muted-foreground">Follow these stages from left to right.</p></div>
-        <Journey steps={steps} />
+        <div><h2 id="cycle-title" className="text-sm font-semibold">Your review cycle</h2><p className="text-xs text-muted-foreground">The highlighted stage is where to focus now. Select any stage to open it.</p></div>
+        <Journey steps={steps} current={currentStage} />
       </section>
 
       <section aria-labelledby="places-title" className="space-y-3">
@@ -234,28 +265,23 @@ function RoleHome() {
 }
 
 function AdminHome() {
+  const month = new Date().getMonth();
+  const currentStage = month === 11 ? 1 : month === 0 ? 2 : month === 1 ? 4 : 0;
   return (
     <div className="space-y-8">
       <section className="space-y-5">
         <div>
           <p className="text-xs font-semibold uppercase text-primary">Admin workspace</p>
           <h1 className="mt-1 text-2xl font-semibold">Run the review cycle</h1>
-          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Start with approvals and exceptions, then use the company snapshot below to monitor the full cycle.</p>
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Start with the specific item that needs attention, then monitor review progress across the company.</p>
         </div>
-        <div className="border-l-4 border-primary bg-primary/5 px-5 py-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase text-primary">Start here</p>
-              <p className="mt-1 text-lg font-semibold">Check approvals and exceptions</p>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Review submitted pay decisions, records needing attention, and cycle readiness before anything is released.</p>
-            </div>
-            <Button asChild className="shrink-0"><Link to="/admin/panel">Open admin panel<ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
-          </div>
-        </div>
-        <Journey steps={adminSteps} />
-        <QuickLinks links={adminLinks} />
+        <div><h2 className="mb-3 text-sm font-semibold">Start here</h2><QuickLinks links={adminLinks} /></div>
+        <div className="space-y-3"><div><h2 className="text-sm font-semibold">Annual review cycle</h2><p className="text-xs text-muted-foreground">The highlighted stage reflects the annual calendar. Select any stage to open it.</p></div><Journey steps={adminSteps} current={currentStage} /></div>
       </section>
-      <div className="border-t border-border pt-8"><Overview /></div>
+      <details className="group border-t border-border pt-6">
+        <summary className="flex cursor-pointer list-none items-center justify-between py-2 text-sm font-semibold">Company dashboard <span className="text-xs font-normal text-primary group-open:hidden">Open dashboard</span><span className="hidden text-xs font-normal text-primary group-open:inline">Hide dashboard</span></summary>
+        <div className="pt-6"><Overview /></div>
+      </details>
     </div>
   );
 }

@@ -24,6 +24,7 @@ import FairnessCheck from "@/components/perf/FairnessCheck";
 import DataHealth from "@/components/perf/DataHealth";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useSearchParams } from "react-router-dom";
 import BudgetApproval from "@/components/perf/BudgetApproval";
 import { formatMoney } from "@/lib/compensation";
 import { toast } from "sonner";
@@ -360,7 +361,11 @@ function RolesTab() {
 
 export default function AdminPanel() {
   const { has, loading, unconfigured } = usePermissions();
+  const [searchParams, setSearchParams] = useSearchParams();
   const allowed = loading || unconfigured || has("admin") || has("hr");
+  const requestedTab = searchParams.get("tab");
+  const validTabs = ["budget", "approvals", "roles", "calendar", "fairness", "questions", "records"];
+  const activeTab = requestedTab && validTabs.includes(requestedTab) ? requestedTab : "budget";
 
   if (!allowed) {
     return (
@@ -387,7 +392,7 @@ export default function AdminPanel() {
         </p>
       </div>
 
-      <Tabs defaultValue="budget">
+      <Tabs value={activeTab} onValueChange={(tab) => setSearchParams({ tab })}>
         <TabsList>
           <TabsTrigger value="budget" className="gap-1.5">
             <Wallet className="h-4 w-4" /> Merit budget

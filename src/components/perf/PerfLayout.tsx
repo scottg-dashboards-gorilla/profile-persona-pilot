@@ -26,14 +26,14 @@ const pageTitles: Record<string, string> = {
   "/reviews": "Feedback & reviews",
   "/pdr": "Objectives",
   "/apr": "Pay review",
-  "/people": "Team's Assessment",
+  "/people": "Team assessments",
   "/tasks": "Tasks",
   "/me": "My feedback",
   "/profile": "My profile",
-  "/compensation": "Compensation & Raises",
-  "/calibration": "Reviewer Calibration",
+  "/compensation": "Salary updates",
+  "/calibration": "Calibration",
   "/org": "Org structure",
-  "/admin/audit": "Audit Log",
+  "/admin/audit": "Audit log",
 };
 
 function HeaderTitle() {

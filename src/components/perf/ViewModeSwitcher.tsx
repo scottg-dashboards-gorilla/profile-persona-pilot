@@ -14,7 +14,7 @@ export function ViewModeMenuSection() {
 
   const pick = (mode: ViewMode) => {
     setViewMode(mode);
-    navigate(mode === "employee" ? "/me" : "/");
+    navigate("/");
   };
 
   return (
