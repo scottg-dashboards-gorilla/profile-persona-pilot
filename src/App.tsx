@@ -30,6 +30,7 @@ import PDR from "./pages/perf/PDR";
 import APR from "./pages/perf/APR";
 import SalaryHistory from "./pages/perf/SalaryHistory";
 import AdminPanel from "./pages/perf/AdminPanel";
+import ReviewCycle from "./pages/perf/ReviewCycle";
 import ReviewForm from "./pages/ReviewForm";
 import RequireArea from "./components/perf/RequireArea";
 
@@ -53,6 +54,7 @@ const App = () => (
           {/* Performance Reviews app shell */}
           <Route element={<PerfLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/cycle" element={<ReviewCycle />} />
             <Route path="/reviews" element={<RequireArea area="reviews"><Reviews /></RequireArea>} />
             <Route path="/pdr" element={<RequireArea area="pdr"><PDR /></RequireArea>} />
             <Route path="/apr" element={<RequireArea area="apr"><APR /></RequireArea>} />

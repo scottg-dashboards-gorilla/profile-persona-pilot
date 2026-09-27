@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Trash2, Link2, ShieldCheck, UserPlus } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -217,10 +218,15 @@ export default function AdminAccess() {
             <div className="text-2xl font-semibold">{noEmailCount}</div>
             <div className="text-muted-foreground">no email on file — cannot self-link</div>
           </div>
+          {(unlinkedCount > 0 || noEmailCount > 0) && (
+            <div className="ml-auto flex items-center">
+              <Button asChild variant="outline" size="sm"><a href="#employee-links">Resolve sign-in gaps</a></Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="employee-links">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <UserPlus className="h-4 w-4" /> Grant a role
@@ -262,6 +268,9 @@ export default function AdminAccess() {
           </div>
         </CardContent>
       </Card>
+      <div className="flex justify-end">
+        <Button asChild variant="ghost" size="sm"><Link to="/admin/audit?area=user_roles">Review access changes in Audit log</Link></Button>
+      </div>
 
       <Card>
         <CardHeader>

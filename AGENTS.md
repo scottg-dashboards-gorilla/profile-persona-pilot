@@ -4,3 +4,4 @@
 - Navigation is grouped by the work each view performs; preserve existing permission and row-scoping rules when changing labels or order.
 - Keep tasks, annual objectives, review feedback, assessment improvement actions, and pay review as distinct workflows because they have different owners and timing.
 - Home cycle stages link to their existing workflow pages and show dates/current focus because the Home page is the orientation layer, not a duplicate workflow.
+- The shared Review Cycle page reads the active stored cycle and role-scoped records, then deep-links to existing task screens rather than duplicating their forms.

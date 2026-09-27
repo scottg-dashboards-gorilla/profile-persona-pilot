@@ -37,25 +37,25 @@ type QuickLink = {
 type JourneyStep = { title: string; when: string; href: string };
 
 const employeeSteps: JourneyStep[] = [
-  { title: "Set objectives", when: "Start of year", href: "/pdr" },
+  { title: "Set objectives", when: "Start of year", href: "/cycle?stage=objectives" },
   { title: "Track everyday work", when: "Throughout year", href: "/tasks" },
-  { title: "Write your feedback", when: "Dec 1–15", href: "/me" },
-  { title: "Complete assessment", when: "Review period", href: "/me" },
-  { title: "Confirm outcome", when: "Feb 1–15", href: "/me" },
+  { title: "Write your feedback", when: "Dec 1–15", href: "/cycle?stage=feedback" },
+  { title: "Complete assessment", when: "Review period", href: "/cycle?stage=assessment" },
+  { title: "Confirm outcome", when: "Feb 1–15", href: "/cycle?stage=outcome" },
 ];
 const managerSteps: JourneyStep[] = [
-  { title: "Align objectives", when: "Start of year", href: "/pdr" },
-  { title: "Coach and track", when: "Throughout year", href: "/tasks" },
-  { title: "Review feedback", when: "Dec 15–Jan 10", href: "/reviews" },
-  { title: "Rate and recommend pay", when: "January", href: "/apr" },
-  { title: "Share approved outcome", when: "Feb 1–15", href: "/reviews" },
+  { title: "Align objectives", when: "Start of year", href: "/cycle?stage=objectives" },
+  { title: "Start reviews", when: "Before input", href: "/cycle?stage=kickoff" },
+  { title: "Review feedback", when: "Dec 15–Jan 10", href: "/cycle?stage=manager" },
+  { title: "Rate and recommend pay", when: "January", href: "/cycle?stage=score" },
+  { title: "Share approved outcome", when: "Feb 1–15", href: "/cycle?stage=share" },
 ];
 const adminSteps: JourneyStep[] = [
-  { title: "Set up cycle", when: "Before launch", href: "/admin/panel?tab=calendar" },
-  { title: "Monitor input", when: "Dec–Jan", href: "/reviews" },
-  { title: "Check fairness", when: "January", href: "/calibration" },
-  { title: "Approve pay", when: "Before conversations", href: "/admin/panel?tab=approvals" },
-  { title: "Release and close", when: "Feb 1–15", href: "/reviews" },
+  { title: "Approve questions", when: "Before launch", href: "/cycle?stage=setup" },
+  { title: "Monitor input", when: "Dec–Jan", href: "/cycle?stage=monitor" },
+  { title: "Check fairness", when: "January", href: "/cycle?stage=fairness" },
+  { title: "Approve pay", when: "Before conversations", href: "/cycle?stage=approve" },
+  { title: "Release and close", when: "Feb 1–15", href: "/cycle?stage=release" },
 ];
 
 const employeeLinks: QuickLink[] = [

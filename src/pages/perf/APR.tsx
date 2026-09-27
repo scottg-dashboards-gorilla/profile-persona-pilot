@@ -58,6 +58,7 @@ import { AprEntryDialog, type AprReview } from "@/components/perf/AprEntryDialog
 import { RatingsGrid } from "@/components/perf/RatingsGrid";
 import { usePermissions } from "@/hooks/usePermissions";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from "react-router-dom";
 
 const thisYear = new Date().getFullYear();
 
@@ -161,6 +162,18 @@ export default function APR() {
   /** Approved merit pot for the people in view, plus anything still awaiting approval. */
   const [approvedBudget, setApprovedBudget] = useState(0);
   const [pendingBudget, setPendingBudget] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const focusId = searchParams.get("focus");
+    if (!focusId || rows.length === 0) return;
+    const row = rows.find((item) => item.id === focusId);
+    if (!row) return;
+    setOpen(row);
+    const next = new URLSearchParams(searchParams);
+    next.delete("focus");
+    setSearchParams(next, { replace: true });
+  }, [rows, searchParams, setSearchParams]);
 
   const load = useCallback(async () => {
     setLoading(true);
