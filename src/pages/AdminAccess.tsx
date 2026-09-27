@@ -45,6 +45,7 @@ export default function AdminAccess() {
   const [newRole, setNewRole] = useState<AppRole>("manager");
   const [linkEdits, setLinkEdits] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
+  const [issuesOnly, setIssuesOnly] = useState(false);
   const [linkUserId, setLinkUserId] = useState("");
   const [linkEmployeeUuid, setLinkEmployeeUuid] = useState<string>("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -166,6 +167,7 @@ export default function AdminAccess() {
   };
 
   const filteredEmployees = employees.filter((e) => {
+    if (issuesOnly && e.email && e.user_id) return false;
     const q = search.toLowerCase();
     if (!q) return true;
     return (
@@ -220,7 +222,10 @@ export default function AdminAccess() {
           </div>
           {(unlinkedCount > 0 || noEmailCount > 0) && (
             <div className="ml-auto flex items-center">
-              <Button asChild variant="outline" size="sm"><a href="#employee-links">Resolve missing work emails</a></Button>
+              <Button variant="outline" size="sm" onClick={() => {
+                setIssuesOnly(true);
+                window.setTimeout(() => document.getElementById("employee-links")?.scrollIntoView({ behavior: "smooth" }), 0);
+              }}>Show records to fix</Button>
             </div>
           )}
         </CardContent>
@@ -448,6 +453,9 @@ export default function AdminAccess() {
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-sm"
             />
+            <Button className="ml-2" variant={issuesOnly ? "secondary" : "outline"} size="sm" onClick={() => setIssuesOnly((value) => !value)}>
+              {issuesOnly ? "Showing records to fix" : "Show records to fix"}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>

@@ -5,6 +5,8 @@
 - [ ] Publish pending (bonus removal + share award removal + APR manager scoping)
 
 ## Done
+- [x] Walk Scott's admin Home, Access, and Audit log; add live action counts and a focused records-to-fix list
+- [x] Start Nahili's real review and add one clearly labeled, dated pilot goal with a numeric target
 - [x] Connect Home stages to real cycle tasks and add a role-aware cycle page with dates, goals and progress
 - [x] Make role Home journeys dated, clickable, and visibly current; align every guided-tour description to its real destination
 - [x] Simplify employee, manager, and admin navigation around a clear start-to-finish workflow

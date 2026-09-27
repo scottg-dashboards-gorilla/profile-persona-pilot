@@ -268,6 +268,28 @@ function RoleHome() {
 }
 
 function AdminHome() {
+  const [counts, setCounts] = useState({ questions: 0, approvals: 0, records: 0, reviews: 0 });
+  useEffect(() => {
+    (async () => {
+      const [{ count: questions }, { count: approvals }, { data: employees }, { count: reviews }] = await Promise.all([
+        supabase.from("department_questions").select("id", { count: "exact", head: true }).eq("is_active", false),
+        supabase.from("performance_reviews").select("id", { count: "exact", head: true }).eq("comp_approval_status", "submitted"),
+        supabase.from("employees").select("email,manager_uuid,hire_date,user_id,current_annual_comp").eq("terminated", false),
+        supabase.from("performance_reviews").select("id", { count: "exact", head: true }).neq("status", "completed"),
+      ]);
+      const records = (employees ?? []).filter((employee) =>
+        !employee.email || !employee.hire_date || !employee.user_id || employee.current_annual_comp == null,
+      ).length;
+      setCounts({ questions: questions ?? 0, approvals: approvals ?? 0, records, reviews: reviews ?? 0 });
+    })();
+  }, []);
+  const liveLinks = adminLinks.map((link) => {
+    if (link.href.includes("tab=questions")) return { ...link, detail: `${counts.questions} disabled department question${counts.questions === 1 ? "" : "s"} waiting for review.` };
+    if (link.href.includes("tab=approvals")) return { ...link, detail: `${counts.approvals} pay submission${counts.approvals === 1 ? "" : "s"} waiting for a decision.` };
+    if (link.href.includes("tab=records")) return { ...link, detail: `${counts.records} employee record${counts.records === 1 ? "" : "s"} missing a work email, sign-in link, hire date, or pay figure.` };
+    if (link.href === "/reviews") return { ...link, detail: `${counts.reviews} review${counts.reviews === 1 ? "" : "s"} still open across the company.` };
+    return link;
+  });
   const month = new Date().getMonth();
   const currentStage = month === 11 ? 1 : month === 0 ? 2 : month === 1 ? 4 : 0;
   return (
@@ -278,7 +300,7 @@ function AdminHome() {
           <h1 className="mt-1 text-2xl font-semibold">Run the review cycle</h1>
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Start with the specific item that needs attention, then monitor review progress across the company.</p>
         </div>
-        <div><h2 className="mb-3 text-sm font-semibold">Start here</h2><QuickLinks links={adminLinks} /></div>
+        <div><h2 className="mb-3 text-sm font-semibold">Start here</h2><QuickLinks links={liveLinks} /></div>
         <div className="space-y-3"><div><h2 className="text-sm font-semibold">Annual review cycle</h2><p className="text-xs text-muted-foreground">The highlighted stage reflects the annual calendar. Select any stage to open it.</p></div><Journey steps={adminSteps} current={currentStage} /></div>
       </section>
       <details className="group border-t border-border pt-6">
