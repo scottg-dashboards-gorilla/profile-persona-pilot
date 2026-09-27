@@ -1,3 +1,5 @@
+import { FileSpreadsheet, ClipboardCheck, Send } from "lucide-react";
+import { WorkflowHero } from "@/components/perf/WorkflowHero";
 import { KeyDates } from "@/components/perf/KeyDates";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -176,6 +178,27 @@ export default function MyReview() {
   // Everything that isn't a released outcome: the open review plus completed ones being finalised.
   const pendingHistory = reviews.filter((r) => !r.released_at && inFilter(r));
   const hasHistory = reviews.length > 0;
+  const nextStep = useMemo(() => {
+    if (!attempt) return {
+      title: "Take your assessment",
+      description: "Your assessment result feeds into your review. Complete it to unlock full insights.",
+      actionLabel: "Start Assessment",
+      to: "/assessment",
+      icon: FileSpreadsheet,
+      variant: "default" as const
+    };
+    const urgentTodo = todos[0];
+    if (urgentTodo) return {
+      title: "Next Step",
+      description: urgentTodo.title + ". " + urgentTodo.detail,
+      actionLabel: "Complete Action",
+      to: urgentTodo.id.startsWith('ack') ? '#' + urgentTodo.id : '#self',
+      icon: urgentTodo.id.startsWith('ack') ? Send : ClipboardCheck,
+      variant: "warning" as const
+    };
+    return null;
+  }, [attempt, todos]);
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -428,6 +451,18 @@ export default function MyReview() {
       </div>
 
       <KeyDates audience="employee" />
+
+      {nextStep && (
+        <WorkflowHero
+          title={nextStep.title}
+          description={nextStep.description}
+          actionLabel={nextStep.actionLabel}
+          to={nextStep.to}
+          icon={nextStep.icon}
+          variant={nextStep.variant}
+        />
+      )}
+
 
 
       {todos.length > 0 && (

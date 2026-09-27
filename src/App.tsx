@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 
 import PerfLayout from "./components/perf/PerfLayout";
 import Overview from "./pages/perf/Overview";
+import Home from "./pages/perf/Home";
 import Reviews from "./pages/perf/Reviews";
 import People from "./pages/perf/People";
 import EmployeeDetail from "./pages/perf/EmployeeDetail";
@@ -52,7 +53,7 @@ const App = () => (
         <Routes>
           {/* Performance Reviews app shell */}
           <Route element={<PerfLayout />}>
-            <Route path="/" element={<RequireArea area="overview" redirectTo="/me"><Overview /></RequireArea>} />
+            <Route path="/" element={<Home />} />
             <Route path="/reviews" element={<RequireArea area="reviews"><Reviews /></RequireArea>} />
             <Route path="/pdr" element={<RequireArea area="pdr"><PDR /></RequireArea>} />
             <Route path="/apr" element={<RequireArea area="apr"><APR /></RequireArea>} />

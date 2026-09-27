@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardCheck, Users, Target, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock, TrendingUp } from "lucide-react";
+import { Home, ClipboardCheck, Users, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock, TrendingUp } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +17,7 @@ import { usePermissions, type PermissionArea } from "@/hooks/usePermissions";
 type Item = {
   title: string;
   url: string;
-  icon: typeof LayoutDashboard;
+  icon: typeof Home;
   /** Only shown when the signed-in person can reach this area. */
   area?: PermissionArea;
   /** Only shown to HR or admin. */
@@ -28,30 +28,59 @@ type Item = {
   notInEmployeeView?: boolean;
 };
 
-const primary: Item[] = [
-  { title: "Overview", url: "/", icon: LayoutDashboard, area: "overview" },
-  { title: "Objective setting", url: "/pdr", icon: Workflow, area: "pdr" },
-  { title: "Pay review cycle", url: "/apr", icon: Wallet, area: "apr" },
-  { title: "Reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
-  { title: "Team's Assessment", url: "/people", icon: Users, area: "reviews", notInEmployeeView: true },
-  { title: "Improvement actions", url: "/improvement", icon: TrendingUp, area: "reviews", notInEmployeeView: true },
-  { title: "Task Tracker", url: "/tasks", icon: ListTodo },
-  { title: "My review", url: "/me", icon: UserSquare2, employeeOnly: true },
-  { title: "Company performance", url: "/company", icon: Building2, area: "company" },
-  { title: "Compensation", url: "/compensation", icon: DollarSign, area: "compensation" },
-  { title: "Salary history", url: "/salary-history", icon: Lock, area: "salary" },
-  { title: "Calibration", url: "/calibration", icon: Scale, area: "calibration" },
-  { title: "Org structure", url: "/org", icon: Network, area: "org" },
-];
+type Group = { label: string; items: Item[] };
 
-const secondary: Item[] = [
-  { title: "Playbook", url: "/playbook", icon: BookOpen },
-  { title: "Admin panel", url: "/admin/panel", icon: ShieldCheck, adminOnly: true },
-  { title: "Assessments", url: "/assessments", icon: FileSpreadsheet, adminOnly: true },
-  { title: "Role Configs", url: "/admin/roles", icon: Settings, adminOnly: true },
-  { title: "Access", url: "/admin/access", icon: ShieldCheck, adminOnly: true },
-  { title: "Audit log", url: "/admin/audit", icon: History, area: "audit" },
-];
+const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
+  employee: [
+    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }] },
+    { label: "My work", items: [
+      { title: "Objectives", url: "/pdr", icon: Workflow, area: "pdr" },
+      { title: "Tasks", url: "/tasks", icon: ListTodo },
+      { title: "My feedback", url: "/me", icon: UserSquare2, employeeOnly: true },
+    ] },
+    { label: "Help", items: [{ title: "Playbook", url: "/playbook", icon: BookOpen }] },
+  ],
+  manager: [
+    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }] },
+    { label: "Team work", items: [
+      { title: "Objectives", url: "/pdr", icon: Workflow, area: "pdr" },
+      { title: "Tasks", url: "/tasks", icon: ListTodo },
+      { title: "Feedback & reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
+      { title: "Team assessments", url: "/people", icon: Users, area: "reviews" },
+      { title: "Improvement actions", url: "/improvement", icon: TrendingUp, area: "reviews" },
+      { title: "Pay review", url: "/apr", icon: Wallet, area: "apr" },
+    ] },
+    { label: "People", items: [
+      { title: "Org structure", url: "/org", icon: Network, area: "org" },
+      { title: "Salary history", url: "/salary-history", icon: Lock, area: "salary" },
+    ] },
+    { label: "Help", items: [{ title: "Playbook", url: "/playbook", icon: BookOpen }] },
+  ],
+  admin: [
+    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }] },
+    { label: "Review cycle", items: [
+      { title: "Objectives", url: "/pdr", icon: Workflow, area: "pdr" },
+      { title: "Feedback & reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
+      { title: "Assessments", url: "/assessments", icon: FileSpreadsheet, adminOnly: true },
+      { title: "Improvement actions", url: "/improvement", icon: TrendingUp, area: "reviews" },
+      { title: "Pay review", url: "/apr", icon: Wallet, area: "apr" },
+      { title: "Calibration", url: "/calibration", icon: Scale, area: "calibration" },
+    ] },
+    { label: "People & pay", items: [
+      { title: "Org structure", url: "/org", icon: Network, area: "org" },
+      { title: "Company performance", url: "/company", icon: Building2, area: "company" },
+      { title: "Salary updates", url: "/compensation", icon: DollarSign, area: "compensation" },
+      { title: "Salary history", url: "/salary-history", icon: Lock, area: "salary" },
+    ] },
+    { label: "Administration", items: [
+      { title: "Admin panel", url: "/admin/panel", icon: ShieldCheck, adminOnly: true },
+      { title: "Assessment roles", url: "/admin/roles", icon: Settings, adminOnly: true },
+      { title: "Access", url: "/admin/access", icon: ShieldCheck, adminOnly: true },
+      { title: "Audit log", url: "/admin/audit", icon: History, area: "audit" },
+    ] },
+    { label: "Help", items: [{ title: "Playbook", url: "/playbook", icon: BookOpen }] },
+  ],
+};
 
 
 export function PerfSidebar() {
@@ -70,11 +99,7 @@ export function PerfSidebar() {
     return true;
   };
 
-  const labelFor = (item: Item) =>
-    item.url === "/people" && mode === "admin" ? "Assessments" : item.title;
-
-  const primaryItems = primary.filter(visible);
-  const secondaryItems = secondary.filter(visible);
+  const groups = groupsByMode[mode].map((group) => ({ ...group, items: group.items.filter(visible) }));
 
   return (
     <Sidebar collapsible="icon">
@@ -95,40 +120,25 @@ export function PerfSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {primaryItems.map((item) => (
+        {groups.map((group) => group.items.length > 0 && (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={labelFor(item)}>
-                    <NavLink to={item.url} data-tour={item.url} end={item.url === "/"} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      <span>{labelFor(item)}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={labelFor(item)}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
                     <NavLink to={item.url} data-tour={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
-                      <span>{labelFor(item)}</span>
+                      <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
     </Sidebar>
   );

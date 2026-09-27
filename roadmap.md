@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Open
-- [ ] Simplify employee, manager, and admin navigation around a clear start-to-finish workflow
+- [x] Simplify employee, manager, and admin navigation around a clear start-to-finish workflow
 - [ ] Email domain mydatapath.com unverified — share setup with Scott (HR@mydatapath.com sender)
 - [ ] Publish pending (bonus removal + share award removal + APR manager scoping)
 

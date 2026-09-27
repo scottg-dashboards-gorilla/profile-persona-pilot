@@ -1,0 +1,257 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  CheckCircle2,
+  ClipboardCheck,
+  FileText,
+  ListTodo,
+  Loader2,
+  Target,
+  TrendingUp,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { usePermissions } from "@/hooks/usePermissions";
+import { supabase } from "@/integrations/supabase/client";
+import Overview from "./Overview";
+
+type HomeAction = {
+  id: string;
+  title: string;
+  detail: string;
+  href: string;
+  label: string;
+};
+
+type QuickLink = {
+  title: string;
+  detail: string;
+  href: string;
+  label: string;
+  icon: typeof Target;
+};
+
+const employeeSteps = ["Objectives", "Everyday work", "Your feedback", "Assessment", "Outcome"];
+const managerSteps = ["Align objectives", "Coach & track", "Review feedback", "Rate & recommend pay", "Share outcome"];
+const adminSteps = ["Set up cycle", "Monitor input", "Check fairness", "Approve pay", "Release & close"];
+
+const employeeLinks: QuickLink[] = [
+  { title: "Objectives", detail: "Set annual goals and add mid-year or year-end progress.", href: "/pdr", label: "Open objectives", icon: Target },
+  { title: "Tasks", detail: "Track the day-to-day work that supports your goals.", href: "/tasks", label: "Update tasks", icon: ListTodo },
+  { title: "My feedback", detail: "Write your review input and see shared outcomes.", href: "/me", label: "Open my review", icon: FileText },
+];
+
+const managerLinks: QuickLink[] = [
+  { title: "Objectives", detail: "Align goals and respond to progress updates.", href: "/pdr", label: "Review objectives", icon: Target },
+  { title: "Tasks", detail: "See team work, priorities, blockers, and comments.", href: "/tasks", label: "View team tasks", icon: ListTodo },
+  { title: "Feedback & reviews", detail: "Read employee input and write manager feedback.", href: "/reviews", label: "Open reviews", icon: ClipboardCheck },
+  { title: "Improvement actions", detail: "Follow up weaknesses or declines found by assessments.", href: "/improvement", label: "View actions", icon: TrendingUp },
+  { title: "Pay review", detail: "Enter ratings, I/C, and merit recommendations.", href: "/apr", label: "Open pay review", icon: Wallet },
+];
+
+const adminLinks: QuickLink[] = [
+  { title: "Set up the cycle", detail: "Manage dates, questions, people, and approved budgets.", href: "/admin/panel", label: "Open administration", icon: ClipboardCheck },
+  { title: "Monitor reviews", detail: "Track employee input, manager feedback, and completion.", href: "/reviews", label: "View all reviews", icon: Users },
+  { title: "Approve pay", detail: "Review submitted recommendations before outcomes are shared.", href: "/admin/panel", label: "Review approvals", icon: Wallet },
+];
+
+function Journey({ steps }: { steps: string[] }) {
+  return (
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-5" aria-label="Review cycle stages">
+      {steps.map((step, index) => (
+        <div key={step} className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-background px-3 py-2.5">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+            {index + 1}
+          </span>
+          <span className="text-xs font-medium leading-tight">{step}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function QuickLinks({ links }: { links: QuickLink[] }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {links.map((item) => (
+        <Card key={item.href + item.title} className="shadow-none">
+          <CardContent className="flex h-full flex-col p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
+                <item.icon className="h-4 w-4" />
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold">{item.title}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.detail}</p>
+              </div>
+            </div>
+            <Button asChild variant="ghost" size="sm" className="mt-3 w-fit px-0 text-primary hover:bg-transparent">
+              <Link to={item.href}>{item.label}<ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function RoleHome() {
+  const { viewMode } = usePermissions();
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState("");
+  const [actions, setActions] = useState<HomeAction[]>([]);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth.user?.id;
+    if (!userId) return setLoading(false);
+
+    const { data: me } = await supabase
+      .from("employees")
+      .select("uuid,first_name,last_name")
+      .eq("user_id", userId)
+      .maybeSingle();
+    setName(me?.first_name ?? "");
+    if (!me?.uuid) return setLoading(false);
+
+    const year = new Date().getFullYear();
+    const today = new Date().toISOString().slice(0, 10);
+    const next: HomeAction[] = [];
+
+    if (viewMode === "employee") {
+      const [{ data: forms }, { data: reviews }, { data: attempts }, { data: tasks }] = await Promise.all([
+        supabase.from("pdr_forms").select("id,objectives_submitted_at,objectives_approved_at,midyear_self_submitted_at,self_input_submitted_at").eq("employee_uuid", me.uuid).eq("fiscal_year", year).maybeSingle(),
+        supabase.from("performance_reviews").select("id,review_cycle,status,released_at,employee_ack_at").eq("employee_uuid", me.uuid).order("scheduled_date", { ascending: false }),
+        supabase.from("assessment_attempts").select("id").eq("employee_uuid", me.uuid).not("submitted_at", "is", null).limit(1),
+        supabase.from("daily_tasks").select("id,status,due_date").eq("employee_uuid", me.uuid).neq("status", "done"),
+      ]);
+      if (!forms || !forms.objectives_submitted_at) next.push({ id: "objectives", title: `Set and submit your ${year} objectives`, detail: "Start with measurable goals for the year. These are separate from your day-to-day task list.", href: "/pdr", label: "Add objectives" });
+      const openReview = (reviews ?? []).find((review) => review.status !== "completed");
+      if (openReview) {
+        const { data: self } = await supabase.from("review_self_assessments").select("submitted_at").eq("review_id", openReview.id).maybeSingle();
+        if (!self?.submitted_at) next.push({ id: "feedback", title: "Write your review feedback", detail: "Record what you accomplished, challenges you faced, and how you demonstrated the DP INC values.", href: "/me", label: "Write my feedback" });
+      }
+      if (!attempts?.length) next.push({ id: "assessment", title: "Complete your assessment", detail: "Your role assessment and DISC profile are reviewed alongside your goals and feedback.", href: "/me", label: "Open assessment" });
+      const acknowledgements = (reviews ?? []).filter((review) => review.released_at && !review.employee_ack_at);
+      if (acknowledgements.length) next.push({ id: "ack", title: "Confirm your review outcome", detail: "Your manager has shared the approved outcome. Read it and confirm receipt.", href: "/me", label: "Review outcome" });
+      const overdue = (tasks ?? []).filter((task) => task.due_date && task.due_date < today);
+      if (overdue.length) next.push({ id: "tasks", title: `${overdue.length} overdue task${overdue.length === 1 ? "" : "s"}`, detail: "Update the status or due date on your day-to-day work board.", href: "/tasks", label: "Update tasks" });
+    } else {
+      const { data: reports } = await supabase.from("employees").select("uuid").eq("manager_uuid", me.uuid).neq("uuid", me.uuid);
+      const ids = (reports ?? []).map((person) => person.uuid);
+      if (ids.length) {
+        const [{ data: forms }, { data: reviews }, { data: tasks }, { data: improvements }] = await Promise.all([
+          supabase.from("pdr_forms").select("id,objectives_submitted_at,objectives_approved_at,midyear_self_submitted_at,midyear_manager_submitted_at,self_input_submitted_at,comments_finalized_at").in("employee_uuid", ids).eq("fiscal_year", year),
+          supabase.from("performance_reviews").select("id,status,assessment_attempt_id,comp_approval_status,released_at").in("employee_uuid", ids),
+          supabase.from("daily_tasks").select("id").in("employee_uuid", ids).eq("status", "blocked"),
+          supabase.from("assessment_action_items").select("id,status,due_date").in("employee_uuid", ids).neq("status", "done"),
+        ]);
+        const align = (forms ?? []).filter((form) => form.objectives_submitted_at && !form.objectives_approved_at).length;
+        if (align) next.push({ id: "align", title: `Align ${align} submitted objective set${align === 1 ? "" : "s"}`, detail: "Check that each goal is measurable, then approve it or send it back.", href: "/pdr", label: "Review objectives" });
+        const open = (reviews ?? []).filter((review) => review.status === "in_progress").length;
+        if (open) next.push({ id: "reviews", title: `Complete feedback for ${open} team review${open === 1 ? "" : "s"}`, detail: "Read employee input and assessments, then add manager feedback and DP INC value scores.", href: "/reviews", label: "Write feedback" });
+        const missing = (reviews ?? []).filter((review) => review.status !== "completed" && !review.assessment_attempt_id).length;
+        if (missing) next.push({ id: "assessments", title: `${missing} review${missing === 1 ? "" : "s"} missing an assessment`, detail: "Request or review the role assessment before completing manager feedback.", href: "/people", label: "Review assessments" });
+        const dueActions = (improvements ?? []).filter((item) => item.due_date && item.due_date < today).length;
+        if (dueActions) next.push({ id: "improvements", title: `${dueActions} improvement action${dueActions === 1 ? "" : "s"} overdue`, detail: "Follow up assessment-based commitments before closing the review.", href: "/improvement", label: "Check actions" });
+        if ((tasks ?? []).length) next.push({ id: "blocked", title: `${tasks?.length} blocked team task${tasks?.length === 1 ? "" : "s"}`, detail: "Review blockers and leave guidance on the person's work board.", href: "/tasks", label: "Review blockers" });
+        const approved = (reviews ?? []).filter((review) => review.comp_approval_status === "approved" && !review.released_at).length;
+        if (approved) next.push({ id: "share", title: `${approved} approved outcome${approved === 1 ? "" : "s"} ready to share`, detail: "Hold the review conversation, then share the approved outcome with the employee.", href: "/reviews", label: "Share outcomes" });
+      }
+    }
+    setActions(next);
+    setLoading(false);
+  }, [viewMode]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const steps = viewMode === "employee" ? employeeSteps : managerSteps;
+  const links = viewMode === "employee" ? employeeLinks : managerLinks;
+  const intro = viewMode === "employee"
+    ? "Start with the first item below. Your objectives, everyday tasks, and review feedback each have their own place."
+    : "Start with the first team item below, then follow the review cycle from objectives through the approved outcome.";
+  const primary = actions[0];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs font-semibold uppercase text-primary">{viewMode === "employee" ? "My workspace" : "Manager workspace"}</p>
+        <h1 className="mt-1 text-2xl font-semibold">{name ? `Welcome, ${name}` : "Welcome"}</h1>
+        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{intro}</p>
+      </div>
+
+      <section aria-labelledby="next-step-title">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 id="next-step-title" className="text-sm font-semibold">Start here</h2>
+          {actions.length > 1 && <span className="text-xs text-muted-foreground">{actions.length} items need attention</span>}
+        </div>
+        <div className="border-l-4 border-primary bg-primary/5 px-5 py-5">
+          {loading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Checking what needs your attention…</div>
+          ) : primary ? (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-lg font-semibold">{primary.title}</p>
+                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{primary.detail}</p>
+              </div>
+              <Button asChild className="shrink-0"><Link to={primary.href}>{primary.label}<ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-primary" /><div><p className="font-semibold">You're up to date</p><p className="text-sm text-muted-foreground">Nothing needs your attention right now.</p></div></div>
+          )}
+        </div>
+      </section>
+
+      {actions.length > 1 && (
+        <section aria-labelledby="other-actions-title">
+          <h2 id="other-actions-title" className="mb-2 text-sm font-semibold">Also waiting on you</h2>
+          <div className="divide-y divide-border border-y border-border">
+            {actions.slice(1, 5).map((action) => (
+              <Link key={action.id} to={action.href} className="group flex items-center gap-3 py-3">
+                <span className="min-w-0 flex-1"><span className="block text-sm font-medium">{action.title}</span><span className="block text-xs text-muted-foreground">{action.detail}</span></span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section aria-labelledby="cycle-title" className="space-y-3">
+        <div><h2 id="cycle-title" className="text-sm font-semibold">Your review cycle</h2><p className="text-xs text-muted-foreground">Follow these stages from left to right.</p></div>
+        <Journey steps={steps} />
+      </section>
+
+      <section aria-labelledby="places-title" className="space-y-3">
+        <div><h2 id="places-title" className="text-sm font-semibold">Where to do your work</h2><p className="text-xs text-muted-foreground">Each area has one clear purpose.</p></div>
+        <QuickLinks links={links} />
+      </section>
+    </div>
+  );
+}
+
+function AdminHome() {
+  return (
+    <div className="space-y-8">
+      <section className="space-y-5">
+        <div>
+          <p className="text-xs font-semibold uppercase text-primary">Admin workspace</p>
+          <h1 className="mt-1 text-2xl font-semibold">Run the review cycle</h1>
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Start with approvals and exceptions, then use the company snapshot below to monitor the full cycle.</p>
+        </div>
+        <Journey steps={adminSteps} />
+        <QuickLinks links={adminLinks} />
+      </section>
+      <div className="border-t border-border pt-8"><Overview /></div>
+    </div>
+  );
+}
+
+export default function Home() {
+  const { viewMode, loading } = usePermissions();
+  if (loading) return <div className="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading your workspace…</div>;
+  return viewMode === "admin" ? <AdminHome /> : <RoleHome />;
+}
