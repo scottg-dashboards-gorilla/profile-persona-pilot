@@ -151,7 +151,6 @@ export default function Overview() {
   const [loaded, setLoaded] = useState(false);
   const [payTrend, setPayTrend] = useState<PayYear[]>([]);
   const [activityOpen, setActivityOpen] = useState(false);
-
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -411,6 +410,7 @@ export default function Overview() {
       </div>
 
 
+      
       <BudgetApproval year={new Date().getFullYear()} />
 
       {/* Needs your attention */}

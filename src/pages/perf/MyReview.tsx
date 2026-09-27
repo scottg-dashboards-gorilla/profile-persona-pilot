@@ -176,7 +176,6 @@ export default function MyReview() {
   // Everything that isn't a released outcome: the open review plus completed ones being finalised.
   const pendingHistory = reviews.filter((r) => !r.released_at && inFilter(r));
   const hasHistory = reviews.length > 0;
-
   const load = useCallback(async () => {
     setLoading(true);
     const {
@@ -428,7 +427,6 @@ export default function MyReview() {
       </div>
 
       <KeyDates audience="employee" />
-
 
       {todos.length > 0 && (
         <Card className="border-amber-200 bg-amber-50/60">

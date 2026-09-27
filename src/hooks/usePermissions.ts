@@ -26,7 +26,7 @@ const AREA_ROLES: Record<PermissionArea, AppRole[]> = {
   company: ["admin", "hr"],
   pdr: ["admin", "hr", "manager"],
   apr: ["admin", "hr", "manager"],
-  overview: ["admin"],
+  overview: ["admin", "hr", "manager"],
   salary: ["admin", "manager"],
 };
 

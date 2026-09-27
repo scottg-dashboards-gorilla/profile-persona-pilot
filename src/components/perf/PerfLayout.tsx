@@ -22,11 +22,13 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { ViewModeBadge, ViewModeMenuSection } from "./ViewModeSwitcher";
 
 const pageTitles: Record<string, string> = {
-  "/": "Overview",
-  "/reviews": "Reviews",
+  "/": "Home",
+  "/reviews": "Feedback & reviews",
+  "/pdr": "Objectives",
+  "/apr": "Pay review",
   "/people": "Team's Assessment",
-  "/tasks": "Task Tracker",
-  "/me": "My review",
+  "/tasks": "Tasks",
+  "/me": "My feedback",
   "/profile": "My profile",
   "/compensation": "Compensation & Raises",
   "/calibration": "Reviewer Calibration",
