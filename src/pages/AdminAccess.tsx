@@ -220,13 +220,13 @@ export default function AdminAccess() {
           </div>
           {(unlinkedCount > 0 || noEmailCount > 0) && (
             <div className="ml-auto flex items-center">
-              <Button asChild variant="outline" size="sm"><a href="#employee-links">Resolve sign-in gaps</a></Button>
+              <Button asChild variant="outline" size="sm"><a href="#employee-links">Resolve missing work emails</a></Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <Card id="employee-links">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <UserPlus className="h-4 w-4" /> Grant a role
@@ -433,13 +433,13 @@ export default function AdminAccess() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="employee-links">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Link2 className="h-4 w-4" /> Link employees to auth users
           </CardTitle>
           <CardDescription>
-            Set the auth user UUID for each employee so manager-scoped policies recognize them.
+            People with a work email link automatically when they sign in. Missing work emails need to be corrected in the employee source before they can self-link; use the search below to identify them. Paste an account ID here only when the sign-in email differs from the record.
           </CardDescription>
           <div className="pt-2">
             <Input

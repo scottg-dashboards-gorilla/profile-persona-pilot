@@ -1,0 +1,1 @@
+UPDATE public.pdr_objectives SET measure_type = 'number', unit = 'requests' WHERE id = '8c4ac3d6-3bee-4d56-a8fc-cf2f59acbed0' AND title = 'Pilot: HR case follow-through' AND measure_type = 'percentage';

@@ -73,6 +73,7 @@ const managerLinks: QuickLink[] = [
 ];
 
 const adminLinks: QuickLink[] = [
+  { title: "Review questions", detail: "Review disabled department questions and switch on the ones ready for this cycle.", href: "/admin/panel?tab=questions", label: "Approve questions", icon: ClipboardCheck },
   { title: "Pay approvals", detail: "Approve or return submitted merit recommendations before outcomes are shared.", href: "/admin/panel?tab=approvals", label: "Review pay approvals", icon: Wallet },
   { title: "Records needing attention", detail: "Find missing pay, manager, reviewer, sign-in, or hire-date details.", href: "/admin/panel?tab=records", label: "Check records", icon: ClipboardCheck },
   { title: "Review progress", detail: "Track employee input, manager feedback, and completion across the company.", href: "/reviews", label: "Monitor reviews", icon: Users },
@@ -177,6 +178,8 @@ function RoleHome() {
         ]);
         const align = (forms ?? []).filter((form) => form.objectives_submitted_at && !form.objectives_approved_at).length;
         if (align) next.push({ id: "align", title: `Align ${align} submitted objective set${align === 1 ? "" : "s"}`, detail: "Check that each goal is measurable, then approve it or send it back.", href: "/pdr", label: "Review objectives" });
+        const scheduled = (reviews ?? []).filter((review) => review.status === "scheduled").length;
+        if (scheduled) next.push({ id: "kickoff", title: `Start ${scheduled} scheduled team review${scheduled === 1 ? "" : "s"}`, detail: "Start each direct report’s existing review record before drafting manager input.", href: "/cycle?stage=kickoff", label: "Start reviews" });
         const open = (reviews ?? []).filter((review) => review.status === "in_progress").length;
         if (open) next.push({ id: "reviews", title: `Complete feedback for ${open} team review${open === 1 ? "" : "s"}`, detail: "Read employee input and assessments, then add manager feedback and DP INC value scores.", href: "/reviews", label: "Write feedback" });
         const missing = (reviews ?? []).filter((review) => review.status !== "completed" && !review.assessment_attempt_id).length;
@@ -185,9 +188,9 @@ function RoleHome() {
         if (dueActions) next.push({ id: "improvements", title: `${dueActions} improvement action${dueActions === 1 ? "" : "s"} overdue`, detail: "Follow up assessment-based commitments before closing the review.", href: "/improvement", label: "Check actions" });
         if ((tasks ?? []).length) next.push({ id: "blocked", title: `${tasks?.length} blocked team task${tasks?.length === 1 ? "" : "s"}`, detail: "Review blockers and leave guidance on the person's work board.", href: "/tasks", label: "Review blockers" });
         const unrated = (reviews ?? []).filter((review) => review.status === "in_progress" && review.rating_score == null && review.assessment_attempt_id).length;
-        if (unrated) next.push({ id: "pay", title: `Enter ratings for ${unrated} team review${unrated === 1 ? "" : "s"}`, detail: "Record the results rating, DP INC value score, I/C, and merit recommendation in Pay review.", href: "/apr", label: "Open pay review" });
+        if (unrated) next.push({ id: "pay", title: `Enter ratings for ${unrated} team review${unrated === 1 ? "" : "s"}`, detail: "Record the results rating, DP INC value score, I/C, and merit recommendation in Pay review.", href: "/cycle?stage=score", label: "Draft scores" });
         const approved = (reviews ?? []).filter((review) => review.comp_approval_status === "approved" && !review.released_at).length;
-        if (approved) next.push({ id: "share", title: `${approved} approved outcome${approved === 1 ? "" : "s"} ready to share`, detail: "Hold the review conversation, then share the approved outcome with the employee.", href: "/reviews", label: "Share outcomes" });
+        if (approved) next.push({ id: "share", title: `${approved} approved outcome${approved === 1 ? "" : "s"} ready to share`, detail: "Hold the review conversation, then share the approved outcome with the employee.", href: "/cycle?stage=share", label: "Share outcomes" });
       }
     }
     setActions(next);
@@ -204,7 +207,7 @@ function RoleHome() {
   const primary = actions[0];
   const stageByAction: Record<string, number> = viewMode === "employee"
     ? { objectives: 0, tasks: 1, feedback: 2, assessment: 3, ack: 4 }
-    : { align: 0, blocked: 1, reviews: 2, assessments: 2, improvements: 2, pay: 3, share: 4 };
+    : { align: 0, kickoff: 1, blocked: 1, reviews: 2, assessments: 2, improvements: 2, pay: 3, share: 4 };
   const currentStage = primary ? (stageByAction[primary.id] ?? 0) : steps.length - 1;
 
   return (
