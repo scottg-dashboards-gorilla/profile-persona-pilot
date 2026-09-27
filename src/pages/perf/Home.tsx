@@ -242,6 +242,16 @@ function AdminHome() {
           <h1 className="mt-1 text-2xl font-semibold">Run the review cycle</h1>
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Start with approvals and exceptions, then use the company snapshot below to monitor the full cycle.</p>
         </div>
+        <div className="border-l-4 border-primary bg-primary/5 px-5 py-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase text-primary">Start here</p>
+              <p className="mt-1 text-lg font-semibold">Check approvals and exceptions</p>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Review submitted pay decisions, records needing attention, and cycle readiness before anything is released.</p>
+            </div>
+            <Button asChild className="shrink-0"><Link to="/admin/panel">Open admin panel<ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+          </div>
+        </div>
         <Journey steps={adminSteps} />
         <QuickLinks links={adminLinks} />
       </section>

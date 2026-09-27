@@ -16,7 +16,7 @@ const STEP_TEXT: Record<string, StepDef> = {
   "/pdr": { title: "Objectives", body: "Set and agree annual goals, then record mid-year and year-end progress. These are separate from day-to-day tasks." },
   "/apr": { title: "Pay review", body: "Managers enter ratings, I/C scores and merit recommendations here. HR approves them before anything is shared." },
   "/reviews": { title: "Feedback & reviews", body: "Employee and manager feedback lives here: accomplishments, challenges, core values, and the review conversation. Pay stays in Pay review." },
-  "/people": { title: "Team's Assessment", body: "Assessment results for your team — skills, DISC style and how scores changed since last time." },
+  "/people": { title: "Team assessments", body: "Assessment results for your team — skills, DISC style and how scores changed since last time." },
   "/improvement": { title: "Improvement actions", body: "Follow-up actions created when an assessment flags a weak or dropping skill. Track status and overdue items here; mandatory ones must be done before a review can be completed." },
   "/tasks": { title: "Tasks", body: "Day-to-day work lives here. Move tasks between columns as work progresses; annual objectives stay in Objectives." },
   "/me": { title: "My feedback", body: "Write your review input here and, once released, read your manager's feedback and approved outcome." },
