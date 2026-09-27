@@ -149,8 +149,14 @@ export default function PerfLayout() {
                     <DropdownMenuItem onClick={() => startTour()} className="flex items-center gap-2">
                       <Compass className="h-4 w-4" /> Take the tour
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2">
-                      <LogOut className="h-4 w-4" /> Sign out
+                    <DropdownMenuItem
+                      onClick={() => {
+                        localStorage.removeItem("datapath.skipAuth");
+                        signOut();
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" /> {session ? "Sign out" : "Exit preview"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -158,7 +164,7 @@ export default function PerfLayout() {
             </header>
             <main className="flex-1 p-6 max-w-[1400px] w-full mx-auto">
               <Outlet />
-              <GuidedTour userId={session.user.id} />
+              <GuidedTour userId={session?.user?.id ?? "preview"} />
             </main>
           </div>
         </div>
