@@ -12,7 +12,6 @@ import AdminAccess from "./pages/AdminAccess";
 import Login from "./pages/Login";
 
 import PerfLayout from "./components/perf/PerfLayout";
-import Overview from "./pages/perf/Overview";
 import Home from "./pages/perf/Home";
 import Reviews from "./pages/perf/Reviews";
 import People from "./pages/perf/People";

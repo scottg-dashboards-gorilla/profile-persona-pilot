@@ -1,6 +1,3 @@
-import { usePermissions } from "@/hooks/usePermissions";
-import { Settings, Send, ClipboardCheck } from "lucide-react";
-import { WorkflowHero } from "@/components/perf/WorkflowHero";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -154,29 +151,6 @@ export default function Overview() {
   const [loaded, setLoaded] = useState(false);
   const [payTrend, setPayTrend] = useState<PayYear[]>([]);
   const [activityOpen, setActivityOpen] = useState(false);
-  const { unconfigured } = usePermissions();
-  const nextStep = useMemo(() => {
-    if (unconfigured) return {
-      title: "Initial Setup",
-      description: "Start by configuring roles and user permissions to get the platform ready.",
-      actionLabel: "Configure Roles",
-      to: "/admin/roles",
-      icon: Settings,
-      variant: "warning" as const
-    };
-    const urgent = attention[0];
-    if (urgent) return {
-      title: "Next Priority",
-      description: urgent.title + ". " + urgent.detail,
-      actionLabel: "Take Action",
-      to: urgent.to,
-      icon: urgent.key === 'release' ? Send : ClipboardCheck,
-      variant: (urgent.tone === 'red' ? 'warning' : 'default') as const
-    };
-    return null;
-  }, [attention, unconfigured]);
-
-
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -437,17 +411,6 @@ export default function Overview() {
 
 
       
-      {nextStep && (
-        <WorkflowHero
-          title={nextStep.title}
-          description={nextStep.description}
-          actionLabel={nextStep.actionLabel}
-          to={nextStep.to}
-          icon={nextStep.icon}
-          variant={nextStep.variant}
-        />
-      )}
-
       <BudgetApproval year={new Date().getFullYear()} />
 
       {/* Needs your attention */}
