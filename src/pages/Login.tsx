@@ -193,6 +193,24 @@ const Login = () => {
             Accounts are set up by HR. If you can't get in, ask HR to add you to the
             staff list and send you an invite.
           </p>
+
+          <div className="border-t border-border pt-4 space-y-2">
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full text-muted-foreground"
+              onClick={() => {
+                localStorage.setItem("datapath.skipAuth", "1");
+                navigate("/", { replace: true });
+              }}
+            >
+              Preview without signing in
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Look around the app before IT sets up accounts. Pages will be empty —
+              real data only loads for signed-in users.
+            </p>
+          </div>
         </div>
       </div>
     </div>

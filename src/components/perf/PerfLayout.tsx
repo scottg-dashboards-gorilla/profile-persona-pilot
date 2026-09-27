@@ -85,15 +85,18 @@ export default function PerfLayout() {
     );
   }
 
-  if (!session) {
+  // Handoff/preview mode: let someone look around the shell without an account.
+  // Data stays empty — the backend only serves rows to signed-in users.
+  const skipAuth = localStorage.getItem("datapath.skipAuth") === "1";
+  if (!session && !skipAuth) {
     return <Navigate to="/login" replace state={{ from: pathname }} />;
   }
 
-  const email = session.user.email ?? "";
-  const displayName = me ? `${me.first_name} ${me.last_name}` : email;
+  const email = session?.user?.email ?? "";
+  const displayName = me ? `${me.first_name} ${me.last_name}` : email || "Preview user";
   const initials = me
     ? `${me.first_name[0] ?? ""}${me.last_name[0] ?? ""}`.toUpperCase()
-    : (email[0] ?? "?").toUpperCase();
+    : (email[0] ?? "P").toUpperCase();
 
   return (
     <div className="perf-theme">
@@ -146,8 +149,14 @@ export default function PerfLayout() {
                     <DropdownMenuItem onClick={() => startTour()} className="flex items-center gap-2">
                       <Compass className="h-4 w-4" /> Take the tour
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2">
-                      <LogOut className="h-4 w-4" /> Sign out
+                    <DropdownMenuItem
+                      onClick={() => {
+                        localStorage.removeItem("datapath.skipAuth");
+                        signOut();
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" /> {session ? "Sign out" : "Exit preview"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -155,7 +164,7 @@ export default function PerfLayout() {
             </header>
             <main className="flex-1 p-6 max-w-[1400px] w-full mx-auto">
               <Outlet />
-              <GuidedTour userId={session.user.id} />
+              <GuidedTour userId={session?.user?.id ?? "preview"} />
             </main>
           </div>
         </div>
