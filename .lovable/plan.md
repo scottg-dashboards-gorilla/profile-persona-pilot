@@ -1,50 +1,46 @@
+# Clear role-based starting experience
+
 ## Goal
-Make the assessment a required part of every review cycle and surface change-over-time for DISC, tier, and technical competencies on the employee detail page, the Complete Review modal, and the Overview dashboard.
+Make it immediately clear where each person starts, what they should do next, and where tasks, objectives, feedback, assessments, improvement actions, and pay decisions live.
 
-## Database
-New table `assessment_attempts` (one row per attempt):
-- `employee_uuid` → employees
-- `review_id` (nullable) → performance_reviews — links the attempt to the cycle review it was taken for
-- `cycle_id` (nullable) → review_cycles — for fast filtering
-- `taken_at`, `submitted_at`
-- `disc_scores` jsonb `{ D, I, S, C }` (percentages)
-- `disc_primary` text
-- `tier` text (`tier_1` | `tier_2` | `team_leader`)
-- `technical_scores` jsonb (per-competency 0–100)
-- `truthfulness_score` numeric (kept for context, not shown as a "growth" delta)
-- `raw_answers` jsonb (optional, audit only)
-- Standard timestamps + RLS: admin/HR/manager-of-reviewee/self can read; admin/HR/self insert.
+## What will change
 
-`performance_reviews` gets a new nullable `assessment_attempt_id` so each review points at the attempt used during completion. The Complete Review modal blocks submission until an attempt exists for that review.
+### 1. Give every view a useful Home page
+- Replace the current manager redirect loop with a real manager Home.
+- Give employees a simple Home rather than dropping them directly into the full review page.
+- Keep the existing company overview for admins, but add a clear review-cycle launcher above the reporting detail.
+- Each Home will begin with one prominent **Next step** and a short list of other items requiring attention.
 
-Backfill: any existing `employee_profiles` row is copied into `assessment_attempts` as a single historical attempt (no `review_id`).
+### 2. Organize navigation by the work people do
+- **Employee:** Home; My work (Objectives, Tasks, My review); Help (Playbook).
+- **Manager:** Home; Team work (Objectives, Tasks, Feedback & reviews, Assessments, Improvement actions, Pay review); People (Org structure); Help (Playbook).
+- **Admin:** Home; Review cycle; People & pay; Administration; Help.
+- Rename ambiguous labels in the menu so “Feedback & reviews,” “Objectives,” and “Pay review” are easier to distinguish.
+- Preserve every existing permission rule and keep each person limited to the same records they can already access.
 
-## Assessment flow changes
-- The candidate-facing `/assessment` route accepts `?review=<reviewId>` (and falls back to employee email). On submit it writes a new `assessment_attempts` row stamped with `review_id` + `cycle_id`.
-- From the Reviews page, each row gets a "Request assessment" action that copies an assessment link prefilled with `review=<id>`.
-- The Complete Review modal shows the linked attempt (or a warning + copy-link button if none exists) and refuses to mark complete without one. The modal also displays deltas vs the employee's previous attempt.
+### 3. Show the full journey without overwhelming the page
+- Add a compact, role-specific cycle strip showing the ordered stages and the current area.
+- Use direct action labels such as **Add objectives**, **Update tasks**, **Write feedback**, **Review assessments**, **Set improvement actions**, and **Enter pay recommendation**.
+- Explain the distinction at the point of choice: Tasks are day-to-day work; Objectives are annual goals; Feedback is the review conversation; Improvement actions follow assessment findings.
 
-## Growth tracking surfaces
-1. **Employee detail page** (new `/people/:uuid`)
-   - Header with current tier, primary DISC, last assessed date.
-   - "Growth over time" section: line chart for DISC D/I/S/C across attempts, radar overlay of latest vs previous technical scores, tier-change timeline.
-   - Table of attempts with date, cycle, tier, delta chips.
+### 4. Make the first screen practical
+- Employee Home: next personal action, annual cycle stages, and quick access to objectives, tasks, and review input.
+- Manager Home: team actions first, then the ordered manager flow from objectives through HR-approved outcome sharing.
+- Admin Home: approvals and exceptions first, then cycle setup, review monitoring, assessment coverage, pay approval, and release.
+- Reuse existing live counts and links where available; no new review rules or backend changes.
 
-2. **Complete Review modal**
-   - New "Assessment delta" card under contributor feedback: previous → current tier, DISC shifts (chips like `D +6`, `S -3`), top 3 most-improved and most-declined competencies.
-
-3. **Overview dashboard**
-   - Tiles: "Avg tier shift this cycle", "Biggest improvers" (top 3 by composite delta), "Needs attention" (negative deltas).
-   - Uses the latest attempt per employee in the active cycle vs their prior attempt.
+### 5. Verify all three views
+- Check employee, manager, and admin navigation at desktop and mobile widths.
+- Confirm every action opens the correct existing page, labels fit, and no view exposes another role’s options.
+- Confirm the guided tour follows the reorganized navigation.
 
 ## Technical details
-- New file `src/lib/assessmentDeltas.ts` with pure helpers: `discDelta`, `technicalDelta`, `tierChange`, `compositeImprovement`. Reused across all three surfaces.
-- Charts via existing `recharts` dependency (LineChart for DISC, RadarChart for technical, simple list/badges for tier).
-- `mockEmployees` stays for fallback display only; real data is queried from `assessment_attempts` keyed by `employee_uuid`.
-- Migration runs in one file: create table → GRANTs (`authenticated` rw, `service_role` all) → enable RLS → policies using `has_role` + `is_review_manager` + self-check via `employees.user_id` → backfill from `employee_profiles` → add `assessment_attempt_id` FK on `performance_reviews`.
-- Reviews list shows an "Assessment" status pill per row (Pending / Submitted) sourced from the linked attempt.
+- Add a focused role-aware Home page and small reusable workflow/quick-action components.
+- Update route handling so `/` is valid in all three views.
+- Refactor sidebar item grouping and tour wording to match the new labels.
+- Keep the existing admin reporting dashboard intact beneath the new starting guidance.
+- Record the role-based navigation structure in `AGENTS.md`.
 
-## Out of scope (call out explicitly)
-- No changes to truthfulness scoring or to the assessment question set.
-- No automated assessment scheduling/email; HR copies/sends the link manually for now.
-- Org-wide trend tiles use only the current and previous cycle; full historical org dashboards can come later.
+## Out of scope
+- No changes to review calculations, access rules, stored data, or approval logic.
+- No new notifications or workflow states; this reorganizes and clarifies what already exists.
