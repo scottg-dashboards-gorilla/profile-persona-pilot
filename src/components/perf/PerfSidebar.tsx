@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, ClipboardCheck, Users, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock, TrendingUp } from "lucide-react";
+import { Home, ClipboardCheck, Users, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock, TrendingUp, CalendarRange } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -32,7 +32,7 @@ type Group = { label: string; items: Item[] };
 
 const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
   employee: [
-    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }] },
+    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }, { title: "Review cycle", url: "/cycle", icon: CalendarRange }] },
     { label: "My work", items: [
       { title: "Objectives", url: "/pdr", icon: Workflow, area: "pdr" },
       { title: "Tasks", url: "/tasks", icon: ListTodo },
@@ -41,7 +41,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
     { label: "Help", items: [{ title: "Playbook", url: "/playbook", icon: BookOpen }] },
   ],
   manager: [
-    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }] },
+    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }, { title: "Review cycle", url: "/cycle", icon: CalendarRange }] },
     { label: "Team work", items: [
       { title: "Objectives", url: "/pdr", icon: Workflow, area: "pdr" },
       { title: "Tasks", url: "/tasks", icon: ListTodo },
@@ -57,7 +57,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
     { label: "Help", items: [{ title: "Playbook", url: "/playbook", icon: BookOpen }] },
   ],
   admin: [
-    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }] },
+    { label: "Start", items: [{ title: "Home", url: "/", icon: Home }, { title: "Review cycle", url: "/cycle", icon: CalendarRange }] },
     { label: "Review cycle", items: [
       { title: "Objectives", url: "/pdr", icon: Workflow, area: "pdr" },
       { title: "Feedback & reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },

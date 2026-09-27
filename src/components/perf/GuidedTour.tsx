@@ -13,6 +13,7 @@ const STEP_TEXT: Record<string, StepDef> = {
     body: "This quick tour shows what each button in the menu does and where to find things. You can skip it now and restart it any time from your account menu (your initials, top right).",
   },
   "/": { title: "Home", body: "Start here. Your next action is shown first, followed by the full cycle and links to each kind of work." },
+  "/cycle": { title: "Review cycle", body: "See the active cycle dates and progress, then open the exact goal, feedback, score, approval, release, or acknowledgement action." },
   "/pdr": { title: "Objectives", body: "Set and agree annual goals, then record mid-year and year-end progress. These are separate from day-to-day tasks." },
   "/apr": { title: "Pay review", body: "Managers enter ratings, I/C scores and merit recommendations here. HR approves them before anything is shared." },
   "/reviews": { title: "Feedback & reviews", body: "Employee and manager feedback lives here: accomplishments, challenges, core values, and the review conversation. Pay stays in Pay review." },

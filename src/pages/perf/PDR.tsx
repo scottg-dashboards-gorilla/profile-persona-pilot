@@ -28,6 +28,7 @@ import { TeamGoals, type MeritInfo } from "@/components/perf/TeamGoals";
 import { SubmissionTracker } from "@/components/perf/SubmissionTracker";
 import { KeyDates } from "@/components/perf/KeyDates";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useSearchParams } from "react-router-dom";
 
 type Emp = {
   uuid: string;
@@ -59,6 +60,7 @@ export default function PDR() {
   const [creating, setCreating] = useState(false);
   const [addingAll, setAddingAll] = useState(false);
   const [newEmp, setNewEmp] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -144,6 +146,15 @@ export default function PDR() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const focusId = searchParams.get("focus");
+    if (!focusId || !forms.some((form) => form.id === focusId)) return;
+    setOpenId(focusId);
+    const next = new URLSearchParams(searchParams);
+    next.delete("focus");
+    setSearchParams(next, { replace: true });
+  }, [forms, searchParams, setSearchParams]);
 
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();

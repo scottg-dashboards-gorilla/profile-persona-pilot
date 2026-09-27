@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { RefreshCw, History, Download } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 
 type Entry = {
   id: string;
@@ -64,6 +65,7 @@ function fmt(v: unknown) {
 const csvCell = csvSafeCell;
 
 export default function AuditLog() {
+  const [searchParams] = useSearchParams();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [tableFilter, setTableFilter] = useState("all");
   const [actorFilter, setActorFilter] = useState("all");
@@ -89,6 +91,11 @@ export default function AuditLog() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    const area = searchParams.get("area");
+    if (area && area in tableLabels) setTableFilter(area);
+  }, [searchParams]);
 
   const actors = useMemo(
     () =>
@@ -333,9 +340,10 @@ export default function AuditLog() {
                 <TableRow>
                   <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
                     <History className="h-5 w-5 mx-auto mb-2" />
-                    {entries.length
-                      ? "No entries match these filters."
-                      : "No audit entries yet. Every change to reviews, cycles, reviewer feedback, and access roles from now on is recorded here automatically."}
+                    {entries.length ? "No entries match these filters." : "No audit entries yet. Changes to reviews, cycles, reviewer feedback, and access roles will appear here automatically."}
+                    <div className="mt-3 flex justify-center gap-2">
+                      {entries.length ? <Button size="sm" variant="outline" onClick={() => { setTableFilter("all"); setActorFilter("all"); setActionFilter("all"); setFieldFilter("all"); setRecordId(""); setFrom(""); setTo(""); setSearch(""); }}>Clear filters</Button> : <Button asChild size="sm" variant="outline"><Link to="/admin/access">Manage access</Link></Button>}
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

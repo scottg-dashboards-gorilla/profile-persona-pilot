@@ -5,6 +5,7 @@
 - [ ] Publish pending (bonus removal + share award removal + APR manager scoping)
 
 ## Done
+- [x] Connect Home stages to real cycle tasks and add a role-aware cycle page with dates, goals and progress
 - [x] Make role Home journeys dated, clickable, and visibly current; align every guided-tour description to its real destination
 - [x] Simplify employee, manager, and admin navigation around a clear start-to-finish workflow
 - [x] Share award section removed from pay review cycle (UI, ratings grid, budgets, playbook, DB columns dropped)
