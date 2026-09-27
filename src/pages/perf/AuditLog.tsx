@@ -50,6 +50,7 @@ const actionTone: Record<string, string> = {
   update: "bg-indigo-100 text-indigo-800 border-indigo-200",
   delete: "bg-red-100 text-red-800 border-red-200",
 };
+const actionLabels: Record<string, string> = { insert: "Created", update: "Changed", delete: "Removed" };
 
 function raw(v: unknown) {
   if (v === null || v === undefined) return "";
@@ -357,7 +358,7 @@ export default function AuditLog() {
                   </TableCell>
                   <TableCell className="align-top">
                     <Badge variant="outline" className={actionTone[e.action]}>
-                      {e.action}
+                      {actionLabels[e.action] ?? e.action}
                     </Badge>
                     <div className="text-xs text-muted-foreground mt-1">
                       {tableLabels[e.table_name] ?? e.table_name}
@@ -366,7 +367,7 @@ export default function AuditLog() {
                   </TableCell>
                   <TableCell className="text-xs align-top">
                     {Object.keys(e.changed_fields ?? {}).length === 0 ? (
-                      <span className="text-muted-foreground">Record {e.action}d</span>
+                      <span className="text-muted-foreground">Record {actionLabels[e.action]?.toLowerCase() ?? e.action}</span>
                     ) : (
                       <div className="space-y-0.5">
                         {Object.entries(e.changed_fields ?? {}).map(([field, v]) => (
