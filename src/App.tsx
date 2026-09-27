@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import AdminRoles from "./pages/AdminRoles";
 import AdminAccess from "./pages/AdminAccess";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 
 import PerfLayout from "./components/perf/PerfLayout";
 import Home from "./pages/perf/Home";
@@ -83,6 +84,7 @@ const App = () => (
 
           {/* Sign in / sign up (no shell) */}
           <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Private self-assessment & 360 feedback forms — no account needed */}
           <Route path="/review-form/:token" element={<ReviewForm />} />
