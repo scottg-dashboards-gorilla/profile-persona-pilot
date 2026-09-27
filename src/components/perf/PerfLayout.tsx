@@ -85,15 +85,18 @@ export default function PerfLayout() {
     );
   }
 
-  if (!session) {
+  // Handoff/preview mode: let someone look around the shell without an account.
+  // Data stays empty — the backend only serves rows to signed-in users.
+  const skipAuth = localStorage.getItem("datapath.skipAuth") === "1";
+  if (!session && !skipAuth) {
     return <Navigate to="/login" replace state={{ from: pathname }} />;
   }
 
-  const email = session.user.email ?? "";
-  const displayName = me ? `${me.first_name} ${me.last_name}` : email;
+  const email = session?.user?.email ?? "";
+  const displayName = me ? `${me.first_name} ${me.last_name}` : email || "Preview user";
   const initials = me
     ? `${me.first_name[0] ?? ""}${me.last_name[0] ?? ""}`.toUpperCase()
-    : (email[0] ?? "?").toUpperCase();
+    : (email[0] ?? "P").toUpperCase();
 
   return (
     <div className="perf-theme">
