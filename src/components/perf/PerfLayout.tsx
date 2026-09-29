@@ -1,4 +1,4 @@
-import { Outlet, useLocation, Navigate, Link } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, Navigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { PerfSidebar } from "./PerfSidebar";
@@ -50,6 +50,7 @@ function HeaderTitle() {
 
 export default function PerfLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { session, loading, signOut } = useAuth();
   const [me, setMe] = useState<{ first_name: string; last_name: string; title: string | null } | null>(
     null,
@@ -152,7 +153,10 @@ export default function PerfLayout() {
                     <DropdownMenuItem
                       onClick={() => {
                         localStorage.removeItem("datapath.skipAuth");
-                        signOut();
+                        if (session) signOut();
+                        // Navigate explicitly: in preview mode there is no
+                        // session change to re-trigger the login redirect.
+                        navigate("/login", { replace: true });
                       }}
                       className="flex items-center gap-2"
                     >
