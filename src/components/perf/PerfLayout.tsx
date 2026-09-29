@@ -153,15 +153,10 @@ export default function PerfLayout() {
                     <DropdownMenuItem
                       onClick={() => {
                         localStorage.removeItem("datapath.skipAuth");
-                        if (session) {
-                          signOut();
-                          navigate("/login", { replace: true });
-                        } else {
-                          // Preview mode: no session to end, so drive the
-                          // redirect ourselves instead of waiting for the
-                          // auth state to change.
-                          navigate("/login", { replace: true });
-                        }
+                        if (session) signOut();
+                        // Navigate explicitly: in preview mode there is no
+                        // session change to re-trigger the login redirect.
+                        navigate("/login", { replace: true });
                       }}
                       className="flex items-center gap-2"
                     >
