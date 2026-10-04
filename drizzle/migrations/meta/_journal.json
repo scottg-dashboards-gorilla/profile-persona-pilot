@@ -8,6 +8,13 @@
       "when": 1791151857413,
       "tag": "0000_manager_approval_before_hr",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791151919749,
+      "tag": "0001_relax_manager_approval_status_check",
+      "breakpoints": true
     }
   ]
 }
