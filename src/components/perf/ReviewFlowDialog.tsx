@@ -555,6 +555,11 @@ export function ReviewFlowDialog({
               ? `${review.review_cycle} · ${doneCount} of ${steps.length} steps done. Each step shows who owns it.`
               : "Loading…"}
           </DialogDescription>
+          {approvalStatus && (
+            <div className={`mt-2 inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-medium ${approvalStatus.tone}`}>
+              Approval status: {approvalStatus.label}
+            </div>
+          )}
         </DialogHeader>
 
         {loading && !review && (
