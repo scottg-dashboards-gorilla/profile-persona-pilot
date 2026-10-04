@@ -737,6 +737,112 @@ export type Database = {
           },
         ]
       }
+      feedback_check_in_answers: {
+        Row: {
+          check_in_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          item_key: string
+          item_kind: string
+          score: number | null
+          side: string
+          updated_at: string
+        }
+        Insert: {
+          check_in_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          item_key: string
+          item_kind: string
+          score?: number | null
+          side: string
+          updated_at?: string
+        }
+        Update: {
+          check_in_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          item_key?: string
+          item_kind?: string
+          score?: number | null
+          side?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_check_in_answers_check_in_id_fkey"
+            columns: ["check_in_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_check_ins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_check_ins: {
+        Row: {
+          created_at: string
+          department: string | null
+          due_date: string | null
+          employee_name: string
+          employee_required: boolean
+          employee_submitted_at: string | null
+          employee_uuid: string
+          fiscal_year: number
+          id: string
+          manager_submitted_at: string | null
+          note: string | null
+          requested_by: string | null
+          requester_name: string | null
+          shared_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          due_date?: string | null
+          employee_name: string
+          employee_required?: boolean
+          employee_submitted_at?: string | null
+          employee_uuid: string
+          fiscal_year?: number
+          id?: string
+          manager_submitted_at?: string | null
+          note?: string | null
+          requested_by?: string | null
+          requester_name?: string | null
+          shared_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          due_date?: string | null
+          employee_name?: string
+          employee_required?: boolean
+          employee_submitted_at?: string | null
+          employee_uuid?: string
+          fiscal_year?: number
+          id?: string
+          manager_submitted_at?: string | null
+          note?: string | null
+          requested_by?: string | null
+          requester_name?: string | null
+          shared_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_check_ins_employee_uuid_fkey"
+            columns: ["employee_uuid"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       funding_curve_points: {
         Row: {
           achievement_percent: number
@@ -2047,6 +2153,10 @@ export type Database = {
         Args: { _comment?: string; _review_id: string }
         Returns: Json
       }
+      check_in_side_access: {
+        Args: { _check_in_id: string; _side: string; _write: boolean }
+        Returns: boolean
+      }
       claim_employee_link: { Args: never; Returns: Json }
       create_review_token: {
         Args: {
@@ -2069,6 +2179,7 @@ export type Database = {
         Args: { _employee_uuid: string }
         Returns: boolean
       }
+      is_hr_or_admin: { Args: never; Returns: boolean }
       is_my_manager: { Args: { _employee_uuid: string }; Returns: boolean }
       is_review_contributor: {
         Args: { _contributor_id: string }
