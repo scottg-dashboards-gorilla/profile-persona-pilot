@@ -275,20 +275,47 @@ export function ReviewFlowDialog({
           ),
         },
         {
+          key: "mgr_approve",
+          owner: "Manager",
+          title: "Manager approves the review and pay recommendation",
+          detail: mgrApproved
+            ? `Manager approved ${format(parseISO(review.manager_approved_at!), "MMM d, h:mma")}${review.manager_approval_note ? ` — "${review.manager_approval_note}"` : ""}.`
+            : review.status === "completed"
+              ? "Confirm the rating, feedback and pay recommendation are final. HR can't approve until you do."
+              : "Available once the review is completed.",
+          done: mgrApproved,
+          blocked: !mgrApproved && review.status === "completed",
+          action: mgrApproved ? (
+            compApproved ? null : (
+              <Button size="sm" variant="outline" disabled={busy === "mgr"} onClick={() => patch({ manager_approved_at: null, manager_approval_note: null }, "mgr", "Manager approval withdrawn")}>
+                Withdraw
+              </Button>
+            )
+          ) : (
+            <Button
+              size="sm"
+              disabled={busy === "mgr" || review.status !== "completed"}
+              onClick={() => patch({ manager_approved_at: new Date().toISOString(), comp_approval_status: compRejected ? "submitted" : review.comp_approval_status }, "mgr", "Approved — sent to HR")}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Approve & send to HR
+            </Button>
+          ),
+        },
+        {
           key: "comp",
           owner: "HR",
           title: "HR approves the pay outcome",
           detail: compApproved
             ? `Approved ${review.comp_approved_at ? format(parseISO(review.comp_approved_at), "MMM d") : ""}.`
-            : compRejected
-              ? "Sent back to the manager."
+            : !mgrApproved
+              ? "Locked until the manager approves."
               : compProposed
-                ? "Waiting on HR sign-off before the outcome is shared."
+                ? "Manager approved — waiting on HR sign-off before the outcome is shared."
                 : "No pay change proposed, but HR still has to sign off before the outcome is shared.",
           done: compApproved,
-          blocked: !compApproved && review.status === "completed",
+          blocked: !compApproved && mgrApproved,
           action:
-            !compApproved ? (
+            !compApproved && mgrApproved ? (
               <div className="flex flex-col items-end gap-2 w-full">
                 <Textarea
                   rows={2}
