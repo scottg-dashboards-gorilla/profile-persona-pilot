@@ -34,6 +34,7 @@ import {
   type ManagerBudget,
 } from "@/lib/pmp";
 import { VALUES_WEIGHT, blendRating, managerValuesAverage } from "@/lib/coreValues";
+import { combineValueAverages, sharedCheckInValueAverages } from "@/lib/checkIns";
 
 export type AprReview = {
   id: string;
@@ -110,9 +111,11 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
         .select("value_code, manager_score")
         .eq("review_id", review.id),
     ]);
+    const ciAvgs = await sharedCheckInValueAverages([review.employee_uuid], fiscalYear);
     setValuesAvg(
-      managerValuesAverage(
-        (valueRows ?? []) as { value_code: string; manager_score: number | null }[],
+      combineValueAverages(
+        managerValuesAverage((valueRows ?? []) as { value_code: string; manager_score: number | null }[]),
+        ciAvgs[review.employee_uuid],
       ),
     );
 

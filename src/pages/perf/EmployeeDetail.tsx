@@ -39,6 +39,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { exportCycleComparisonPdf } from "@/lib/cycleComparisonPdf";
 import { exportRecordPack } from "@/lib/recordPack";
 import { RequestCheckInButton } from "@/components/perf/RequestCheckInButton";
+import { FeedbackCheckInsCard } from "@/components/perf/FeedbackCheckInsCard";
 
 type Employee = {
   uuid: string;
@@ -188,6 +189,15 @@ export default function EmployeeDetail() {
           />
         )}
       </div>
+
+      {emp && (
+        <FeedbackCheckInsCard
+          employeeUuid={emp.uuid}
+          employeeName={`${emp.first_name ?? ""} ${emp.last_name ?? ""}`.trim()}
+          department={(emp as { department?: string | null }).department ?? null}
+          side="manager"
+        />
+      )}
 
       <Card>
         <CardContent className="p-5 flex flex-wrap items-center justify-between gap-4">

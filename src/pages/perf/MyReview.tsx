@@ -17,6 +17,7 @@ import { StatusPill, computeReviewTone } from "@/components/perf/StatusPill";
 import { GoalsPanel, GoalsSummaryLine } from "@/components/perf/GoalsPanel";
 import { ImprovementPlanCard } from "@/components/perf/ImprovementPlanCard";
 import { AssessmentCheckInCard } from "@/components/perf/AssessmentCheckInCard";
+import { FeedbackCheckInsCard } from "@/components/perf/FeedbackCheckInsCard";
 import { goalsSummary, type PdrObjective } from "@/lib/pmp";
 import {
   Select,
@@ -778,6 +779,14 @@ export default function MyReview() {
       )}
 
       {me?.uuid && <AssessmentCheckInCard employeeUuid={me.uuid} />}
+      {me?.uuid && (
+        <FeedbackCheckInsCard
+          employeeUuid={me.uuid}
+          employeeName={`${me.first_name} ${me.last_name}`}
+          department={me.department ?? null}
+          side="employee"
+        />
+      )}
       {me?.uuid && <ImprovementPlanCard employeeUuid={me.uuid} />}
 
       <Card>

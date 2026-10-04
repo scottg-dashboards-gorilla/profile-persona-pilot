@@ -48,6 +48,7 @@ import {
   type PdrObjective,
 } from "@/lib/pmp";
 import { VALUES_WEIGHT, blendRating, managerValuesAverage } from "@/lib/coreValues";
+import { combineValueAverages, sharedCheckInValueAverages } from "@/lib/checkIns";
 import { cn } from "@/lib/utils";
 
 type GridRow = {
@@ -233,7 +234,10 @@ export function RatingsGrid({ year }: { year: number }) {
         },
       );
       const avgs: Record<string, number | null> = {};
-      list.forEach((r) => (avgs[r.id] = managerValuesAverage(byReview[r.id] ?? [])));
+      const ciAvgs = await sharedCheckInValueAverages(list.map((r) => r.employee_uuid), year);
+      list.forEach(
+        (r) => (avgs[r.id] = combineValueAverages(managerValuesAverage(byReview[r.id] ?? []), ciAvgs[r.employee_uuid])),
+      );
       setValuesByReview(avgs);
     } else {
       setValuesByReview({});
