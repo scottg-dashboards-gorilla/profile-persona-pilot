@@ -1216,6 +1216,9 @@ export type Database = {
           ic_score: number | null
           id: string
           kickoff_at: string | null
+          manager_approval_note: string | null
+          manager_approved_at: string | null
+          manager_approved_by: string | null
           manager_review_response: string | null
           manager_review_sent_at: string | null
           manager_summary_comment: string | null
@@ -1292,6 +1295,9 @@ export type Database = {
           ic_score?: number | null
           id?: string
           kickoff_at?: string | null
+          manager_approval_note?: string | null
+          manager_approved_at?: string | null
+          manager_approved_by?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
           manager_summary_comment?: string | null
@@ -1368,6 +1374,9 @@ export type Database = {
           ic_score?: number | null
           id?: string
           kickoff_at?: string | null
+          manager_approval_note?: string | null
+          manager_approved_at?: string | null
+          manager_approved_by?: string | null
           manager_review_response?: string | null
           manager_review_sent_at?: string | null
           manager_summary_comment?: string | null

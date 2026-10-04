@@ -433,6 +433,8 @@ export function RatingsGrid({ year }: { year: number }) {
         comp_approval_status: "submitted",
         comp_submitted_at: new Date().toISOString(),
         comp_submitted_by: auth.user?.id ?? null,
+        // Submitting from the pay grid is the manager's approval of the recommendation.
+        manager_approved_at: new Date().toISOString(),
       })
       .in(
         "id",

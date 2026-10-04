@@ -68,6 +68,8 @@ type ReviewState = {
   pay_pushback_manager_at: string | null;
   pay_pushback_hr_note: string | null;
   pay_pushback_resolved_at: string | null;
+  manager_approved_at: string | null;
+  manager_approval_note: string | null;
 };
 
 type Owner = "Employee" | "Manager" | "HR";
@@ -101,7 +103,7 @@ export function ReviewFlowDialog({
       supabase
         .from("performance_reviews")
         .select(
-          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date, reopened_at, reopened_reason, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at, connect_held_at, connect_note",
+          "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date, reopened_at, reopened_reason, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at, connect_held_at, connect_note, manager_approved_at, manager_approval_note",
         )
         .eq("id", reviewId)
         .maybeSingle(),
@@ -172,6 +174,18 @@ export function ReviewFlowDialog({
   const compProposed = review?.comp_adjustment_amount != null && review.comp_adjustment_amount !== 0;
   const compApproved = review?.comp_approval_status === "approved";
   const compRejected = review?.comp_approval_status === "rejected";
+  const mgrApproved = !!review?.manager_approved_at;
+  const approvalStatus = !review
+    ? null
+    : compApproved
+      ? { label: "Approved by manager and HR", tone: "bg-primary/10 text-primary border-primary/30" }
+      : compRejected
+        ? { label: "Sent back by HR — manager to re-approve", tone: "bg-destructive/10 text-destructive border-destructive/30" }
+        : mgrApproved
+          ? { label: "Manager approved — waiting on HR", tone: "bg-accent text-accent-foreground border-border" }
+          : review.status === "completed"
+            ? { label: "Waiting on manager approval", tone: "bg-muted text-foreground border-border" }
+            : { label: "Review in progress — not ready for approval", tone: "bg-muted text-muted-foreground border-border" };
 
   const steps: {
     key: string;
@@ -261,20 +275,47 @@ export function ReviewFlowDialog({
           ),
         },
         {
+          key: "mgr_approve",
+          owner: "Manager",
+          title: "Manager approves the review and pay recommendation",
+          detail: mgrApproved
+            ? `Manager approved ${format(parseISO(review.manager_approved_at!), "MMM d, h:mma")}${review.manager_approval_note ? ` — "${review.manager_approval_note}"` : ""}.`
+            : review.status === "completed"
+              ? "Confirm the rating, feedback and pay recommendation are final. HR can't approve until you do."
+              : "Available once the review is completed.",
+          done: mgrApproved,
+          blocked: !mgrApproved && review.status === "completed",
+          action: mgrApproved ? (
+            compApproved ? null : (
+              <Button size="sm" variant="outline" disabled={busy === "mgr"} onClick={() => patch({ manager_approved_at: null, manager_approval_note: null }, "mgr", "Manager approval withdrawn")}>
+                Withdraw
+              </Button>
+            )
+          ) : (
+            <Button
+              size="sm"
+              disabled={busy === "mgr" || review.status !== "completed"}
+              onClick={() => patch({ manager_approved_at: new Date().toISOString(), comp_approval_status: compRejected ? "submitted" : review.comp_approval_status }, "mgr", "Approved — sent to HR")}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Approve & send to HR
+            </Button>
+          ),
+        },
+        {
           key: "comp",
           owner: "HR",
           title: "HR approves the pay outcome",
           detail: compApproved
             ? `Approved ${review.comp_approved_at ? format(parseISO(review.comp_approved_at), "MMM d") : ""}.`
-            : compRejected
-              ? "Sent back to the manager."
+            : !mgrApproved
+              ? "Locked until the manager approves."
               : compProposed
-                ? "Waiting on HR sign-off before the outcome is shared."
+                ? "Manager approved — waiting on HR sign-off before the outcome is shared."
                 : "No pay change proposed, but HR still has to sign off before the outcome is shared.",
           done: compApproved,
-          blocked: !compApproved && review.status === "completed",
+          blocked: !compApproved && mgrApproved,
           action:
-            !compApproved ? (
+            !compApproved && mgrApproved ? (
               <div className="flex flex-col items-end gap-2 w-full">
                 <Textarea
                   rows={2}
@@ -514,6 +555,11 @@ export function ReviewFlowDialog({
               ? `${review.review_cycle} · ${doneCount} of ${steps.length} steps done. Each step shows who owns it.`
               : "Loading…"}
           </DialogDescription>
+          {approvalStatus && (
+            <div className={`mt-2 inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-medium ${approvalStatus.tone}`}>
+              Approval status: {approvalStatus.label}
+            </div>
+          )}
         </DialogHeader>
 
         {loading && !review && (
