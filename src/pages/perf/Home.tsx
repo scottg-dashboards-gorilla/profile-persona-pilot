@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
+import { ManagerCheckInsCard } from "@/components/perf/ManagerCheckInsCard";
 import Overview from "./Overview";
 
 type HomeAction = {
@@ -128,6 +129,7 @@ function RoleHome() {
   const { viewMode } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
+  const [meUuid, setMeUuid] = useState("");
   const [actions, setActions] = useState<HomeAction[]>([]);
 
   const load = useCallback(async () => {
@@ -142,6 +144,7 @@ function RoleHome() {
       .eq("user_id", userId)
       .maybeSingle();
     setName(me?.first_name ?? "");
+    setMeUuid(me?.uuid ?? "");
     if (!me?.uuid) return setLoading(false);
 
     const year = new Date().getFullYear();
@@ -176,6 +179,14 @@ function RoleHome() {
           supabase.from("daily_tasks").select("id").in("employee_uuid", ids).eq("status", "blocked"),
           supabase.from("assessment_action_items").select("id,status,due_date").in("employee_uuid", ids).neq("status", "done"),
         ]);
+        const { data: checkIns } = await supabase
+          .from("feedback_check_ins")
+          .select("id,due_date,manager_submitted_at")
+          .in("employee_uuid", ids)
+          .is("shared_at", null);
+        const overdueCheckIns = (checkIns ?? []).filter((c) => c.due_date && c.due_date < today).length;
+        if (overdueCheckIns) next.push({ id: "checkins", title: `${overdueCheckIns} feedback check-in${overdueCheckIns === 1 ? "" : "s"} overdue`, detail: "Open check-ins with a passed due date are listed on this page below — fill in your side or follow up with the employee.", href: "#pending-checkins", label: "View check-ins" });
+        else if ((checkIns ?? []).some((c) => !c.manager_submitted_at)) next.push({ id: "checkins", title: "Feedback check-ins waiting on you", detail: "Score DP INC values and department questions for your open check-ins, listed on this page below.", href: "#pending-checkins", label: "View check-ins" });
         const align = (forms ?? []).filter((form) => form.objectives_submitted_at && !form.objectives_approved_at).length;
         if (align) next.push({ id: "align", title: `Align ${align} submitted objective set${align === 1 ? "" : "s"}`, detail: "Check that each goal is measurable, then approve it or send it back.", href: "/pdr", label: "Review objectives" });
         const scheduled = (reviews ?? []).filter((review) => review.status === "scheduled").length;
@@ -207,7 +218,7 @@ function RoleHome() {
   const primary = actions[0];
   const stageByAction: Record<string, number> = viewMode === "employee"
     ? { objectives: 0, tasks: 1, feedback: 2, assessment: 3, ack: 4 }
-    : { align: 0, kickoff: 1, blocked: 1, reviews: 2, assessments: 2, improvements: 2, pay: 3, share: 4 };
+    : { align: 0, kickoff: 1, blocked: 1, checkins: 1, reviews: 2, assessments: 2, improvements: 2, pay: 3, share: 4 };
   const currentStage = primary ? (stageByAction[primary.id] ?? 0) : steps.length - 1;
 
   return (
@@ -251,6 +262,12 @@ function RoleHome() {
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {viewMode === "manager" && meUuid && (
+        <section id="pending-checkins" aria-labelledby="checkins-title" className="scroll-mt-6">
+          <ManagerCheckInsCard managerUuid={meUuid} />
         </section>
       )}
 
