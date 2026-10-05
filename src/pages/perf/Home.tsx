@@ -218,7 +218,7 @@ function RoleHome() {
   const primary = actions[0];
   const stageByAction: Record<string, number> = viewMode === "employee"
     ? { objectives: 0, tasks: 1, feedback: 2, assessment: 3, ack: 4 }
-    : { align: 0, kickoff: 1, blocked: 1, reviews: 2, assessments: 2, improvements: 2, pay: 3, share: 4 };
+    : { align: 0, kickoff: 1, blocked: 1, checkins: 1, reviews: 2, assessments: 2, improvements: 2, pay: 3, share: 4 };
   const currentStage = primary ? (stageByAction[primary.id] ?? 0) : steps.length - 1;
 
   return (
@@ -262,6 +262,12 @@ function RoleHome() {
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {viewMode === "manager" && meUuid && (
+        <section id="pending-checkins" aria-labelledby="checkins-title" className="scroll-mt-6">
+          <ManagerCheckInsCard managerUuid={meUuid} />
         </section>
       )}
 
