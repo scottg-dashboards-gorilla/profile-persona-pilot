@@ -63,7 +63,7 @@ import { useSearchParams } from "react-router-dom";
 const thisYear = new Date().getFullYear();
 
 const SELECT =
-  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, ic_score, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at";
+  "id, employee_uuid, employee_name, department, title, current_annual_comp, fiscal_year, scheduled_date, rating_score, merit_percent, merit_amount, ic_score, apr_stage, escalation_status, escalation_note, promotion, new_title, hr_finalized_at, coo_finance_approved_at, payroll_submitted_at, comp_approval_status, connect_held_at, connect_note, released_at, manager_approved_at";
 
 type Row = AprReview & {
   hr_finalized_at: string | null;
@@ -73,6 +73,7 @@ type Row = AprReview & {
   connect_held_at: string | null;
   connect_note: string | null;
   released_at: string | null;
+  manager_approved_at: string | null;
 };
 
 const EXPORT_SELECT =
@@ -244,6 +245,10 @@ export default function APR() {
   const stageCount = (stage: AprStage) => rows.filter((r) => r.apr_stage === stage).length;
 
   async function advance(row: Row, stage: AprStage, body: Record<string, unknown>, msg: string) {
+    if (body.comp_approval_status === "approved" && !row.manager_approved_at) {
+      toast({ title: "Manager approval required", description: "The manager must approve and send this recommendation to HR first.", variant: "destructive" });
+      return;
+    }
     setBusy(row.id);
     const { error } = await supabase
       .from("performance_reviews")
@@ -256,6 +261,22 @@ export default function APR() {
     }
     toast({ title: msg, description: row.employee_name });
     await load();
+  }
+
+  async function approveAndSendToHr(row: Row) {
+    if (row.rating_score == null) return;
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      toast({ title: "Sign in to approve", description: "Manager approval must be recorded against your account.", variant: "destructive" });
+      return;
+    }
+    const now = new Date().toISOString();
+    await advance(row, "hr_review", {
+      manager_approved_at: now,
+      comp_approval_status: "submitted",
+      comp_submitted_at: now,
+      comp_submitted_by: user.id,
+    }, "Manager approved — sent to HR");
   }
 
   async function decideEscalation(row: Row, approved: boolean) {
@@ -452,6 +473,11 @@ export default function APR() {
                           {r.escalation_status === "pending" && (
                             <div className="text-[11px] text-amber-700 mt-1">Exception waiting</div>
                           )}
+                          {(r.apr_stage === "manager_entry" || r.apr_stage === "hr_review" || r.apr_stage === "coo_finance") && (
+                            <div className="text-[11px] text-muted-foreground mt-1">
+                              {r.manager_approved_at ? "Manager approved" : "Awaiting manager approval"}
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1 flex-wrap">
@@ -469,16 +495,16 @@ export default function APR() {
                                 </Button>
                               </>
                             )}
-                            {r.apr_stage === "manager_entry" && r.escalation_status !== "pending" && (
+                            {(r.apr_stage === "manager_entry" || ((r.apr_stage === "hr_review" || r.apr_stage === "coo_finance") && !r.manager_approved_at)) && r.escalation_status !== "pending" && (
                               <Button size="sm" disabled={busy === r.id || r.rating_score == null}
                                 title={r.rating_score == null ? "Enter a rating first" : undefined}
-                                onClick={() => advance(r, "hr_review", {}, "Sent to HR")}>
-                                <ArrowRight className="h-3.5 w-3.5 mr-1" /> To HR
+                                onClick={() => approveAndSendToHr(r)}>
+                                <ArrowRight className="h-3.5 w-3.5 mr-1" /> Approve & send to HR
                               </Button>
                             )}
                             {(r.apr_stage === "hr_review" || r.apr_stage === "coo_finance") && (
-                              <Button size="sm" disabled={busy === r.id || !isHr}
-                                title={isHr ? undefined : "HR or admin only"}
+                              <Button size="sm" disabled={busy === r.id || !isHr || !r.manager_approved_at}
+                                title={!r.manager_approved_at ? "The manager must approve and send to HR first" : isHr ? undefined : "HR or admin only"}
                                 onClick={() => {
                                   const now = new Date().toISOString();
                                   advance(r, "closed", {
