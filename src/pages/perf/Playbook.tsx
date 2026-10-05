@@ -337,7 +337,7 @@ export default function Playbook() {
     return (
       <div className="space-y-5 max-w-4xl">
         <div>
-          <h1 className="text-xl font-semibold">Your Datapath playbook</h1>
+          <h1 className="text-xl font-semibold">Your Datapath Tool</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Everything you're asked to do across the year, in the order it happens — and what you can count
             on in return.
@@ -461,7 +461,7 @@ export default function Playbook() {
     return (
       <div className="space-y-5 max-w-4xl">
         <div>
-          <h1 className="text-xl font-semibold">Your manager playbook</h1>
+          <h1 className="text-xl font-semibold">Your manager Tool</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Everything that's yours to decide for your direct reports across the year — the order it happens
             in, the limits you work inside, and the screen each step lives on.
@@ -771,7 +771,7 @@ export default function Playbook() {
   return (
     <div className="space-y-5 max-w-4xl">
       <div>
-        <h1 className="text-xl font-semibold">Datapath review playbook</h1>
+        <h1 className="text-xl font-semibold">Datapath review Tool</h1>
         <p className="text-sm text-muted-foreground mt-1">
           {forEmployee
             ? "How performance and pay work at Datapath, and what's yours to do — your objectives, your input at mid-year and year-end, and how your outcome reaches you."

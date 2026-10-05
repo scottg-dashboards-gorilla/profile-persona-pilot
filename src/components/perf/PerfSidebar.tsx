@@ -38,7 +38,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
       { title: "Tasks", url: "/tasks", icon: ListTodo },
       { title: "My feedback", url: "/me", icon: UserSquare2, employeeOnly: true },
     ] },
-    { label: "Help", items: [{ title: "Playbook", url: "/playbook", icon: BookOpen }] },
+    { label: "Help", items: [{ title: "Tool", url: "/playbook", icon: BookOpen }] },
   ],
   manager: [
     { label: "Start", items: [{ title: "Home", url: "/", icon: Home }, { title: "Review cycle", url: "/cycle", icon: CalendarRange }] },
@@ -54,7 +54,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
       { title: "Org structure", url: "/org", icon: Network, area: "org" },
       { title: "Salary history", url: "/salary-history", icon: Lock, area: "salary" },
     ] },
-    { label: "Help", items: [{ title: "Playbook", url: "/playbook", icon: BookOpen }] },
+    { label: "Help", items: [{ title: "Tool", url: "/playbook", icon: BookOpen }] },
   ],
   admin: [
     { label: "Start", items: [{ title: "Home", url: "/", icon: Home }, { title: "Review cycle", url: "/cycle", icon: CalendarRange }] },
@@ -78,7 +78,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
       { title: "Access", url: "/admin/access", icon: ShieldCheck, adminOnly: true },
       { title: "Audit log", url: "/admin/audit", icon: History, area: "audit" },
     ] },
-    { label: "Help", items: [{ title: "Playbook", url: "/playbook", icon: BookOpen }] },
+    { label: "Help", items: [{ title: "Tool", url: "/playbook", icon: BookOpen }] },
   ],
 };
 

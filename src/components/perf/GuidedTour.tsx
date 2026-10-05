@@ -26,7 +26,7 @@ const STEP_TEXT: Record<string, StepDef> = {
   "/salary-history": { title: "Salary history", body: "Restricted record of past pay changes. Confidential — visible to authorised people only." },
   "/calibration": { title: "Calibration", body: "Compare how different reviewers rate, to spot ratings that are too tough or too generous." },
   "/org": { title: "Org structure", body: "Your reporting tree — who reports to whom. Click anyone to open their record." },
-  "/playbook": { title: "Playbook", body: "The guide to the cycle: key dates, your steps through the year, rating meanings and tips. Start here if you're unsure what to do next." },
+  "/playbook": { title: "Tool", body: "The guide to the cycle: key dates, your steps through the year, rating meanings and tips. Start here if you're unsure what to do next." },
   "/admin/panel": { title: "Admin panel", body: "Manage merit budgets, pay approvals, access roles, the review calendar, fairness checks, questions, and records needing attention." },
   "/assessments": { title: "Assessments", body: "All candidate and staff assessment results, with sharing links and comparisons." },
   "/admin/roles": { title: "Assessment roles", body: "Choose which technical question groups apply to each assessment role." },
