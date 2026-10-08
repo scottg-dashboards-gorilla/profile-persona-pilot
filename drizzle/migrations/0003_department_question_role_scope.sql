@@ -1,0 +1,2 @@
+ALTER TABLE public.department_questions ADD COLUMN IF NOT EXISTS applies_to_titles text[] NOT NULL DEFAULT '{}';
+COMMENT ON COLUMN public.department_questions.applies_to_titles IS 'Empty array applies to all roles in the department; otherwise matches the employee job title, case-insensitively.';

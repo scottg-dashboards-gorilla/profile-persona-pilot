@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, Lock, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { CORE_VALUES, VALUE_SCALE } from "@/lib/coreValues";
+import { VALUE_SCALE } from "@/lib/coreValues";
+import { departmentValues } from "@/lib/departmentReview";
 import {
   checkInStatus,
   loadCheckInQuestions,
@@ -54,9 +55,12 @@ export function FeedbackCheckInForm({ checkIn, side, onOpenChange, onChanged }: 
   const load = useCallback(async () => {
     if (!checkIn) return;
     setLoading(true);
-    const questions: CheckInQuestion[] = await loadCheckInQuestions(checkIn.department, side);
+    const [questions, { data: employee }] = await Promise.all([
+      loadCheckInQuestions(checkIn.department, side, checkIn.employee_uuid),
+      supabase.from("employees").select("department, title").eq("uuid", checkIn.employee_uuid).maybeSingle(),
+    ]);
     setItems([
-      ...CORE_VALUES.map((v) => ({ kind: "value" as const, key: v.code, title: `${v.code} — ${v.name}`, hint: v.meaning, type: "score" as const })),
+      ...departmentValues(employee ?? { department: checkIn.department, title: null }).map((v) => ({ kind: "value" as const, key: v.code, title: `${v.code} — ${v.name}`, hint: v.meaning, type: "score" as const })),
       ...questions.map((q) => ({ kind: "question" as const, key: q.id, title: q.prompt, hint: q.help_text ?? "", type: q.response_type })),
     ]);
     const { data } = await supabase
@@ -94,15 +98,14 @@ export function FeedbackCheckInForm({ checkIn, side, onOpenChange, onChanged }: 
     setBusy(true);
     const rows = items
       .map((i) => ({ i, v: draft[k(i.kind, i.key)] }))
-      .filter(({ v }) => v && (v.score != null || v.comment.trim()))
-      .map(({ i, v }) => ({
+      .flatMap(({ i, v }) => v && (v.score != null || v.comment.trim()) ? [{
         check_in_id: checkIn.id,
         side,
         item_kind: i.kind,
         item_key: i.key,
-        score: v!.score,
-        comment: v!.comment.trim() || null,
-      }));
+        score: v.score,
+        comment: v.comment.trim() || null,
+      }] : []);
     if (rows.length) {
       const { error } = await supabase
         .from("feedback_check_in_answers")

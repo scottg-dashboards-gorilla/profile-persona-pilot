@@ -24,6 +24,7 @@ type Question = {
   audience: "employee" | "manager" | "both";
   sort_order: number;
   is_active: boolean;
+  applies_to_titles: string[];
 };
 
 const ALL = "__all__";
@@ -43,13 +44,14 @@ export default function DepartmentQuestions() {
     help_text: "",
     response_type: "score" as Question["response_type"],
     audience: "both" as Question["audience"],
+    applies_to_titles: "",
   });
 
   const load = useCallback(async () => {
     const [{ data: qs }, { data: emps }] = await Promise.all([
       supabase
         .from("department_questions")
-        .select("id, department, prompt, help_text, response_type, audience, sort_order, is_active")
+        .select("id, department, prompt, help_text, response_type, audience, sort_order, is_active, applies_to_titles")
         .order("department", { nullsFirst: true })
         .order("sort_order"),
       supabase.from("employees").select("department").eq("terminated", false),
@@ -82,6 +84,7 @@ export default function DepartmentQuestions() {
       response_type: draft.response_type,
       audience: draft.audience,
       sort_order: nextOrder,
+      applies_to_titles: draft.applies_to_titles.split(";").map((t) => t.trim()).filter(Boolean),
     });
     setSaving(false);
     if (error) {
@@ -192,6 +195,10 @@ export default function DepartmentQuestions() {
               Add question
             </Button>
           </div>
+          <div className="grid gap-1.5 md:col-span-2">
+            <Label>Job titles (optional, separated by semicolons)</Label>
+            <Input value={draft.applies_to_titles} onChange={(e) => setDraft({ ...draft, applies_to_titles: e.target.value })} placeholder="All roles when blank" />
+          </div>
         </div>
 
         {loading ? (
@@ -209,6 +216,7 @@ export default function DepartmentQuestions() {
                     <Badge variant="secondary" className="text-[10px]">
                       {q.department ?? "Everyone"}
                     </Badge>
+                    {q.applies_to_titles?.length > 0 && <span className="text-xs text-muted-foreground">Roles: {q.applies_to_titles.join(", ")}</span>}
                     <Badge variant="outline" className="text-[10px]">
                       {q.response_type === "score"
                         ? "Score 1–5"

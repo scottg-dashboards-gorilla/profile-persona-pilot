@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, ListChecks } from "lucide-react";
+import { departmentValues, questionApplies, type EmployeeContext } from "@/lib/departmentReview";
 
 type ValueRow = {
   value_code: string;
@@ -23,6 +24,7 @@ type Question = {
   response_type: "score" | "yes_no" | "text";
   audience: "employee" | "manager" | "both";
   sort_order: number;
+  applies_to_titles: string[];
 };
 
 type QuestionRow = {
@@ -64,23 +66,27 @@ export function ValuesGradingPanel({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, QuestionRow>>({});
   const [loaded, setLoaded] = useState(false);
+  const [employee, setEmployee] = useState<EmployeeContext>({ department: department ?? null, title: null });
 
   const load = useCallback(async () => {
-    const [{ data: vr }, { data: qs }, { data: qr }] = await Promise.all([
+    const [{ data: vr }, { data: qs }, { data: qr }, { data: emp }] = await Promise.all([
       supabase
         .from("review_value_ratings")
         .select("value_code, self_score, self_comment, manager_score, manager_comment")
         .eq("review_id", reviewId),
       supabase
         .from("department_questions")
-        .select("id, department, prompt, help_text, response_type, audience, sort_order")
+        .select("id, department, prompt, help_text, response_type, audience, sort_order, applies_to_titles")
         .eq("is_active", true)
         .order("sort_order"),
       supabase
         .from("review_question_responses")
         .select("question_id, self_score, self_text, manager_score, manager_text")
         .eq("review_id", reviewId),
+      supabase.from("employees").select("department, title").eq("uuid", employeeUuid).maybeSingle(),
     ]);
+    const context = emp ?? { department: department ?? null, title: null };
+    setEmployee(context);
     const vmap: Record<string, ValueRow> = {};
     ((vr ?? []) as ValueRow[]).forEach((r) => (vmap[r.value_code] = r));
     setValues(vmap);
@@ -90,12 +96,12 @@ export function ValuesGradingPanel({
     setQuestions(
       ((qs ?? []) as Question[]).filter(
         (q) =>
-          (!q.department || q.department === (department ?? "")) &&
+          questionApplies(q, context) &&
           (q.audience === "both" || q.audience === (side === "self" ? "employee" : "manager")),
       ),
     );
     setLoaded(true);
-  }, [reviewId, department, side]);
+  }, [reviewId, employeeUuid, department, side]);
 
   useEffect(() => {
     load();
@@ -165,7 +171,7 @@ export function ValuesGradingPanel({
           </div>
         </div>
 
-        {CORE_VALUES.map((v) => {
+        {departmentValues(employee).map((v) => {
           const row = values[v.code];
           const mine = (row?.[scoreKey] as number | null) ?? null;
           const theirs = (row?.[otherScoreKey] as number | null) ?? null;
