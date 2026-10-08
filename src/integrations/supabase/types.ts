@@ -599,6 +599,7 @@ export type Database = {
       }
       department_questions: {
         Row: {
+          applies_to_titles: string[]
           audience: string
           created_at: string
           created_by: string | null
@@ -612,6 +613,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          applies_to_titles?: string[]
           audience?: string
           created_at?: string
           created_by?: string | null
@@ -625,6 +627,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          applies_to_titles?: string[]
           audience?: string
           created_at?: string
           created_by?: string | null
