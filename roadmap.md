@@ -1,6 +1,8 @@
 # Roadmap
 
 ## Open
+- [ ] Apply department-head questions, value evidence guidance, goal references and assessment coverage; distinguish operations leaders from technicians
+- [ ] Obtain Dan's missing role-specific questions/training content and design SLA evidence source; confirm Stephen's hourly-rate formula before calculation
 - [ ] Email domain mydatapath.com unverified — share setup with Scott (HR@mydatapath.com sender)
 - [ ] Publish pending (bonus removal + share award removal + APR manager scoping)
 - [ ] Finish Nahili pilot release — waits for genuine employee narrative, manager DP INC scores, approved merit budget, and the review conversation
