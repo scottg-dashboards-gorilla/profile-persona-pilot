@@ -191,7 +191,7 @@ const IntroScreen = ({ onBegin, onResume, lockedName, lockedEmail, suggestedRole
               Assessment Dimensions
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {[...competencyDimensions, ...comptiaDimensions, ...discDimensions].map((dim) => (
+              {[...competencyDimensions, ...comptiaDimensions, ...discDimensions].filter((dim) => selectedRole?.dimensions.includes(dim.id)).map((dim) => (
                 <div key={dim.id} className="flex items-center gap-2 text-sm py-1.5">
                   <div
                     className="w-2 h-2 rounded-full flex-shrink-0"
@@ -234,7 +234,7 @@ const IntroScreen = ({ onBegin, onResume, lockedName, lockedEmail, suggestedRole
             <label htmlFor="employee-role" className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
               Role
             </label>
-            <Select value={role} onValueChange={(v) => setRole(v)}>
+            <Select value={role} onValueChange={(v) => setRole(v)} disabled={!!lockedName && !!suggestedRoleId}>
               <SelectTrigger id="employee-role" className="h-11">
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>

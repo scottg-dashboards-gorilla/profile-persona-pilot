@@ -5,3 +5,6 @@
 - Keep tasks, annual objectives, review feedback, assessment improvement actions, and pay review as distinct workflows because they have different owners and timing.
 - Home cycle stages link to their existing workflow pages and show dates/current focus because the Home page is the orientation layer, not a duplicate workflow.
 - The shared Review Cycle page reads the active stored cycle and role-scoped records, then deep-links to existing task screens rather than duplicating their forms.
+- Department questions use stored exact job-title scopes and a shared matcher in annual review and off-cycle forms so leaders and technicians receive the correct set without changing access permissions.
+- Department assessment profiles use stored role configurations selected from the signed-in employee's department and title; candidate role selection stays independent.
+- Department-head goals are reference standards in objective setting, not automatically assigned goals or recorded achievements, to preserve authentic employee review evidence.

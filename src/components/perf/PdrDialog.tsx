@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { DepartmentGoalGuidance } from "@/components/perf/DepartmentGoalGuidance";
 
 /** Goal kind, dates, target type, starting point and target value for a measurable goal. */
 function GoalTargetFields({
@@ -528,6 +529,7 @@ export function PdrDialog({ formId, onOpenChange, onChanged, canManage }: Props)
 
         {form && (
           <div className="space-y-5">
+            <DepartmentGoalGuidance employeeUuid={form.employee_uuid} />
             {/* Stage 1 — objectives */}
             <section className="rounded-md border p-3 space-y-3">
               <header className="flex items-center justify-between gap-2 flex-wrap">

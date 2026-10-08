@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { useRoles } from "@/hooks/useRoles";
 import { classifyTier } from "@/lib/tierClassification";
 import type { PreviousAttempt } from "@/components/assessment/ProgressComparison";
+import { assessmentRoleFor } from "@/lib/departmentReview";
 
 type Screen = "intro" | "questions" | "results";
 
@@ -59,7 +60,7 @@ const Index = () => {
       await supabase.rpc("claim_employee_link");
       const { data: emp } = await supabase
         .from("employees")
-        .select("uuid, first_name, last_name, email, title")
+        .select("uuid, first_name, last_name, email, title, department")
         .eq("user_id", user.id)
         .maybeSingle();
       if (!emp) return;
@@ -95,6 +96,11 @@ const Index = () => {
         }
       }
       const title = (emp.title ?? "").toLowerCase();
+      const assignedRole = assessmentRoleFor(emp);
+      if (assignedRole && roles.some((r) => r.id === assignedRole)) {
+        setSuggestedRoleId(assignedRole);
+        return;
+      }
       if (roles.length) {
         const match = roles.find((r) => {
           const key = `${r.id} ${r.label}`.toLowerCase();
@@ -113,12 +119,13 @@ const Index = () => {
     const effectiveName = linkedName ?? name;
     // Starting fresh discards this person's previous draft (others are kept).
     clearSavedProgress(effectiveName);
-    const cfg = roles.find((r) => r.id === selectedRoleId);
-    setRole(selectedRoleId, cfg?.dimensions);
+    const effectiveRole = linkedUuid && suggestedRoleId ? suggestedRoleId : selectedRoleId;
+    const cfg = roles.find((r) => r.id === effectiveRole);
+    setRole(effectiveRole, cfg?.dimensions);
     setEmployeeName(effectiveName);
     setStartTime(Date.now());
     setScreen("questions");
-  }, [setEmployeeName, setStartTime, setRole, roles, linkedName]);
+  }, [setEmployeeName, setStartTime, setRole, roles, linkedName, linkedUuid, suggestedRoleId]);
 
   const handleResume = useCallback((saved: SavedProgress) => {
     restoreProgress(saved);

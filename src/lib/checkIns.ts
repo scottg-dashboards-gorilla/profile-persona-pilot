@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CORE_VALUES, averageScore } from "@/lib/coreValues";
+import { questionApplies } from "@/lib/departmentReview";
 
 /** Off-cycle feedback check-in: DP INC values + department questions, scored blind by both sides. */
 export type FeedbackCheckIn = {
@@ -53,15 +54,15 @@ export function checkInStatus(c: FeedbackCheckIn): { label: string; overdue: boo
 }
 
 /** Active department questions (company-wide + that department) for one side. */
-export async function loadCheckInQuestions(department: string | null, side: "manager" | "employee") {
-  const { data } = await supabase
+export async function loadCheckInQuestions(department: string | null, side: "manager" | "employee", employeeUuid: string) {
+  const [{ data }, { data: employee }] = await Promise.all([supabase
     .from("department_questions")
-    .select("id, department, prompt, help_text, response_type, audience, sort_order, is_active")
+    .select("id, department, prompt, help_text, response_type, audience, sort_order, is_active, applies_to_titles")
     .eq("is_active", true)
-    .order("sort_order");
-  return ((data ?? []) as (CheckInQuestion & { department: string | null })[]).filter(
+    .order("sort_order"), supabase.from("employees").select("department, title").eq("uuid", employeeUuid).maybeSingle()]);
+  return ((data ?? []) as (CheckInQuestion & { department: string | null; applies_to_titles: string[] })[]).filter(
     (q) =>
-      (q.department == null || q.department === department) &&
+      questionApplies(q, employee ?? { department, title: null }) &&
       (q.audience === "both" || q.audience === side),
   );
 }
