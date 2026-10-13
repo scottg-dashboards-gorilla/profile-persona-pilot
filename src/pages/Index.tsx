@@ -101,6 +101,8 @@ const Index = () => {
         setSuggestedRoleId(assignedRole);
         return;
       }
+      // Loose keyword guess: pre-select only, never lock — the person can
+      // still change it if the guess is wrong (e.g. an Accounting Manager).
       if (roles.length) {
         const match = roles.find((r) => {
           const key = `${r.id} ${r.label}`.toLowerCase();
@@ -110,7 +112,7 @@ const Index = () => {
             return /leader|manager/.test(key);
           return false;
         });
-        if (match) setSuggestedRoleId(match.id);
+        if (match) setGuessedRoleId(match.id);
       }
     })();
   }, [employeeUuidParam, roles]);
