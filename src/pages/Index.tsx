@@ -44,6 +44,8 @@ const Index = () => {
   const [linkedUuid, setLinkedUuid] = useState<string | null>(null);
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null);
   const [suggestedRoleId, setSuggestedRoleId] = useState<string | null>(null);
+  /** Keyword-based pre-selection; shown but not locked. */
+  const [guessedRoleId, setGuessedRoleId] = useState<string | null>(null);
   /** The person's last assessment, so this one can be shown against it. */
   const [previous, setPrevious] = useState<PreviousAttempt | null>(null);
 
@@ -101,6 +103,8 @@ const Index = () => {
         setSuggestedRoleId(assignedRole);
         return;
       }
+      // Loose keyword guess: pre-select only, never lock — the person can
+      // still change it if the guess is wrong (e.g. an Accounting Manager).
       if (roles.length) {
         const match = roles.find((r) => {
           const key = `${r.id} ${r.label}`.toLowerCase();
@@ -110,7 +114,7 @@ const Index = () => {
             return /leader|manager/.test(key);
           return false;
         });
-        if (match) setSuggestedRoleId(match.id);
+        if (match) setGuessedRoleId(match.id);
       }
     })();
   }, [employeeUuidParam, roles]);
@@ -119,6 +123,7 @@ const Index = () => {
     const effectiveName = linkedName ?? name;
     // Starting fresh discards this person's previous draft (others are kept).
     clearSavedProgress(effectiveName);
+    // Only a mapping-based suggestion locks the role; keyword guesses don't.
     const effectiveRole = linkedUuid && suggestedRoleId ? suggestedRoleId : selectedRoleId;
     const cfg = roles.find((r) => r.id === effectiveRole);
     setRole(effectiveRole, cfg?.dimensions);
@@ -214,6 +219,7 @@ const Index = () => {
         lockedName={linkedName}
         lockedEmail={linkedEmail}
         suggestedRoleId={suggestedRoleId}
+        preselectedRoleId={guessedRoleId}
       />
     );
   }
