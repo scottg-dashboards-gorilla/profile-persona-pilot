@@ -219,6 +219,7 @@ const Index = () => {
         lockedName={linkedName}
         lockedEmail={linkedEmail}
         suggestedRoleId={suggestedRoleId}
+        preselectedRoleId={guessedRoleId}
       />
     );
   }
