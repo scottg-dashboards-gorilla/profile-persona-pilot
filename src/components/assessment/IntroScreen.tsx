@@ -14,6 +14,8 @@ interface IntroScreenProps {
   lockedName?: string | null;
   lockedEmail?: string | null;
   suggestedRoleId?: string | null;
+  /** Keyword-based guess: pre-selected in the dropdown but changeable. */
+  preselectedRoleId?: string | null;
   onResume: (saved: SavedProgress) => void;
 }
 
