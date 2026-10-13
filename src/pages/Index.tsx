@@ -44,6 +44,8 @@ const Index = () => {
   const [linkedUuid, setLinkedUuid] = useState<string | null>(null);
   const [linkedEmail, setLinkedEmail] = useState<string | null>(null);
   const [suggestedRoleId, setSuggestedRoleId] = useState<string | null>(null);
+  /** Keyword-based pre-selection; shown but not locked. */
+  const [guessedRoleId, setGuessedRoleId] = useState<string | null>(null);
   /** The person's last assessment, so this one can be shown against it. */
   const [previous, setPrevious] = useState<PreviousAttempt | null>(null);
 
