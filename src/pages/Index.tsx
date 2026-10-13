@@ -123,6 +123,7 @@ const Index = () => {
     const effectiveName = linkedName ?? name;
     // Starting fresh discards this person's previous draft (others are kept).
     clearSavedProgress(effectiveName);
+    // Only a mapping-based suggestion locks the role; keyword guesses don't.
     const effectiveRole = linkedUuid && suggestedRoleId ? suggestedRoleId : selectedRoleId;
     const cfg = roles.find((r) => r.id === effectiveRole);
     setRole(effectiveRole, cfg?.dimensions);
