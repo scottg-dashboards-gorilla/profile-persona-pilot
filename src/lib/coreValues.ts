@@ -90,5 +90,6 @@ export function managerValuesAverage(
   rows: { value_code: string; manager_score: number | null }[],
 ) {
   const byCode = new Map(rows.map((r) => [r.value_code, r.manager_score]));
+  if (CORE_VALUES.some(v => byCode.get(v.code) == null)) return null;
   return averageScore(CORE_VALUES.map((v) => byCode.get(v.code) ?? null));
 }

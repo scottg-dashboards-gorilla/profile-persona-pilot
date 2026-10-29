@@ -427,7 +427,7 @@ export default function MyReview() {
         <p className="text-sm text-muted-foreground">{me.title ?? "—"}</p>
       </div>
 
-      <KeyDates audience="employee" />
+      <KeyDates audience="employee" year={active ? Number(active.scheduled_date.slice(0, 4)) : goalYear ?? undefined} />
 
       {todos.length > 0 && (
         <Card className="border-amber-200 bg-amber-50/60">
