@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -60,8 +61,7 @@ export function ReviewCalendar() {
   const load = useCallback(async () => {
     setLoading(true);
     const [{ data: revs }, { data: people }] = await Promise.all([
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select(
           "id, employee_uuid, employee_name, scheduled_date, status, comp_approval_status, merit_percent, fiscal_year",
         )

@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { supabase } from "@/integrations/supabase/client";
 import { csvSafeCell } from "@/lib/csvSafe";
 
@@ -17,8 +18,7 @@ export async function exportRecordPack(employeeUuid: string, employeeName: strin
       .select("first_name, last_name, email, title, department, hire_date")
       .eq("uuid", employeeUuid)
       .maybeSingle(),
-    supabase
-      .from("performance_reviews")
+    reviewData("performance_reviews")
       .select(
         "fiscal_year, review_cycle, scheduled_date, completed_date, status, overall_rating, rating_score, ic_score, merit_percent, merit_amount, comp_effective_date, notes, released_at, employee_ack_at, employee_ack_comment, pay_pushback_status, pay_pushback_hr_note",
       )

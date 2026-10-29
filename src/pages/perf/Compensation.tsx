@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,7 +116,7 @@ export default function Compensation() {
     if (!cycleId) return;
     (async () => {
       setLoading(true);
-      let q = supabase.from("performance_reviews").select("*");
+      let q = reviewData("performance_reviews").select("*");
       if (cycleId !== "all") q = q.eq("cycle_id", cycleId);
       const { data: revs } = await q.order("employee_name");
       const rows = (revs ?? []) as Review[];
@@ -274,8 +275,7 @@ export default function Compensation() {
       variant: ok === dirty.length ? undefined : "destructive",
     });
     setPlans({});
-    const { data } = await supabase
-      .from("performance_reviews")
+    const { data } = await reviewData("performance_reviews")
       .select("*")
       .in(
         "id",

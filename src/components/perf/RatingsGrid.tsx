@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,7 +140,7 @@ export function RatingsGrid({ year }: { year: number }) {
     // Everything that doesn't depend on anything else is fetched at once, so the
     // grid appears quickly instead of waiting on a chain of requests.
     const [{ data }, { data: budgets }, { data: authData }] = await Promise.all([
-      supabase.from("performance_reviews").select(SELECT).eq("fiscal_year", year).order("employee_name"),
+      reviewData("performance_reviews").select(SELECT).eq("fiscal_year", year).order("employee_name"),
       supabase.from("manager_budgets").select("*").eq("fiscal_year", year),
       supabase.auth.getUser(),
     ]);
@@ -223,8 +224,7 @@ export function RatingsGrid({ year }: { year: number }) {
     // Core value scores the manager has given, which count for 30% of the
     // overall rating.
     if (list.length > 0) {
-      const { data: vals } = await supabase
-        .from("review_value_ratings")
+      const { data: vals } = await reviewData("review_value_ratings")
         .select("review_id, value_code, manager_score")
         .in("review_id", list.map((r) => r.id));
       const byReview: Record<string, { value_code: string; manager_score: number | null }[]> = {};

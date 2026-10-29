@@ -16,11 +16,13 @@ import {
 export function KeyDates({
   audience = "employee",
   className,
+  year,
 }: {
   audience?: "employee" | "manager";
   className?: string;
+  year?: number;
 }) {
-  const cycleYear = cycleYearFor();
+  const cycleYear = year ?? cycleYearFor();
   const windows = cycleWindows(cycleYear).filter((w) =>
     audience === "employee"
       ? w.milestone.who !== "Manager"

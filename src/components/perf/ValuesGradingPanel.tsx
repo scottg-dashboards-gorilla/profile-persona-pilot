@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CORE_VALUES, VALUE_SCALE, averageScore } from "@/lib/coreValues";
@@ -52,6 +53,7 @@ export function ValuesGradingPanel({
   side,
   readOnly = false,
   showOtherSide = true,
+  onManagerScoresChange,
 }: {
   reviewId: string;
   employeeUuid: string;
@@ -60,6 +62,7 @@ export function ValuesGradingPanel({
   readOnly?: boolean;
   /** Hide the other side's draft scores until the review is shared. */
   showOtherSide?: boolean;
+  onManagerScoresChange?: (rows: ValueRow[]) => void;
 }) {
   const { toast } = useToast();
   const [values, setValues] = useState<Record<string, ValueRow>>({});
@@ -70,8 +73,7 @@ export function ValuesGradingPanel({
 
   const load = useCallback(async () => {
     const [{ data: vr }, { data: qs }, { data: qr }, { data: emp }] = await Promise.all([
-      supabase
-        .from("review_value_ratings")
+      reviewData("review_value_ratings")
         .select("value_code, self_score, self_comment, manager_score, manager_comment")
         .eq("review_id", reviewId),
       supabase
@@ -79,8 +81,7 @@ export function ValuesGradingPanel({
         .select("id, department, prompt, help_text, response_type, audience, sort_order, applies_to_titles")
         .eq("is_active", true)
         .order("sort_order"),
-      supabase
-        .from("review_question_responses")
+      reviewData("review_question_responses")
         .select("question_id, self_score, self_text, manager_score, manager_text")
         .eq("review_id", reviewId),
       supabase.from("employees").select("department, title").eq("uuid", employeeUuid).maybeSingle(),
@@ -107,6 +108,10 @@ export function ValuesGradingPanel({
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (loaded) onManagerScoresChange?.(Object.values(values));
+  }, [values, loaded, onManagerScoresChange]);
+
   const managerAverage = useMemo(
     () => averageScore(CORE_VALUES.map((v) => values[v.code]?.manager_score)),
     [values],
@@ -119,30 +124,21 @@ export function ValuesGradingPanel({
   async function saveValue(code: string, patch: Partial<ValueRow>) {
     const next = { ...(values[code] ?? { value_code: code }), ...patch } as ValueRow;
     setValues((v) => ({ ...v, [code]: next }));
-    const { error } = await supabase.from("review_value_ratings").upsert(
-      {
-        review_id: reviewId,
-        employee_uuid: employeeUuid,
-        value_code: code,
-        ...patch,
-      },
-      { onConflict: "review_id,value_code" },
-    );
-    if (error) toast({ title: "Not saved", description: error.message, variant: "destructive" });
+    const { error } = await supabase.rpc("save_review_grading", {
+      _review_id: reviewId, _kind: "value", _key: code, _side: side, _patch: patch,
+    });
+    if (error) {
+      toast({ title: "Not saved", description: error.message, variant: "destructive" });
+      await load();
+    }
   }
 
   async function saveAnswer(questionId: string, patch: Partial<QuestionRow>) {
     const next = { ...(answers[questionId] ?? { question_id: questionId }), ...patch } as QuestionRow;
     setAnswers((a) => ({ ...a, [questionId]: next }));
-    const { error } = await supabase.from("review_question_responses").upsert(
-      {
-        review_id: reviewId,
-        question_id: questionId,
-        employee_uuid: employeeUuid,
-        ...patch,
-      },
-      { onConflict: "review_id,question_id" },
-    );
+    const { error } = await supabase.rpc("save_review_grading", {
+      _review_id: reviewId, _kind: "question", _key: questionId, _side: side, _patch: patch,
+    });
     if (error) toast({ title: "Not saved", description: error.message, variant: "destructive" });
   }
 

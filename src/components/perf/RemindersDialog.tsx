@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
@@ -88,8 +89,7 @@ export function RemindersDialog({ open, onOpenChange }: Props) {
     const today = new Date().toISOString().slice(0, 10);
 
     const [{ data: reviews }, { data: reminders }, { data: sends }] = await Promise.all([
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select("id, employee_name, employee_email, scheduled_date, status")
         .eq("status", "in_progress")
         .lte("scheduled_date", today),

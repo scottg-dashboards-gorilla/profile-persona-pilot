@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLES as DEFAULT_ROLES, RoleConfig, RoleId, DEFAULT_ROLE } from "@/data/roles";
+import { assessmentDimensions } from "@/lib/assessmentRole";
 
 export interface StoredRoleConfig extends Omit<RoleConfig, "id"> {
   /** Free-form slug — admin can create new IDs beyond the built-in RoleId union. */
@@ -16,7 +17,7 @@ function rowToConfig(row: any): StoredRoleConfig {
     id: row.id,
     label: row.label,
     description: row.description ?? "",
-    dimensions: Array.isArray(row.dimension_ids) ? row.dimension_ids : [],
+    dimensions: assessmentDimensions(Array.isArray(row.dimension_ids) ? row.dimension_ids : [], !!row.includes_technical),
     includesTechnical: !!row.includes_technical,
     sort_order: row.sort_order ?? 100,
     is_active: row.is_active !== false,

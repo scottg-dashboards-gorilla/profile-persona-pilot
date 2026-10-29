@@ -177,7 +177,7 @@ const IntroScreen = ({ onBegin, onResume, lockedName, lockedEmail, suggestedRole
               Key Areas Assessed
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {competencyAreas.map((area) => (
+              {competencyAreas.filter(area => selectedRole?.includesTechnical || (area.icon !== Monitor && area.icon !== Shield)).map((area) => (
                 <div
                   key={area.name}
                   className="flex items-start gap-3 rounded-lg bg-secondary/50 p-3"

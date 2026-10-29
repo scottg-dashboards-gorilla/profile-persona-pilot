@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,8 +48,7 @@ export function DataHealth({ year }: { year: number }) {
           "uuid, first_name, last_name, email, department, hire_date, current_annual_comp, manager_uuid, user_id",
         )
         .eq("terminated", false),
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select("employee_uuid, reviewer_uuid")
         .eq("fiscal_year", year),
     ]);

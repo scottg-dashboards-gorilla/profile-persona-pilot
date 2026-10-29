@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -179,8 +180,7 @@ export default function APR() {
   const load = useCallback(async () => {
     setLoading(true);
     const [{ data }, { data: budgets }] = await Promise.all([
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select(SELECT)
         .eq("fiscal_year", year)
         .order("employee_name"),
@@ -300,8 +300,7 @@ export default function APR() {
 
   async function exportPayChanges() {
     setExporting(true);
-    const { data, error } = await supabase
-      .from("performance_reviews")
+    const { data, error } = await reviewData("performance_reviews")
       .select(EXPORT_SELECT)
       .eq("fiscal_year", year)
       .order("employee_name");

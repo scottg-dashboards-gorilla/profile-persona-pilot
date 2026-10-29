@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -154,7 +155,7 @@ function RoleHome() {
     if (viewMode === "employee") {
       const [{ data: forms }, { data: reviews }, { data: attempts }, { data: tasks }] = await Promise.all([
         supabase.from("pdr_forms").select("id,objectives_submitted_at,objectives_approved_at,midyear_self_submitted_at,self_input_submitted_at").eq("employee_uuid", me.uuid).eq("fiscal_year", year).maybeSingle(),
-        supabase.from("performance_reviews").select("id,review_cycle,status,released_at,employee_ack_at").eq("employee_uuid", me.uuid).order("scheduled_date", { ascending: false }),
+        reviewData("performance_reviews").select("id,review_cycle,status,released_at,employee_ack_at").eq("employee_uuid", me.uuid).order("scheduled_date", { ascending: false }),
         supabase.from("assessment_attempts").select("id").eq("employee_uuid", me.uuid).not("submitted_at", "is", null).limit(1),
         supabase.from("daily_tasks").select("id,status,due_date").eq("employee_uuid", me.uuid).neq("status", "done"),
       ]);
@@ -175,7 +176,7 @@ function RoleHome() {
       if (ids.length) {
         const [{ data: forms }, { data: reviews }, { data: tasks }, { data: improvements }] = await Promise.all([
           supabase.from("pdr_forms").select("id,objectives_submitted_at,objectives_approved_at,midyear_self_submitted_at,midyear_manager_submitted_at,self_input_submitted_at,comments_finalized_at").in("employee_uuid", ids).eq("fiscal_year", year),
-          supabase.from("performance_reviews").select("id,status,assessment_attempt_id,comp_approval_status,released_at,rating_score").in("employee_uuid", ids),
+          reviewData("performance_reviews").select("id,status,assessment_attempt_id,comp_approval_status,released_at,rating_score").in("employee_uuid", ids),
           supabase.from("daily_tasks").select("id").in("employee_uuid", ids).eq("status", "blocked"),
           supabase.from("assessment_action_items").select("id,status,due_date").in("employee_uuid", ids).neq("status", "done"),
         ]);
@@ -304,9 +305,9 @@ function AdminHome() {
     (async () => {
       const [{ count: questions }, { count: approvals }, { data: employees }, { count: reviews }] = await Promise.all([
         supabase.from("department_questions").select("id", { count: "exact", head: true }).eq("is_active", false),
-        supabase.from("performance_reviews").select("id", { count: "exact", head: true }).eq("comp_approval_status", "submitted"),
+        reviewData("performance_reviews").select("id", { count: "exact", head: true }).eq("comp_approval_status", "submitted"),
         supabase.from("employees").select("email,manager_uuid,hire_date,user_id,current_annual_comp").eq("terminated", false),
-        supabase.from("performance_reviews").select("id", { count: "exact", head: true }).neq("status", "completed"),
+        reviewData("performance_reviews").select("id", { count: "exact", head: true }).neq("status", "completed"),
       ]);
       const records = (employees ?? []).filter((employee) =>
         !employee.email || !employee.hire_date || !employee.user_id || employee.current_annual_comp == null,

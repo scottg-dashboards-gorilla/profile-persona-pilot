@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { KeyDates } from "@/components/perf/KeyDates";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -200,8 +201,7 @@ export default function MyReview() {
     setMe(emp as Employee);
 
     const [{ data: revs }, { data: gs }] = await Promise.all([
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select(
           "id, review_cycle, scheduled_date, completed_date, status, overall_rating, notes, comp_adjustment_amount, comp_adjustment_percent, comp_effective_date, promotion, new_title, released_at, employee_ack_at, employee_ack_comment, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at",
         )
@@ -427,7 +427,7 @@ export default function MyReview() {
         <p className="text-sm text-muted-foreground">{me.title ?? "—"}</p>
       </div>
 
-      <KeyDates audience="employee" />
+      <KeyDates audience="employee" year={active ? Number(active.scheduled_date.slice(0, 4)) : goalYear ?? undefined} />
 
       {todos.length > 0 && (
         <Card className="border-amber-200 bg-amber-50/60">

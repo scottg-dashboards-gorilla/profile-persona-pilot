@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -82,8 +83,7 @@ export default function Calibration() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      let rq = supabase
-        .from("performance_reviews")
+      let rq = reviewData("performance_reviews")
         .select("id,employee_uuid,employee_name,reviewer_uuid,overall_rating,cycle_id,notes");
       if (cycleId !== "all") rq = rq.eq("cycle_id", cycleId);
 
