@@ -1,7 +1,6 @@
 # Roadmap
 
 ## Open
-- [ ] Fix review rescheduling, assessment role/count, score refresh, completion validation, release gates and server-side draft privacy; verify with tests and signed-in checks
 - [ ] Finish genuine end-to-end release verification — blocked by test-only narrative, missing DP INC scores, 10 uncovered assessment actions, approvals, and a real conversation
 - [ ] Obtain Dan's missing role-specific questions/training content and design SLA evidence source; confirm Stephen's hourly-rate formula before calculation
 - [ ] Verify imported questions in the signed-in preview — current requester has no linked sign-in account available for automated checks
@@ -10,6 +9,7 @@
 - [ ] Finish Nahili pilot release — waits for genuine employee narrative, manager DP INC scores, approved merit budget, and the review conversation
 
 ## Done
+- [x] Fix rescheduling, nontechnical assessment dimensions, stored-year dates, live rating blending, mandatory manager feedback/five values, release gates, and server-masked draft reads; verify 18 tests, employee privacy, and disposable approval/release checks
 - [x] Inspect Scott's review workflow and Nahili's employee view; identify missing rescheduling, assessment mismatch, score-refresh/completion gaps, and draft-results privacy exposure
 - [x] Apply 12 department-head questions with job-title scopes, department value evidence, objective goal references and four assessment profiles; separate operations leaders from technicians
 - [x] Walk Scott's admin Home, Access, and Audit log; add live action counts and a focused records-to-fix list
