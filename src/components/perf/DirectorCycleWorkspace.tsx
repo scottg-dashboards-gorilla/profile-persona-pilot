@@ -40,7 +40,7 @@ export default function DirectorCycleWorkspace({ reviews, fiscalYear }: { review
       if (!ids.length) return;
       const [{ data: sub }, { data: req }, { data: act }, { data: bud }] = await Promise.all([
         supabase.from("employees").select("manager_uuid").in("manager_uuid", ids).eq("terminated", false),
-        supabase.from("assessment_check_in_requests").select("employee_uuid,due_date").in("employee_uuid", ids).eq("status", "pending"),
+        supabase.from("assessment_check_in_requests").select("employee_uuid,due_date").in("employee_uuid", ids).eq("status", "open"),
         supabase.from("assessment_action_items").select("employee_uuid,due_date,status").in("employee_uuid", ids).eq("is_required", true).not("status", "in", "(completed,done,closed)"),
         supabase.from("manager_budgets").select("merit_budget_amount,approval_status").eq("manager_uuid", me.uuid).eq("fiscal_year", fiscalYear).maybeSingle(),
       ]);
