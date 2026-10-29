@@ -42,6 +42,7 @@ import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { ActionItemsPanel, type DeltaContext } from "@/components/perf/ActionItemsPanel";
 import { SelfAssessmentPanel } from "@/components/perf/SelfAssessmentPanel";
 import { ValuesGradingPanel } from "@/components/perf/ValuesGradingPanel";
+import { managerFeedbackReady } from "@/lib/reviewReadiness";
 
 
 export type ReviewRow = {
@@ -112,6 +113,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const [newTitle, setNewTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [reopenReason, setReopenReason] = useState("");
+  const [managerScores, setManagerScores] = useState<{ value_code: string; manager_score: number | null }[]>([]);
 
   useEffect(() => {
     if (!review) return;
@@ -169,6 +171,10 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
   const wasShared = !!review.released_at;
 
   async function handleSave() {
+    if (!managerFeedbackReady(notes, managerScores)) {
+      toast({ title: "Feedback required", description: "Add manager feedback and score all five DP INC values before completing.", variant: "destructive" });
+      return;
+    }
     if (!currentAttempt) {
       toast({
         title: "Assessment required",
@@ -252,6 +258,7 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
               employeeUuid={review.employee_uuid}
               department={review.department}
               side="manager"
+              onManagerScoresChange={setManagerScores}
             />
           </div>
           <AssessmentDelta
@@ -376,12 +383,15 @@ export function CompleteReviewDialog({ review, onOpenChange, onSaved }: Props) {
             onClick={handleSave}
             disabled={
               saving ||
+              !managerFeedbackReady(notes, managerScores) ||
               !currentAttempt ||
               uncoveredAreas.length > 0 ||
               (wasShared && !reopenReason.trim())
             }
             title={
-              !currentAttempt
+              !managerFeedbackReady(notes, managerScores)
+                ? "Add manager feedback and score all five DP INC values"
+                : !currentAttempt
                 ? "An assessment attempt is required for this review"
                 : uncoveredAreas.length > 0
                   ? "Every flagged area needs an improvement action with a date"

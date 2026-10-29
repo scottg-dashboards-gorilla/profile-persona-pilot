@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Check,
@@ -96,6 +97,7 @@ export function ReviewFlowDialog({
   const [pushbackNote, setPushbackNote] = useState("");
   const [hrNote, setHrNote] = useState("");
   const [connectNote, setConnectNote] = useState("");
+  const [scheduledDate, setScheduledDate] = useState("");
 
   const load = useCallback(async () => {
     if (!reviewId) return;
@@ -112,6 +114,7 @@ export function ReviewFlowDialog({
       supabase.from("review_contributors").select("status").eq("review_id", reviewId),
     ]);
     setReview((r as ReviewState) ?? null);
+    setScheduledDate(r?.scheduled_date ?? "");
     setSelfDone((sa as { submitted_at: string | null } | null)?.submitted_at ?? null);
     setAttemptDone(((att ?? []) as unknown[]).length > 0);
     const list = (cs ?? []) as { status: string }[];
@@ -419,8 +422,10 @@ export function ReviewFlowDialog({
             const releaseBlock =
               review.status !== "completed"
                 ? "Complete the review first."
-                : compProposed && !compApproved
-                  ? "HR needs to approve the pay change first."
+                : !mgrApproved
+                  ? "The manager needs to approve the review first."
+                : !compApproved
+                  ? "HR needs to approve the pay outcome first, including no-change decisions."
                   : !review.connect_held_at || !review.connect_note
                     ? "Sharing is locked — log the connect conversation with a note above first."
                     : null;
@@ -561,6 +566,16 @@ export function ReviewFlowDialog({
             </div>
           )}
         </DialogHeader>
+
+        {review && !review.released_at && (
+          <div className="flex items-end gap-2">
+            <label className="grid gap-1 text-sm">Review date
+              <Input type="date" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} />
+            </label>
+            <Button variant="outline" disabled={!scheduledDate || scheduledDate === review.scheduled_date || busy === "date"}
+              onClick={() => patch({ scheduled_date: scheduledDate }, "date", "Review date saved")}>Save date</Button>
+          </div>
+        )}
 
         {loading && !review && (
           <div className="py-10 text-center text-sm text-muted-foreground">

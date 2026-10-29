@@ -53,6 +53,7 @@ export function ValuesGradingPanel({
   side,
   readOnly = false,
   showOtherSide = true,
+  onManagerScoresChange,
 }: {
   reviewId: string;
   employeeUuid: string;
@@ -61,6 +62,7 @@ export function ValuesGradingPanel({
   readOnly?: boolean;
   /** Hide the other side's draft scores until the review is shared. */
   showOtherSide?: boolean;
+  onManagerScoresChange?: (rows: ValueRow[]) => void;
 }) {
   const { toast } = useToast();
   const [values, setValues] = useState<Record<string, ValueRow>>({});
@@ -106,6 +108,10 @@ export function ValuesGradingPanel({
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (loaded) onManagerScoresChange?.(Object.values(values));
+  }, [values, loaded, onManagerScoresChange]);
+
   const managerAverage = useMemo(
     () => averageScore(CORE_VALUES.map((v) => values[v.code]?.manager_score)),
     [values],
@@ -127,7 +133,10 @@ export function ValuesGradingPanel({
       },
       { onConflict: "review_id,value_code" },
     );
-    if (error) toast({ title: "Not saved", description: error.message, variant: "destructive" });
+    if (error) {
+      toast({ title: "Not saved", description: error.message, variant: "destructive" });
+      await load();
+    }
   }
 
   async function saveAnswer(questionId: string, patch: Partial<QuestionRow>) {
