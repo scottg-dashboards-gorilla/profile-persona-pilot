@@ -2602,6 +2602,21 @@ export type Database = {
         Args: { _comment?: string; _review_id: string }
         Returns: Json
       }
+      admin_set_staff_email: {
+        Args: { _email: string; _employee_uuid: string }
+        Returns: string
+      }
+      admin_staff_access: {
+        Args: never
+        Returns: {
+          account_email: string
+          account_id: string
+          banned_until: string
+          email_confirmed_at: string
+          employee_uuid: string
+          last_sign_in_at: string
+        }[]
+      }
       can_read_review_draft: { Args: { _review_id: string }; Returns: boolean }
       check_in_side_access: {
         Args: { _check_in_id: string; _side: string; _write: boolean }
