@@ -124,15 +124,9 @@ export function ValuesGradingPanel({
   async function saveValue(code: string, patch: Partial<ValueRow>) {
     const next = { ...(values[code] ?? { value_code: code }), ...patch } as ValueRow;
     setValues((v) => ({ ...v, [code]: next }));
-    const { error } = await supabase.from("review_value_ratings").upsert(
-      {
-        review_id: reviewId,
-        employee_uuid: employeeUuid,
-        value_code: code,
-        ...patch,
-      },
-      { onConflict: "review_id,value_code" },
-    );
+    const { error } = await supabase.rpc("save_review_grading", {
+      _review_id: reviewId, _kind: "value", _key: code, _side: side, _patch: patch,
+    });
     if (error) {
       toast({ title: "Not saved", description: error.message, variant: "destructive" });
       await load();
@@ -142,15 +136,9 @@ export function ValuesGradingPanel({
   async function saveAnswer(questionId: string, patch: Partial<QuestionRow>) {
     const next = { ...(answers[questionId] ?? { question_id: questionId }), ...patch } as QuestionRow;
     setAnswers((a) => ({ ...a, [questionId]: next }));
-    const { error } = await supabase.from("review_question_responses").upsert(
-      {
-        review_id: reviewId,
-        question_id: questionId,
-        employee_uuid: employeeUuid,
-        ...patch,
-      },
-      { onConflict: "review_id,question_id" },
-    );
+    const { error } = await supabase.rpc("save_review_grading", {
+      _review_id: reviewId, _kind: "question", _key: questionId, _side: side, _patch: patch,
+    });
     if (error) toast({ title: "Not saved", description: error.message, variant: "destructive" });
   }
 
