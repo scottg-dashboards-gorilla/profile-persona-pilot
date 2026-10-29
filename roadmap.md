@@ -9,6 +9,7 @@
 - [ ] Finish Nahili pilot release — waits for genuine employee narrative, manager DP INC scores, approved merit budget, and the review conversation
 
 ## Done
+- [x] Build real staff access dashboard: 65 active staff, actual sign-in activity, 17 missing emails, validated email editing; verify Scott's dashboard and temporary-record save/readback without changing real staff addresses
 - [x] Fix rescheduling, nontechnical assessment dimensions, stored-year dates, live rating blending, mandatory manager feedback/five values, release gates, and server-masked draft reads; verify 18 tests, employee privacy, and disposable approval/release checks
 - [x] Inspect Scott's review workflow and Nahili's employee view; identify missing rescheduling, assessment mismatch, score-refresh/completion gaps, and draft-results privacy exposure
 - [x] Apply 12 department-head questions with job-title scopes, department value evidence, objective goal references and four assessment profiles; separate operations leaders from technicians

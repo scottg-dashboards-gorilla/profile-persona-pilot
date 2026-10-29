@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Trash2, Link2, ShieldCheck, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { StaffAccessDashboard } from "@/components/perf/StaffAccessDashboard";
 import {
   Dialog,
   DialogContent,
@@ -178,10 +179,6 @@ export default function AdminAccess() {
     );
   });
 
-  const linkedCount = employees.filter((e) => !!e.user_id).length;
-  const noEmailCount = employees.filter((e) => !e.email).length;
-  const unlinkedCount = employees.length - linkedCount - noEmailCount;
-
   const rolesByUser = roles.reduce<Record<string, AppRole[]>>((acc, r) => {
     (acc[r.user_id] ||= []).push(r.role);
     return acc;
@@ -190,47 +187,18 @@ export default function AdminAccess() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6" /> Access & Roles
+        <h1 className="text-2xl font-semibold flex items-center gap-2">
+          <ShieldCheck className="h-6 w-6" /> Staff access
         </h1>
         <p className="text-sm text-muted-foreground">
-          Grant admin, HR, or manager roles to authenticated users, and link employee records to their auth account.
+          Staff sign-in records and work email addresses.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Sign-in link-up</CardTitle>
-          <CardDescription>
-            When someone signs in with their work email, their account is matched to their employee
-            record automatically, and anyone with direct reports is given the manager role. Only
-            people whose sign-in email differs from the address on file need linking by hand below.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-6 text-sm">
-          <div>
-            <div className="text-2xl font-semibold">{linkedCount}</div>
-            <div className="text-muted-foreground">signed in and linked</div>
-          </div>
-          <div>
-            <div className="text-2xl font-semibold">{unlinkedCount}</div>
-            <div className="text-muted-foreground">not signed in yet</div>
-          </div>
-          <div>
-            <div className="text-2xl font-semibold">{noEmailCount}</div>
-            <div className="text-muted-foreground">no email on file — cannot self-link</div>
-          </div>
-          {(unlinkedCount > 0 || noEmailCount > 0) && (
-            <div className="ml-auto flex items-center">
-              <Button variant="outline" size="sm" onClick={() => {
-                setIssuesOnly(true);
-                window.setTimeout(() => document.getElementById("employee-links")?.scrollIntoView({ behavior: "smooth" }), 0);
-              }}>Show records to fix</Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
+      <StaffAccessDashboard onSaved={() => void load()} />
+      <details className="border-t pt-4">
+        <summary className="cursor-pointer font-medium">Roles & account linking</summary>
+        <div className="space-y-6 pt-4">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -444,7 +412,7 @@ export default function AdminAccess() {
             <Link2 className="h-4 w-4" /> Link employees to auth users
           </CardTitle>
           <CardDescription>
-            People with a work email link automatically when they sign in. Missing work emails need to be corrected in the employee source before they can self-link; use the search below to identify them. Paste an account ID here only when the sign-in email differs from the record.
+            Missing work emails can be added in Staff sign-in above. Paste an account ID here only when the sign-in email differs from the record.
           </CardDescription>
           <div className="pt-2">
             <Input
@@ -539,6 +507,8 @@ export default function AdminAccess() {
           </Table>
         </CardContent>
       </Card>
+        </div>
+      </details>
     </div>
   );
 }

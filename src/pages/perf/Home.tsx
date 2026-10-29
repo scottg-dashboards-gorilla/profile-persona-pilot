@@ -75,6 +75,7 @@ const managerLinks: QuickLink[] = [
 ];
 
 const adminLinks: QuickLink[] = [
+  { title: "Staff access", detail: "Check sign-in activity and add missing work email addresses.", href: "/admin/access", label: "View staff access", icon: Users },
   { title: "Review questions", detail: "Review disabled department questions and switch on the ones ready for this cycle.", href: "/admin/panel?tab=questions", label: "Approve questions", icon: ClipboardCheck },
   { title: "Pay approvals", detail: "Approve or return submitted merit recommendations before outcomes are shared.", href: "/admin/panel?tab=approvals", label: "Review pay approvals", icon: Wallet },
   { title: "Records needing attention", detail: "Find missing pay, manager, reviewer, sign-in, or hire-date details.", href: "/admin/panel?tab=records", label: "Check records", icon: ClipboardCheck },
