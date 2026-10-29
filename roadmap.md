@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Open
-- [ ] Walk scheduling → assessment → values → approvals → release in a signed-in review; report verified blockers without inventing employee evidence
+- [ ] Finish genuine end-to-end release verification — blocked by test-only narrative, missing DP INC scores, 10 uncovered assessment actions, approvals, and a real conversation
 - [ ] Obtain Dan's missing role-specific questions/training content and design SLA evidence source; confirm Stephen's hourly-rate formula before calculation
 - [ ] Verify imported questions in the signed-in preview — current requester has no linked sign-in account available for automated checks
 - [ ] Email domain mydatapath.com unverified — share setup with Scott (HR@mydatapath.com sender)
@@ -9,6 +9,7 @@
 - [ ] Finish Nahili pilot release — waits for genuine employee narrative, manager DP INC scores, approved merit budget, and the review conversation
 
 ## Done
+- [x] Inspect Scott's review workflow and Nahili's employee view; identify missing rescheduling, assessment mismatch, score-refresh/completion gaps, and draft-results privacy exposure
 - [x] Apply 12 department-head questions with job-title scopes, department value evidence, objective goal references and four assessment profiles; separate operations leaders from technicians
 - [x] Walk Scott's admin Home, Access, and Audit log; add live action counts and a focused records-to-fix list
 - [x] Start Nahili's real review and add one clearly labeled, dated pilot goal with a numeric target
