@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Open
+- [ ] Walk scheduling → assessment → values → approvals → release in a signed-in review; report verified blockers without inventing employee evidence
 - [ ] Obtain Dan's missing role-specific questions/training content and design SLA evidence source; confirm Stephen's hourly-rate formula before calculation
 - [ ] Verify imported questions in the signed-in preview — current requester has no linked sign-in account available for automated checks
 - [ ] Email domain mydatapath.com unverified — share setup with Scott (HR@mydatapath.com sender)
