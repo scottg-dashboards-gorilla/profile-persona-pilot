@@ -75,6 +75,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
     { label: "Administration", items: [
       { title: "Admin panel", url: "/admin/panel", icon: ShieldCheck, adminOnly: true },
       { title: "Assessment roles", url: "/admin/roles", icon: Settings, adminOnly: true },
+      { title: "Budget approval", url: "/admin/budgets", icon: Wallet, adminOnly: true },
       { title: "Access", url: "/admin/access", icon: ShieldCheck, adminOnly: true },
       { title: "Audit log", url: "/admin/audit", icon: History, area: "audit" },
     ] },
