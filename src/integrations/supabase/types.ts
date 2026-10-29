@@ -91,10 +91,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "assessment_action_items_follow_up_review_id_fkey"
+            columns: ["follow_up_review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "assessment_action_items_review_id_fkey"
             columns: ["review_id"]
             isOneToOne: false
             referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_action_items_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
             referencedColumns: ["id"]
           },
         ]
@@ -161,6 +175,13 @@ export type Database = {
             columns: ["review_id"]
             isOneToOne: false
             referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_attempts_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
             referencedColumns: ["id"]
           },
         ]
@@ -927,6 +948,13 @@ export type Database = {
             referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "goal_check_ins_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
         ]
       }
       goal_key_results: {
@@ -1188,6 +1216,13 @@ export type Database = {
             columns: ["review_id"]
             isOneToOne: false
             referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pdr_forms_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
             referencedColumns: ["id"]
           },
         ]
@@ -1642,6 +1677,13 @@ export type Database = {
             referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_access_tokens_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
         ]
       }
       review_contributor_versions: {
@@ -1776,6 +1818,13 @@ export type Database = {
             referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_contributors_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
         ]
       }
       review_cycles: {
@@ -1875,6 +1924,13 @@ export type Database = {
             referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_question_responses_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
         ]
       }
       review_reminders: {
@@ -1944,6 +2000,13 @@ export type Database = {
             referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_reminders_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
         ]
       }
       review_self_assessments: {
@@ -2006,6 +2069,13 @@ export type Database = {
             referencedRelation: "performance_reviews"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_self_assessments_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: true
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
         ]
       }
       review_value_ratings: {
@@ -2051,6 +2121,13 @@ export type Database = {
             columns: ["review_id"]
             isOneToOne: false
             referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_value_ratings_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
             referencedColumns: ["id"]
           },
         ]
@@ -2149,13 +2226,383 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      performance_reviews_visible: {
+        Row: {
+          aggregation_method: string | null
+          apr_stage: string | null
+          assessment_attempt_id: string | null
+          comp_adjustment_amount: number | null
+          comp_adjustment_percent: number | null
+          comp_approval_note: string | null
+          comp_approval_status: string | null
+          comp_approved_at: string | null
+          comp_approved_by: string | null
+          comp_effective_date: string | null
+          comp_submitted_at: string | null
+          comp_submitted_by: string | null
+          completed_date: string | null
+          connect_held_at: string | null
+          connect_note: string | null
+          coo_finance_approved_at: string | null
+          coo_finance_approved_by: string | null
+          coo_finance_note: string | null
+          created_at: string | null
+          current_annual_comp: number | null
+          cycle_id: string | null
+          department: string | null
+          effective_rating_score: number | null
+          employee_ack_at: string | null
+          employee_ack_comment: string | null
+          employee_email: string | null
+          employee_name: string | null
+          employee_uuid: string | null
+          escalated_to_uuid: string | null
+          escalation_decided_at: string | null
+          escalation_note: string | null
+          escalation_status: string | null
+          fiscal_year: number | null
+          hire_date: string | null
+          hr_finalized_at: string | null
+          hr_finalized_by: string | null
+          ic_score: number | null
+          id: string | null
+          kickoff_at: string | null
+          manager_approval_note: string | null
+          manager_approved_at: string | null
+          manager_approved_by: string | null
+          manager_review_response: string | null
+          manager_review_sent_at: string | null
+          manager_summary_comment: string | null
+          merit_amount: number | null
+          merit_percent: number | null
+          merit_prorated_amount: number | null
+          new_title: string | null
+          notes: string | null
+          overall_rating: string | null
+          pay_pushback_employee_note: string | null
+          pay_pushback_hr_note: string | null
+          pay_pushback_manager_at: string | null
+          pay_pushback_manager_note: string | null
+          pay_pushback_raised_at: string | null
+          pay_pushback_resolved_at: string | null
+          pay_pushback_resolved_by: string | null
+          pay_pushback_status: string | null
+          payroll_submitted_at: string | null
+          promotion: boolean | null
+          rating_score: number | null
+          released_at: string | null
+          released_by: string | null
+          reopened_at: string | null
+          reopened_reason: string | null
+          review_cycle: string | null
+          review_type: string | null
+          reviewer_uuid: string | null
+          scheduled_date: string | null
+          selected_contributor_versions: Json | null
+          self_assessment_response: string | null
+          self_assessment_sent_at: string | null
+          status: string | null
+          title: string | null
+          updated_at: string | null
+          values_avg_score: number | null
+        }
+        Insert: {
+          aggregation_method?: never
+          apr_stage?: string | null
+          assessment_attempt_id?: string | null
+          comp_adjustment_amount?: never
+          comp_adjustment_percent?: never
+          comp_approval_note?: never
+          comp_approval_status?: never
+          comp_approved_at?: never
+          comp_approved_by?: never
+          comp_effective_date?: never
+          comp_submitted_at?: never
+          comp_submitted_by?: never
+          completed_date?: string | null
+          connect_held_at?: never
+          connect_note?: never
+          coo_finance_approved_at?: never
+          coo_finance_approved_by?: never
+          coo_finance_note?: never
+          created_at?: string | null
+          current_annual_comp?: never
+          cycle_id?: string | null
+          department?: string | null
+          effective_rating_score?: never
+          employee_ack_at?: string | null
+          employee_ack_comment?: string | null
+          employee_email?: string | null
+          employee_name?: string | null
+          employee_uuid?: string | null
+          escalated_to_uuid?: never
+          escalation_decided_at?: never
+          escalation_note?: never
+          escalation_status?: never
+          fiscal_year?: number | null
+          hire_date?: string | null
+          hr_finalized_at?: never
+          hr_finalized_by?: never
+          ic_score?: never
+          id?: string | null
+          kickoff_at?: string | null
+          manager_approval_note?: never
+          manager_approved_at?: never
+          manager_approved_by?: never
+          manager_review_response?: never
+          manager_review_sent_at?: string | null
+          manager_summary_comment?: never
+          merit_amount?: never
+          merit_percent?: never
+          merit_prorated_amount?: never
+          new_title?: never
+          notes?: never
+          overall_rating?: never
+          pay_pushback_employee_note?: never
+          pay_pushback_hr_note?: never
+          pay_pushback_manager_at?: never
+          pay_pushback_manager_note?: never
+          pay_pushback_raised_at?: never
+          pay_pushback_resolved_at?: never
+          pay_pushback_resolved_by?: never
+          pay_pushback_status?: never
+          payroll_submitted_at?: never
+          promotion?: never
+          rating_score?: never
+          released_at?: string | null
+          released_by?: never
+          reopened_at?: never
+          reopened_reason?: never
+          review_cycle?: string | null
+          review_type?: string | null
+          reviewer_uuid?: string | null
+          scheduled_date?: string | null
+          selected_contributor_versions?: never
+          self_assessment_response?: never
+          self_assessment_sent_at?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+          values_avg_score?: never
+        }
+        Update: {
+          aggregation_method?: never
+          apr_stage?: string | null
+          assessment_attempt_id?: string | null
+          comp_adjustment_amount?: never
+          comp_adjustment_percent?: never
+          comp_approval_note?: never
+          comp_approval_status?: never
+          comp_approved_at?: never
+          comp_approved_by?: never
+          comp_effective_date?: never
+          comp_submitted_at?: never
+          comp_submitted_by?: never
+          completed_date?: string | null
+          connect_held_at?: never
+          connect_note?: never
+          coo_finance_approved_at?: never
+          coo_finance_approved_by?: never
+          coo_finance_note?: never
+          created_at?: string | null
+          current_annual_comp?: never
+          cycle_id?: string | null
+          department?: string | null
+          effective_rating_score?: never
+          employee_ack_at?: string | null
+          employee_ack_comment?: string | null
+          employee_email?: string | null
+          employee_name?: string | null
+          employee_uuid?: string | null
+          escalated_to_uuid?: never
+          escalation_decided_at?: never
+          escalation_note?: never
+          escalation_status?: never
+          fiscal_year?: number | null
+          hire_date?: string | null
+          hr_finalized_at?: never
+          hr_finalized_by?: never
+          ic_score?: never
+          id?: string | null
+          kickoff_at?: string | null
+          manager_approval_note?: never
+          manager_approved_at?: never
+          manager_approved_by?: never
+          manager_review_response?: never
+          manager_review_sent_at?: string | null
+          manager_summary_comment?: never
+          merit_amount?: never
+          merit_percent?: never
+          merit_prorated_amount?: never
+          new_title?: never
+          notes?: never
+          overall_rating?: never
+          pay_pushback_employee_note?: never
+          pay_pushback_hr_note?: never
+          pay_pushback_manager_at?: never
+          pay_pushback_manager_note?: never
+          pay_pushback_raised_at?: never
+          pay_pushback_resolved_at?: never
+          pay_pushback_resolved_by?: never
+          pay_pushback_status?: never
+          payroll_submitted_at?: never
+          promotion?: never
+          rating_score?: never
+          released_at?: string | null
+          released_by?: never
+          reopened_at?: never
+          reopened_reason?: never
+          review_cycle?: string | null
+          review_type?: string | null
+          reviewer_uuid?: string | null
+          scheduled_date?: string | null
+          selected_contributor_versions?: never
+          self_assessment_response?: never
+          self_assessment_sent_at?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+          values_avg_score?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_reviews_assessment_attempt_id_fkey"
+            columns: ["assessment_attempt_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_reviews_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "review_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_question_responses_visible: {
+        Row: {
+          created_at: string | null
+          employee_uuid: string | null
+          id: string | null
+          manager_score: number | null
+          manager_text: string | null
+          question_id: string | null
+          review_id: string | null
+          self_score: number | null
+          self_text: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          employee_uuid?: string | null
+          id?: string | null
+          manager_score?: never
+          manager_text?: never
+          question_id?: string | null
+          review_id?: string | null
+          self_score?: number | null
+          self_text?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          employee_uuid?: string | null
+          id?: string | null
+          manager_score?: never
+          manager_text?: never
+          question_id?: string | null
+          review_id?: string | null
+          self_score?: number | null
+          self_text?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_question_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "department_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_question_responses_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_question_responses_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_value_ratings_visible: {
+        Row: {
+          created_at: string | null
+          employee_uuid: string | null
+          id: string | null
+          manager_comment: string | null
+          manager_score: number | null
+          review_id: string | null
+          self_comment: string | null
+          self_score: number | null
+          updated_at: string | null
+          value_code: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          employee_uuid?: string | null
+          id?: string | null
+          manager_comment?: never
+          manager_score?: never
+          review_id?: string | null
+          self_comment?: string | null
+          self_score?: number | null
+          updated_at?: string | null
+          value_code?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          employee_uuid?: string | null
+          id?: string | null
+          manager_comment?: never
+          manager_score?: never
+          review_id?: string | null
+          self_comment?: string | null
+          self_score?: number | null
+          updated_at?: string | null
+          value_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_value_ratings_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_value_ratings_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews_visible"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       acknowledge_review: {
         Args: { _comment?: string; _review_id: string }
         Returns: Json
       }
+      can_read_review_draft: { Args: { _review_id: string }; Returns: boolean }
       check_in_side_access: {
         Args: { _check_in_id: string; _side: string; _write: boolean }
         Returns: boolean
@@ -2230,6 +2677,16 @@ export type Database = {
           _truthfulness: number
         }
         Returns: string
+      }
+      save_review_grading: {
+        Args: {
+          _key: string
+          _kind: string
+          _patch: Json
+          _review_id: string
+          _side: string
+        }
+        Returns: undefined
       }
       submit_candidate_assessment: {
         Args: {
