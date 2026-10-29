@@ -224,7 +224,7 @@ function RoleHome() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase text-primary">{viewMode === "employee" ? "My workspace" : "Manager workspace"}</p>
+        <p className="text-xs font-semibold uppercase text-primary">{viewMode === "employee" ? "Your review year" : "Your team"}</p>
         <h1 className="mt-1 text-2xl font-semibold">{name ? `Welcome, ${name}` : "Welcome"}</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{intro}</p>
       </div>
@@ -286,6 +286,20 @@ function RoleHome() {
 
 function AdminHome() {
   const [counts, setCounts] = useState({ questions: 0, approvals: 0, records: 0, reviews: 0 });
+  const [name, setName] = useState("");
+  useEffect(() => {
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth.user?.id;
+      if (!userId) return;
+      const { data: me } = await supabase
+        .from("employees")
+        .select("first_name")
+        .eq("user_id", userId)
+        .maybeSingle();
+      setName(me?.first_name ?? "");
+    })();
+  }, []);
   useEffect(() => {
     (async () => {
       const [{ count: questions }, { count: approvals }, { data: employees }, { count: reviews }] = await Promise.all([
@@ -313,7 +327,9 @@ function AdminHome() {
     <div className="space-y-8">
       <section className="space-y-5">
         <div>
-          <p className="text-xs font-semibold uppercase text-primary">Admin workspace</p>
+          <p className="text-xs font-semibold uppercase text-primary">
+            Welcome back{name ? `, ${name}` : ""}
+          </p>
           <h1 className="mt-1 text-2xl font-semibold">Run the review cycle</h1>
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Start with the specific item that needs attention, then monitor review progress across the company.</p>
         </div>
@@ -330,6 +346,6 @@ function AdminHome() {
 
 export default function Home() {
   const { viewMode, loading } = usePermissions();
-  if (loading) return <div className="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading your workspace…</div>;
+  if (loading) return <div className="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading your home…</div>;
   return viewMode === "admin" ? <AdminHome /> : <RoleHome />;
 }
