@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,8 +95,7 @@ export default function EmployeeDetail() {
           )
           .eq("employee_uuid", uuid)
           .order("taken_at", { ascending: true }),
-        supabase
-          .from("performance_reviews")
+        reviewData("performance_reviews")
           .select("id,scheduled_date,completed_date,status,assessment_attempt_id")
           .eq("employee_uuid", uuid)
           .order("scheduled_date", { ascending: false }),

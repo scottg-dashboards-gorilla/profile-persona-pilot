@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -69,8 +70,7 @@ export function FairnessCheck({ year }: { year: number }) {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("performance_reviews")
+      const { data } = await reviewData("performance_reviews")
         .select("employee_uuid, employee_name, department, rating_score, merit_percent, hire_date")
         .eq("fiscal_year", year);
       if (!cancelled) {

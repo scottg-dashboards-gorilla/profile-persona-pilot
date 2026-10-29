@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,8 +70,7 @@ export default function Reviews() {
 
   async function fetchRows() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("performance_reviews")
+    const { data, error } = await reviewData("performance_reviews")
       .select("*")
       .order("scheduled_date", { ascending: true });
     if (error) {

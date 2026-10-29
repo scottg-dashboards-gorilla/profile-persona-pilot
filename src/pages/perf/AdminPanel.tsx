@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -64,8 +65,7 @@ function ReviewApprovals() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("performance_reviews")
+    const { data, error } = await reviewData("performance_reviews")
       .select(
         "id,employee_name,department,overall_rating,merit_percent,merit_amount,comp_approval_status,comp_submitted_at,released_at,fiscal_year",
       )

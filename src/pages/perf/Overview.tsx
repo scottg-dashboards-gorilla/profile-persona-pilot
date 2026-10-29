@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -205,8 +206,7 @@ export default function Overview() {
   useEffect(() => {
     (async () => {
       const [{ data: pr }, { count: hc }, { count: gc }, { count: rc }] = await Promise.all([
-        supabase
-          .from("performance_reviews")
+        reviewData("performance_reviews")
           .select(
             "id,employee_uuid,employee_name,department,scheduled_date,completed_date,status,overall_rating,comp_adjustment_amount,comp_adjustment_percent,promotion,comp_approval_status,released_at,employee_ack_at,pay_pushback_status,escalation_status,reviewer_uuid,assessment_attempt_id,cycle_id",
           )

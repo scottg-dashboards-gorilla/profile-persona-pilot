@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { format, parseISO } from "date-fns";
@@ -62,7 +63,7 @@ export default function ReviewCycle() {
     if (employeeIds?.length === 0) {
       setReviews([]); setForms([]); setGoalCounts({}); setMeasurableCounts({}); setLoading(false); return;
     }
-    const reviewsQuery = supabase.from("performance_reviews").select("id,employee_uuid,employee_name,status,kickoff_at,assessment_attempt_id,rating_score,comp_approval_status,released_at,employee_ack_at").eq("cycle_id", current.id).order("employee_name");
+    const reviewsQuery = reviewData("performance_reviews").select("id,employee_uuid,employee_name,status,kickoff_at,assessment_attempt_id,rating_score,comp_approval_status,released_at,employee_ack_at").eq("cycle_id", current.id).order("employee_name");
     const formsQuery = supabase.from("pdr_forms").select("id,employee_uuid,objectives_submitted_at,objectives_approved_at,self_input_submitted_at,comments_finalized_at").eq("fiscal_year", Number(current.starts_at.slice(0, 4)));
     const [{ data: reviewRows }, { data: formRows }, { data: questions }] = await Promise.all([
       employeeIds ? reviewsQuery.in("employee_uuid", employeeIds) : reviewsQuery,

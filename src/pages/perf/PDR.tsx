@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -114,8 +115,7 @@ export default function PDR() {
       // Merit agreed in the Pay review cycle, so goal delivery and reward sit side by side.
       // Keep only the review that belongs to the year being viewed — older rows may lack a
       // fiscal_year, in which case fall back to the review's creation year.
-      const { data: revs } = await supabase
-        .from("performance_reviews")
+      const { data: revs } = await reviewData("performance_reviews")
         .select("employee_uuid,merit_percent,merit_amount,overall_rating,created_at,fiscal_year")
         .in("employee_uuid", list.map((x) => x.employee_uuid));
       const m: Record<string, MeritInfo> = {};

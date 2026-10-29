@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell, Loader2 } from "lucide-react";
@@ -33,8 +34,7 @@ export function NotificationsBell() {
     const today = new Date().toISOString().slice(0, 10);
 
     const [{ data: revs }, { data: attempts }, { data: forms }, { data: tasks }] = await Promise.all([
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select("id, review_cycle, status, released_at, employee_ack_at")
         .eq("employee_uuid", uuid)
         .order("scheduled_date", { ascending: false }),
@@ -185,8 +185,7 @@ export function NotificationsBell() {
     };
 
     const [{ data: revs }, { data: forms }, { data: tasks }] = await Promise.all([
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select(
           "id, employee_uuid, employee_name, review_cycle, status, scheduled_date, released_at, comp_approval_status, pay_pushback_status, escalation_status, assessment_attempt_id",
         )
@@ -335,8 +334,7 @@ export function NotificationsBell() {
     const out: Ping[] = [];
     const today = new Date().toISOString().slice(0, 10);
     const [{ data: revs }, { count: queued }] = await Promise.all([
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select(
           "id, status, scheduled_date, released_at, employee_ack_at, comp_approval_status, pay_pushback_status, escalation_status, reviewer_uuid, cycle_id, assessment_attempt_id",
         ),

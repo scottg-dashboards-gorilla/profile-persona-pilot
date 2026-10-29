@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
@@ -100,8 +101,7 @@ export function ReviewFlowDialog({
     if (!reviewId) return;
     setLoading(true);
     const [{ data: r }, { data: sa }, { data: att }, { data: cs }] = await Promise.all([
-      supabase
-        .from("performance_reviews")
+      reviewData("performance_reviews")
         .select(
           "id, employee_uuid, employee_name, review_cycle, scheduled_date, status, overall_rating, comp_adjustment_amount, comp_approval_status, comp_approval_note, comp_approved_at, released_at, employee_ack_at, employee_ack_comment, assessment_attempt_id, kickoff_at, completed_date, reopened_at, reopened_reason, pay_pushback_status, pay_pushback_raised_at, pay_pushback_employee_note, pay_pushback_manager_note, pay_pushback_manager_at, pay_pushback_hr_note, pay_pushback_resolved_at, connect_held_at, connect_note, manager_approved_at, manager_approval_note",
         )

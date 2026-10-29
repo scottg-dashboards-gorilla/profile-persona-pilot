@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CORE_VALUES, VALUE_SCALE, averageScore } from "@/lib/coreValues";
@@ -70,8 +71,7 @@ export function ValuesGradingPanel({
 
   const load = useCallback(async () => {
     const [{ data: vr }, { data: qs }, { data: qr }, { data: emp }] = await Promise.all([
-      supabase
-        .from("review_value_ratings")
+      reviewData("review_value_ratings")
         .select("value_code, self_score, self_comment, manager_score, manager_comment")
         .eq("review_id", reviewId),
       supabase
@@ -79,8 +79,7 @@ export function ValuesGradingPanel({
         .select("id, department, prompt, help_text, response_type, audience, sort_order, applies_to_titles")
         .eq("is_active", true)
         .order("sort_order"),
-      supabase
-        .from("review_question_responses")
+      reviewData("review_question_responses")
         .select("question_id, self_score, self_text, manager_score, manager_text")
         .eq("review_id", reviewId),
       supabase.from("employees").select("department, title").eq("uuid", employeeUuid).maybeSingle(),

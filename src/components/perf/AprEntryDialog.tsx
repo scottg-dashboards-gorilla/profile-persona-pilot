@@ -1,3 +1,4 @@
+import { reviewData } from "@/lib/reviewData";
 import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
@@ -106,8 +107,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
       mgr
         ? supabase.from("employees").select("uuid").eq("manager_uuid", mgr).eq("terminated", false)
         : Promise.resolve({ data: [] }),
-      supabase
-        .from("review_value_ratings")
+      reviewData("review_value_ratings")
         .select("value_code, manager_score")
         .eq("review_id", review.id),
     ]);
@@ -124,8 +124,7 @@ export function AprEntryDialog({ review, fiscalYear, onOpenChange, onSaved }: Pr
 
     const peers = ((teamRes.data ?? []) as { uuid: string }[]).map((e) => e.uuid);
     if (peers.length > 0) {
-      const { data: revs } = await supabase
-        .from("performance_reviews")
+      const { data: revs } = await reviewData("performance_reviews")
         .select("id, merit_amount, fiscal_year")
         .in("employee_uuid", peers)
         .eq("fiscal_year", fiscalYear);
