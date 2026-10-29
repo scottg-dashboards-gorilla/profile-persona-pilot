@@ -11,3 +11,4 @@
 - Read review outcomes and value/question ratings through server-masked visible views; base-table reads expose only nonsensitive columns so draft confidentiality cannot be bypassed in the browser.
 - Enforce review completeness and rating recalculation in database triggers as well as UI checks so every workflow shares the same safeguards.
 - Staff access uses HR/admin-checked functions for account activity and email updates; actual auth sign-in timestamps, not employee links, determine sign-in status, and linked account email changes remain an IT responsibility.
+- The manager who approves a review cannot also give its HR pay approval, and flagged assessment areas must have dated actions before completion; both are enforced in database triggers so no screen can bypass them.

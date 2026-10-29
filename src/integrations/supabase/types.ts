@@ -2679,6 +2679,10 @@ export type Database = {
       }
       resolve_candidate_token: { Args: { _token: string }; Returns: Json }
       resolve_review_token: { Args: { _token: string }; Returns: Json }
+      review_uncovered_flagged_areas: {
+        Args: { _review_id: string }
+        Returns: number
+      }
       roles_configured: { Args: never; Returns: boolean }
       save_my_assessment_attempt: {
         Args: {
