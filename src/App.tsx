@@ -1,3 +1,4 @@
+import BudgetApproval from "./pages/perf/BudgetApproval";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -77,6 +78,7 @@ const App = () => (
             <Route path="/assessments" element={<Dashboard />} />
             <Route path="/admin/roles" element={<AdminRoles />} />
             <Route path="/admin/access" element={<AdminAccess />} />
+            <Route path="/admin/budgets" element={<RequireArea area="apr"><BudgetApproval /></RequireArea>} />
           </Route>
 
           {/* Candidate-facing assessment (no shell) */}
