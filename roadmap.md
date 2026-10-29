@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Open
+- [ ] Build and verify real admin staff sign-in dashboard and missing-email editing
 - [ ] Finish genuine end-to-end release verification — blocked by test-only narrative, missing DP INC scores, 10 uncovered assessment actions, approvals, and a real conversation
 - [ ] Obtain Dan's missing role-specific questions/training content and design SLA evidence source; confirm Stephen's hourly-rate formula before calculation
 - [ ] Verify imported questions in the signed-in preview — current requester has no linked sign-in account available for automated checks
