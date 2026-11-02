@@ -36,11 +36,12 @@ export default function BudgetApproval() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: emps }, { data: b }, { data: revs }] = await Promise.all([
+    const [{ data: emps }, { data: b }, { data: revs, error: revErr }] = await Promise.all([
       supabase.from("employees").select("uuid, first_name, last_name, manager_uuid, current_annual_comp").eq("terminated", false),
       supabase.from("manager_budgets").select("manager_uuid, merit_budget_amount, approval_status, approved_at").eq("fiscal_year", year),
-      supabase.from("performance_reviews").select("employee_uuid, merit_amount, fiscal_year").eq("fiscal_year", year),
+      reviewData("performance_reviews").select("employee_uuid, merit_amount, fiscal_year").eq("fiscal_year", year),
     ]);
+    if (revErr) toast.error(`Could not load planned merit: ${revErr.message}`);
     const list = (emps ?? []) as { uuid: string; first_name: string; last_name: string; manager_uuid: string | null; current_annual_comp: number | null }[];
     const mgrOf = new Map(list.map((e) => [e.uuid, e.manager_uuid]));
     const planned = new Map<string, number>();
