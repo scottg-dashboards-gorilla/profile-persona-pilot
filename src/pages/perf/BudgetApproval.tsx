@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { reviewData } from "@/lib/reviewData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +42,7 @@ export default function BudgetApproval() {
       supabase.from("manager_budgets").select("manager_uuid, merit_budget_amount, approval_status, approved_at").eq("fiscal_year", year),
       reviewData("performance_reviews").select("employee_uuid, merit_amount, fiscal_year").eq("fiscal_year", year),
     ]);
-    if (revErr) toast.error(`Could not load planned merit: ${revErr.message}`);
+    if (revErr) toast({ title: "Could not load planned merit", description: revErr.message, variant: "destructive" });
     const list = (emps ?? []) as { uuid: string; first_name: string; last_name: string; manager_uuid: string | null; current_annual_comp: number | null }[];
     const mgrOf = new Map(list.map((e) => [e.uuid, e.manager_uuid]));
     const planned = new Map<string, number>();
