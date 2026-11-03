@@ -1319,6 +1319,103 @@ export type Database = {
           },
         ]
       }
+      performance_note_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          changed_by_name: string | null
+          id: string
+          note_id: string
+          previous: Json
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          id?: string
+          note_id: string
+          previous: Json
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          id?: string
+          note_id?: string
+          previous?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_note_history_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "performance_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_notes: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          created_at: string
+          details: string
+          employee_ack_at: string | null
+          employee_ack_comment: string | null
+          employee_uuid: string
+          expected_change: string | null
+          follow_up_date: string | null
+          id: string
+          note_type: string
+          occurred_at: string
+          title: string
+          updated_at: string
+          witnesses: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          created_at?: string
+          details: string
+          employee_ack_at?: string | null
+          employee_ack_comment?: string | null
+          employee_uuid: string
+          expected_change?: string | null
+          follow_up_date?: string | null
+          id?: string
+          note_type: string
+          occurred_at?: string
+          title: string
+          updated_at?: string
+          witnesses?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          created_at?: string
+          details?: string
+          employee_ack_at?: string | null
+          employee_ack_comment?: string | null
+          employee_uuid?: string
+          expected_change?: string | null
+          follow_up_date?: string | null
+          id?: string
+          note_type?: string
+          occurred_at?: string
+          title?: string
+          updated_at?: string
+          witnesses?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_notes_employee_uuid_fkey"
+            columns: ["employee_uuid"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       performance_reviews: {
         Row: {
           aggregation_method: string
@@ -2598,6 +2695,10 @@ export type Database = {
       }
     }
     Functions: {
+      acknowledge_performance_note: {
+        Args: { _comment: string; _note_id: string }
+        Returns: undefined
+      }
       acknowledge_review: {
         Args: { _comment?: string; _review_id: string }
         Returns: Json
