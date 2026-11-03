@@ -18,6 +18,7 @@ import Home from "./pages/perf/Home";
 import Reviews from "./pages/perf/Reviews";
 import People from "./pages/perf/People";
 import EmployeeDetail from "./pages/perf/EmployeeDetail";
+import PerformanceNotes from "./pages/perf/PerformanceNotes";
 import ImprovementActions from "./pages/perf/ImprovementActions";
 import TaskTracker from "./pages/perf/TaskTracker";
 import Compensation from "./pages/perf/Compensation";
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/people" element={<People />} />
             <Route path="/people/:uuid" element={<EmployeeDetail />} />
             <Route path="/improvement" element={<ImprovementActions />} />
+            <Route path="/documentation" element={<PerformanceNotes />} />
             <Route path="/me" element={<EmployeeOnly><MyReview /></EmployeeOnly>} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/playbook" element={<Playbook />} />

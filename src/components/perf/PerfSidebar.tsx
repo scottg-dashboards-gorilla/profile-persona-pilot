@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, ClipboardCheck, Users, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock, TrendingUp, CalendarRange } from "lucide-react";
+import { Home, ClipboardCheck, Users, ListTodo, FileSpreadsheet, Settings, ShieldCheck, DollarSign, Scale, Network, History, UserSquare2, BookOpen, Building2, Workflow, Wallet, Lock, TrendingUp, FileWarning, CalendarRange } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +37,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
       { title: "Objectives", url: "/pdr", icon: Workflow, area: "pdr" },
       { title: "Tasks", url: "/tasks", icon: ListTodo },
       { title: "My feedback", url: "/me", icon: UserSquare2, employeeOnly: true },
+      { title: "Formal warnings", url: "/documentation", icon: FileWarning },
     ] },
     { label: "Help", items: [{ title: "Tool", url: "/playbook", icon: BookOpen }] },
   ],
@@ -48,6 +49,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
       { title: "Feedback & reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
       { title: "Team assessments", url: "/people", icon: Users, area: "reviews" },
       { title: "Improvement actions", url: "/improvement", icon: TrendingUp, area: "reviews" },
+      { title: "Performance documentation", url: "/documentation", icon: FileWarning, area: "reviews" },
       { title: "Pay review", url: "/apr", icon: Wallet, area: "apr" },
     ] },
     { label: "People", items: [
@@ -63,6 +65,7 @@ const groupsByMode: Record<"employee" | "manager" | "admin", Group[]> = {
       { title: "Feedback & reviews", url: "/reviews", icon: ClipboardCheck, area: "reviews" },
       { title: "Assessments", url: "/assessments", icon: FileSpreadsheet, adminOnly: true },
       { title: "Improvement actions", url: "/improvement", icon: TrendingUp, area: "reviews" },
+      { title: "Performance documentation", url: "/documentation", icon: FileWarning, area: "reviews" },
       { title: "Pay review", url: "/apr", icon: Wallet, area: "apr" },
       { title: "Calibration", url: "/calibration", icon: Scale, area: "calibration" },
     ] },
