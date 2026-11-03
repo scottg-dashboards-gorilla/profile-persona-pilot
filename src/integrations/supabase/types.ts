@@ -2746,6 +2746,10 @@ export type Database = {
         Returns: boolean
       }
       is_hr_or_admin: { Args: never; Returns: boolean }
+      is_in_management_chain: {
+        Args: { _employee_uuid: string }
+        Returns: boolean
+      }
       is_my_manager: { Args: { _employee_uuid: string }; Returns: boolean }
       is_review_contributor: {
         Args: { _contributor_id: string }

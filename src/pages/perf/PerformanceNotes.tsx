@@ -20,14 +20,14 @@ type Note = {
   author_id: string | null; author_name: string | null; employee_ack_at: string | null; employee_ack_comment: string | null;
   created_at: string; updated_at: string;
 };
-type Emp = { uuid: string; first_name: string; last_name: string; title: string | null; department: string | null; user_id: string | null };
+type Emp = { uuid: string; first_name: string; last_name: string; title: string | null; department: string | null; user_id: string | null; manager_uuid: string | null };
 type Hist = { id: string; changed_at: string; changed_by_name: string | null; previous: Partial<Note> };
 
 const toLocalInput = (iso: string) => format(new Date(iso), "yyyy-MM-dd'T'HH:mm");
 const empty = { employee_uuid: "", note_type: "observation" as NoteType, occurred_at: toLocalInput(new Date().toISOString()), title: "", details: "", expected_change: "", follow_up_date: "", witnesses: "" };
 
 export default function PerformanceNotes() {
-  const { viewMode } = usePermissions();
+  const { viewMode, has } = usePermissions();
   const { toast } = useToast();
   const leader = viewMode !== "employee";
   const [notes, setNotes] = useState<Note[]>([]);
@@ -50,7 +50,7 @@ export default function PerformanceNotes() {
     setMe(u.user?.id ?? null);
     const [{ data: n, error }, { data: e }] = await Promise.all([
       supabase.from("performance_notes").select("*").order("occurred_at", { ascending: false }),
-      supabase.from("employees").select("uuid, first_name, last_name, title, department, user_id").eq("terminated", false).order("first_name"),
+      supabase.from("employees").select("uuid, first_name, last_name, title, department, user_id, manager_uuid").eq("terminated", false).order("first_name"),
     ]);
     if (error) toast({ title: "Couldn't load records", description: error.message, variant: "destructive" });
     setNotes((n as Note[]) ?? []);
@@ -60,7 +60,20 @@ export default function PerformanceNotes() {
   useEffect(() => { load(); }, []);
 
   const empName = (id: string) => { const e = emps.find((x) => x.uuid === id); return e ? `${e.first_name} ${e.last_name}` : "Former employee"; };
-  const subjects = useMemo(() => emps.filter((e) => e.user_id !== me), [emps, me]);
+  const subjects = useMemo(() => {
+    const others = emps.filter((e) => e.user_id !== me);
+    if (has("admin") || has("hr")) return others;
+    // Managers: everyone below them in the reporting line (direct and indirect reports).
+    const mine = emps.find((e) => e.user_id === me)?.uuid;
+    if (!mine) return [];
+    const byId = new Map(emps.map((e) => [e.uuid, e]));
+    const reportsTo = (e: Emp) => {
+      let cur = e.manager_uuid, hops = 0;
+      while (cur && hops++ < 20) { if (cur === mine) return true; cur = byId.get(cur)?.manager_uuid ?? null; }
+      return false;
+    };
+    return others.filter(reportsTo);
+  }, [emps, me, has]);
 
   const shown = notes.filter((n) => (filterEmp === "all" || n.employee_uuid === filterEmp) && (filterType === "all" || n.note_type === filterType));
   const counts = useMemo(() => {
@@ -111,7 +124,7 @@ export default function PerformanceNotes() {
           <h1 className="font-display text-2xl font-semibold">{leader ? "Performance documentation" : "Formal warnings"}</h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
             {leader
-              ? "Date- and time-stamped record of performance concerns, from informal observations and verbal warnings through to PIP referral. Visible to HR, admin and the employee's manager. Employees only see written warnings, final warnings and PIP referrals, and sign to confirm they received them."
+              ? "Date- and time-stamped record of performance concerns, from informal observations and verbal warnings through to PIP referral. Visible to HR, admin and everyone above the employee in the reporting line. Employees only see written warnings, final warnings and PIP referrals, and sign to confirm they received them."
               : "Formal warnings your manager or HR has issued. Please read each one and sign to confirm you've received it. Signing doesn't mean you agree — you can add your own comment."}
           </p>
         </div>
