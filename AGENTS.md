@@ -12,4 +12,4 @@
 - Enforce review completeness and rating recalculation in database triggers as well as UI checks so every workflow shares the same safeguards.
 - Staff access uses HR/admin-checked functions for account activity and email updates; actual auth sign-in timestamps, not employee links, determine sign-in status, and linked account email changes remain an IT responsibility.
 - The manager who approves a review cannot also give its HR pay approval, and flagged assessment areas must have dated actions before completion; both are enforced in database triggers so no screen can bypass them.
-- Performance documentation notes are visible to HR/admin and the direct manager; employees see only formal warnings and sign via a database function, and every edit is snapshotted to history by trigger so records stay defensible.
+- Performance documentation notes are visible to HR/admin and everyone above the employee in the reporting line; employees see only formal warnings and sign via a database function, and every edit is snapshotted to history by trigger so records stay defensible.
