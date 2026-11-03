@@ -1,9 +1,12 @@
 import { reviewData } from "@/lib/reviewData";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
+  ArrowUpRight,
+  CalendarClock,
   CheckCircle2,
+  CircleAlert,
   ClipboardCheck,
   FileText,
   ListTodo,
@@ -38,6 +41,8 @@ type QuickLink = {
 
 type JourneyStep = { title: string; when: string; href: string };
 
+type Stat = { label: string; value: number | string; href: string; icon: typeof Target };
+
 const employeeSteps: JourneyStep[] = [
   { title: "Set objectives", when: "Start of year", href: "/cycle?stage=objectives" },
   { title: "Track everyday work", when: "Throughout year", href: "/tasks" },
@@ -60,20 +65,6 @@ const adminSteps: JourneyStep[] = [
   { title: "Release and close", when: "Feb 1–15", href: "/cycle?stage=release" },
 ];
 
-const employeeLinks: QuickLink[] = [
-  { title: "Objectives", detail: "Set annual goals and add mid-year or year-end progress.", href: "/pdr", label: "Open objectives", icon: Target },
-  { title: "Tasks", detail: "Track the day-to-day work that supports your goals.", href: "/tasks", label: "Update tasks", icon: ListTodo },
-  { title: "My feedback", detail: "Write your review input and see shared outcomes.", href: "/me", label: "Open my review", icon: FileText },
-];
-
-const managerLinks: QuickLink[] = [
-  { title: "Objectives", detail: "Align goals and respond to progress updates.", href: "/pdr", label: "Review objectives", icon: Target },
-  { title: "Tasks", detail: "See team work, priorities, blockers, and comments.", href: "/tasks", label: "View team tasks", icon: ListTodo },
-  { title: "Feedback & reviews", detail: "Read employee input and write manager feedback.", href: "/reviews", label: "Open reviews", icon: ClipboardCheck },
-  { title: "Improvement actions", detail: "Follow up weaknesses or declines found by assessments.", href: "/improvement", label: "View actions", icon: TrendingUp },
-  { title: "Pay review", detail: "Enter ratings, I/C, and merit recommendations.", href: "/apr", label: "Open pay review", icon: Wallet },
-];
-
 const adminLinks: QuickLink[] = [
   { title: "Staff access", detail: "Check sign-in activity and add missing work email addresses.", href: "/admin/access", label: "View staff access", icon: Users },
   { title: "Review questions", detail: "Review disabled department questions and switch on the ones ready for this cycle.", href: "/admin/panel?tab=questions", label: "Approve questions", icon: ClipboardCheck },
@@ -82,23 +73,45 @@ const adminLinks: QuickLink[] = [
   { title: "Review progress", detail: "Track employee input, manager feedback, and completion across the company.", href: "/reviews", label: "Monitor reviews", icon: Users },
 ];
 
+const actionIcons: Record<string, typeof Target> = {
+  objectives: Target,
+  align: Target,
+  feedback: FileText,
+  reviews: ClipboardCheck,
+  assessment: ClipboardCheck,
+  assessments: ClipboardCheck,
+  ack: CheckCircle2,
+  tasks: ListTodo,
+  blocked: CircleAlert,
+  checkins: CalendarClock,
+  kickoff: Users,
+  improvements: TrendingUp,
+  pay: Wallet,
+  share: ArrowUpRight,
+};
+
 function Journey({ steps, current }: { steps: JourneyStep[]; current: number }) {
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-5" aria-label="Review cycle stages">
+    <ol className="space-y-1" aria-label="Review cycle stages">
       {steps.map((step, index) => (
-        <Link
-          key={step.title}
-          to={step.href}
-          aria-current={index === current ? "step" : undefined}
-          className={`flex min-w-0 items-center gap-2 rounded-md border px-3 py-2.5 transition-colors hover:border-primary/50 hover:bg-primary/5 ${index === current ? "border-primary bg-primary/5" : "border-border bg-background"}`}
-        >
-          <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${index === current ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
-            {index + 1}
-          </span>
-          <span className="min-w-0"><span className="block text-xs font-medium leading-tight">{step.title}</span><span className="mt-0.5 block text-[11px] text-muted-foreground">{step.when}</span></span>
-        </Link>
+        <li key={step.title}>
+          <Link
+            to={step.href}
+            aria-current={index === current ? "step" : undefined}
+            className={`flex items-center gap-3 rounded-md px-3 py-2 transition-colors hover:bg-muted ${index === current ? "bg-primary/5" : ""}`}
+          >
+            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${index === current ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              {index + 1}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className={`block text-sm leading-tight ${index === current ? "font-semibold" : "font-medium"}`}>{step.title}</span>
+              <span className="block text-xs text-muted-foreground">{step.when}</span>
+            </span>
+            {index === current && <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-primary">Now</span>}
+          </Link>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
 
@@ -127,12 +140,29 @@ function QuickLinks({ links }: { links: QuickLink[] }) {
   );
 }
 
+function StatStrip({ stats }: { stats: Stat[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {stats.map((stat) => (
+        <Link key={stat.label} to={stat.href} className="group rounded-lg border border-border bg-background px-4 py-3 transition-colors hover:border-primary/40">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">{stat.label}</span>
+            <stat.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+          </div>
+          <p className="mt-1 text-2xl font-semibold tabular-nums">{stat.value}</p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 function RoleHome() {
   const { viewMode } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [meUuid, setMeUuid] = useState("");
   const [actions, setActions] = useState<HomeAction[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -152,6 +182,7 @@ function RoleHome() {
     const year = new Date().getFullYear();
     const today = new Date().toISOString().slice(0, 10);
     const next: HomeAction[] = [];
+    const nextStats: Stat[] = [];
 
     if (viewMode === "employee") {
       const [{ data: forms }, { data: reviews }, { data: attempts }, { data: tasks }] = await Promise.all([
@@ -171,6 +202,12 @@ function RoleHome() {
       if (acknowledgements.length) next.push({ id: "ack", title: "Confirm your review outcome", detail: "Your manager has shared the approved outcome. Read it and confirm receipt.", href: "/me", label: "Review outcome" });
       const overdue = (tasks ?? []).filter((task) => task.due_date && task.due_date < today);
       if (overdue.length) next.push({ id: "tasks", title: `${overdue.length} overdue task${overdue.length === 1 ? "" : "s"}`, detail: "Update the status or due date on your day-to-day work board.", href: "/tasks", label: "Update tasks" });
+      nextStats.push(
+        { label: "Open tasks", value: (tasks ?? []).length, href: "/tasks", icon: ListTodo },
+        { label: "Reviews on file", value: (reviews ?? []).length, href: "/me", icon: FileText },
+        { label: "Objectives submitted", value: forms?.objectives_submitted_at ? "Yes" : "No", href: "/pdr", icon: Target },
+        { label: "Assessment done", value: attempts?.length ? "Yes" : "No", href: "/me", icon: ClipboardCheck },
+      );
     } else {
       const { data: reports } = await supabase.from("employees").select("uuid").eq("manager_uuid", me.uuid).neq("uuid", me.uuid);
       const ids = (reports ?? []).map((person) => person.uuid);
@@ -204,84 +241,103 @@ function RoleHome() {
         if (unrated) next.push({ id: "pay", title: `Enter ratings for ${unrated} team review${unrated === 1 ? "" : "s"}`, detail: "Record the results rating, DP INC value score, I/C, and merit recommendation in Pay review.", href: "/cycle?stage=score", label: "Draft scores" });
         const approved = (reviews ?? []).filter((review) => review.comp_approval_status === "approved" && !review.released_at).length;
         if (approved) next.push({ id: "share", title: `${approved} approved outcome${approved === 1 ? "" : "s"} ready to share`, detail: "Hold the review conversation, then share the approved outcome with the employee.", href: "/cycle?stage=share", label: "Share outcomes" });
+        const overdueTotal = overdueCheckIns + dueActions + (tasks ?? []).length;
+        nextStats.push(
+          { label: "Direct reports", value: ids.length, href: "/people", icon: Users },
+          { label: "Open reviews", value: (reviews ?? []).filter((review) => review.status !== "completed").length, href: "/reviews", icon: ClipboardCheck },
+          { label: "Open check-ins", value: (checkIns ?? []).length, href: "#pending-checkins", icon: CalendarClock },
+          { label: "Overdue items", value: overdueTotal, href: "/improvement", icon: CircleAlert },
+        );
       }
     }
     setActions(next);
+    setStats(nextStats);
     setLoading(false);
   }, [viewMode]);
 
   useEffect(() => { load(); }, [load]);
 
   const steps = viewMode === "employee" ? employeeSteps : managerSteps;
-  const links = viewMode === "employee" ? employeeLinks : managerLinks;
-  const intro = viewMode === "employee"
-    ? "Start with the first item below. Your objectives, everyday tasks, and review feedback each have their own place."
-    : "Start with the first team item below, then follow the review cycle from objectives through the approved outcome.";
-  const primary = actions[0];
   const stageByAction: Record<string, number> = viewMode === "employee"
     ? { objectives: 0, tasks: 1, feedback: 2, assessment: 3, ack: 4 }
     : { align: 0, kickoff: 1, blocked: 1, checkins: 1, reviews: 2, assessments: 2, improvements: 2, pay: 3, share: 4 };
-  const currentStage = primary ? (stageByAction[primary.id] ?? 0) : steps.length - 1;
+  const currentStage = actions[0] ? (stageByAction[actions[0].id] ?? 0) : steps.length - 1;
+  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase text-primary">{viewMode === "employee" ? "Your review year" : "Your team"}</p>
-        <h1 className="mt-1 text-2xl font-semibold">{name ? `Welcome, ${name}` : "Welcome"}</h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{intro}</p>
+        <h1 className="text-2xl font-semibold">{name ? `Welcome back, ${name}` : "Welcome back"}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{today}</p>
       </div>
 
-      <section aria-labelledby="next-step-title">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 id="next-step-title" className="text-sm font-semibold">Start here</h2>
-          {actions.length > 1 && <span className="text-xs text-muted-foreground">{actions.length} items need attention</span>}
-        </div>
-        <div className="border-l-4 border-primary bg-primary/5 px-5 py-5">
-          {loading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Checking what needs your attention…</div>
-          ) : primary ? (
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-lg font-semibold">{primary.title}</p>
-                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{primary.detail}</p>
-              </div>
-              <Button asChild className="shrink-0"><Link to={primary.href}>{primary.label}<ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+      {!loading && stats.length > 0 && <StatStrip stats={stats} />}
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section aria-labelledby="todo-title" className="lg:col-span-2">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 id="todo-title" className="text-sm font-semibold">Needs your attention</h2>
+            {!loading && actions.length > 0 && <span className="text-xs text-muted-foreground">{actions.length} item{actions.length === 1 ? "" : "s"}</span>}
+          </div>
+          <Card className="shadow-none">
+            <CardContent className="p-0">
+              {loading ? (
+                <div className="flex items-center gap-2 px-5 py-8 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Checking what needs your attention…</div>
+              ) : actions.length ? (
+                <ul className="divide-y divide-border">
+                  {actions.slice(0, 6).map((action) => {
+                    const Icon = actionIcons[action.id] ?? ClipboardCheck;
+                    return (
+                      <li key={action.id}>
+                        <Link to={action.href} className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/50">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-medium">{action.title}</span>
+                            <span className="mt-0.5 block text-xs text-muted-foreground">{action.detail}</span>
+                          </span>
+                          <span className="hidden shrink-0 items-center gap-1 text-xs font-medium text-primary sm:flex">
+                            {action.label}<ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                          </span>
+                          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground sm:hidden" />
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="flex items-center gap-3 px-5 py-8">
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-semibold">You're up to date</p>
+                    <p className="text-sm text-muted-foreground">Nothing needs your attention right now.</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        <div className="space-y-6">
+          <section aria-labelledby="cycle-title">
+            <div className="mb-3">
+              <h2 id="cycle-title" className="text-sm font-semibold">{viewMode === "employee" ? "Your review year" : "Your team's review cycle"}</h2>
             </div>
-          ) : (
-            <div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-primary" /><div><p className="font-semibold">You're up to date</p><p className="text-sm text-muted-foreground">Nothing needs your attention right now.</p></div></div>
+            <Card className="shadow-none">
+              <CardContent className="p-2">
+                <Journey steps={steps} current={currentStage} />
+              </CardContent>
+            </Card>
+          </section>
+
+          {viewMode === "manager" && meUuid && (
+            <section id="pending-checkins" aria-labelledby="checkins-title" className="scroll-mt-6">
+              <ManagerCheckInsCard managerUuid={meUuid} />
+            </section>
           )}
         </div>
-      </section>
-
-      {actions.length > 1 && (
-        <section aria-labelledby="other-actions-title">
-          <h2 id="other-actions-title" className="mb-2 text-sm font-semibold">Also waiting on you</h2>
-          <div className="divide-y divide-border border-y border-border">
-            {actions.slice(1, 5).map((action) => (
-              <Link key={action.id} to={action.href} className="group flex items-center gap-3 py-3">
-                <span className="min-w-0 flex-1"><span className="block text-sm font-medium">{action.title}</span><span className="block text-xs text-muted-foreground">{action.detail}</span></span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {viewMode === "manager" && meUuid && (
-        <section id="pending-checkins" aria-labelledby="checkins-title" className="scroll-mt-6">
-          <ManagerCheckInsCard managerUuid={meUuid} />
-        </section>
-      )}
-
-      <section aria-labelledby="cycle-title" className="space-y-3">
-        <div><h2 id="cycle-title" className="text-sm font-semibold">Your review cycle</h2><p className="text-xs text-muted-foreground">The highlighted stage is where to focus now. Select any stage to open it.</p></div>
-        <Journey steps={steps} current={currentStage} />
-      </section>
-
-      <section aria-labelledby="places-title" className="space-y-3">
-        <div><h2 id="places-title" className="text-sm font-semibold">Where to do your work</h2><p className="text-xs text-muted-foreground">Each area has one clear purpose.</p></div>
-        <QuickLinks links={links} />
-      </section>
+      </div>
     </div>
   );
 }
@@ -336,7 +392,24 @@ function AdminHome() {
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Start with the specific item that needs attention, then monitor review progress across the company.</p>
         </div>
         <div><h2 className="mb-3 text-sm font-semibold">Start here</h2><QuickLinks links={liveLinks} /></div>
-        <div className="space-y-3"><div><h2 className="text-sm font-semibold">Annual review cycle</h2><p className="text-xs text-muted-foreground">The highlighted stage reflects the annual calendar. Select any stage to open it.</p></div><Journey steps={adminSteps} current={currentStage} /></div>
+        <div className="space-y-3"><div><h2 className="text-sm font-semibold">Annual review cycle</h2><p className="text-xs text-muted-foreground">The highlighted stage reflects the annual calendar. Select any stage to open it.</p></div>
+          <ol className="grid grid-cols-1 gap-2 sm:grid-cols-5" aria-label="Review cycle stages">
+            {adminSteps.map((step, index) => (
+              <li key={step.title}>
+                <Link
+                  to={step.href}
+                  aria-current={index === currentStage ? "step" : undefined}
+                  className={`flex min-w-0 items-center gap-2 rounded-md border px-3 py-2.5 transition-colors hover:border-primary/50 hover:bg-primary/5 ${index === currentStage ? "border-primary bg-primary/5" : "border-border bg-background"}`}
+                >
+                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${index === currentStage ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0"><span className="block text-xs font-medium leading-tight">{step.title}</span><span className="mt-0.5 block text-[11px] text-muted-foreground">{step.when}</span></span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
       <details className="group border-t border-border pt-6">
         <summary className="flex cursor-pointer list-none items-center justify-between py-2 text-sm font-semibold">Company dashboard <span className="text-xs font-normal text-primary group-open:hidden">Open dashboard</span><span className="hidden text-xs font-normal text-primary group-open:inline">Hide dashboard</span></summary>
